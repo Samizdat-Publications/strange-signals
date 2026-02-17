@@ -96,6 +96,13 @@
                 <div id="plant-list" class="plant-list"></div>
                 <div class="palette-footer">
                     <p class="helper-text">Drag or double-click to place</p>
+                    <div class="shortcut-hints">
+                        <span class="shortcut-hint"><kbd>Del</kbd> Remove</span>
+                        <span class="shortcut-hint"><kbd>Ctrl+Z</kbd> Undo</span>
+                        <span class="shortcut-hint"><kbd>Ctrl+Y</kbd> Redo</span>
+                        <span class="shortcut-hint"><kbd>Esc</kbd> Cancel</span>
+                        <span class="shortcut-hint"><kbd>Right-click</kbd> Menu</span>
+                    </div>
                 </div>
             </aside>
 
@@ -105,6 +112,7 @@
                     <div class="toolbar-left">
                         <span class="toolbar-label">GARDEN OVERVIEW</span>
                         <span class="toolbar-sublabel">4 beds &middot; 5' &times; 10' each</span>
+                        <span id="total-plant-count" class="total-plant-count"><span class="count-num">0</span> PLANTS</span>
                     </div>
                     <div class="toolbar-right">
                         <button id="btn-undo" class="tool-btn disabled" title="Undo (Ctrl+Z)">UNDO</button>

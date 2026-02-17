@@ -322,6 +322,8 @@ const state = {
     clickPlaceMode: null,  // null or { plantId: string }
     // QoL: selected plant in bed
     selectedPlacement: null, // null or { bedIndex, placementId }
+    // QoL: info panel dismiss handler ref
+    _infoPanelDismiss: null,
 };
 
 // ---- UNDO / REDO ENGINE ----
@@ -498,6 +500,19 @@ function renderPlantList(plants) {
             e.dataTransfer.setData('text/plain', item.dataset.plantId);
             e.dataTransfer.effectAllowed = 'copy';
             item.style.opacity = '0.5';
+            // Custom drag ghost with plant emoji
+            const plant = PLANT_LIBRARY.find(p => p.id === item.dataset.plantId);
+            if (plant) {
+                const ghost = document.createElement('div');
+                ghost.className = 'drag-ghost';
+                ghost.textContent = plant.emoji;
+                ghost.style.position = 'absolute';
+                ghost.style.top = '-100px';
+                ghost.style.left = '-100px';
+                document.body.appendChild(ghost);
+                e.dataTransfer.setDragImage(ghost, 18, 18);
+                setTimeout(() => ghost.remove(), 0);
+            }
         });
         item.addEventListener('dragend', () => {
             item.style.opacity = '1';
@@ -530,6 +545,10 @@ function initGardenBeds() {
         bed.innerHTML = `
             <span class="bed-label">BED ${i + 1}</span>
             <span class="bed-dimensions">5' \u00D7 10'</span>
+            <div class="bed-empty-hint">
+                <span class="hint-icon">\u{1F331}</span>
+                <span class="hint-text">drag or double-click to plant</span>
+            </div>
         `;
         // Drag & drop
         bed.addEventListener('dragover', (e) => {
@@ -647,6 +666,10 @@ function renderPlacedPlants(bedIndex) {
     const bedEl = document.querySelectorAll('.garden-bed')[bedIndex];
     bedEl.querySelectorAll('.placed-plant').forEach(el => el.remove());
     bedEl.querySelectorAll('.spacing-warning').forEach(el => el.remove());
+
+    // Show/hide empty bed hint
+    const hint = bedEl.querySelector('.bed-empty-hint');
+    if (hint) hint.style.display = state.beds[bedIndex].length === 0 ? '' : 'none';
 
     state.beds[bedIndex].forEach((placement) => {
         const plant = PLANT_LIBRARY.find(p => p.id === placement.plantId);
@@ -880,6 +903,18 @@ function showPlantInfo(plantId) {
 
     panel.classList.remove('hidden');
     document.getElementById('close-info').onclick = () => panel.classList.add('hidden');
+
+    // Click outside to dismiss
+    function dismissOnOutsideClick(e) {
+        if (!panel.contains(e.target) && !e.target.closest('.placed-plant') && !e.target.closest('.context-menu')) {
+            panel.classList.add('hidden');
+            document.removeEventListener('mousedown', dismissOnOutsideClick);
+        }
+    }
+    // Remove old listener if any, add new
+    document.removeEventListener('mousedown', state._infoPanelDismiss);
+    state._infoPanelDismiss = dismissOnOutsideClick;
+    setTimeout(() => document.addEventListener('mousedown', dismissOnOutsideClick), 100);
 }
 
 // ---- BED SELECTOR & DETAILS ----
@@ -890,8 +925,23 @@ function initBedSelector() {
             tab.classList.add('active');
             state.selectedBed = parseInt(tab.dataset.bed);
             updateBedDetails();
+            highlightActiveBed(state.selectedBed);
         });
     });
+}
+
+function highlightActiveBed(bedIndex) {
+    document.querySelectorAll('.garden-bed').forEach(bed => {
+        bed.classList.remove('active-highlight');
+    });
+    const beds = document.querySelectorAll('.garden-bed');
+    if (beds[bedIndex]) {
+        beds[bedIndex].classList.add('active-highlight');
+        // Scroll the bed into view if needed
+        beds[bedIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // Remove highlight after animation
+        setTimeout(() => beds[bedIndex].classList.remove('active-highlight'), 800);
+    }
 }
 
 function updateBedDetails() {
@@ -900,6 +950,13 @@ function updateBedDetails() {
     const uniquePlants = [...new Set(plants.map(p => p.plantId))];
 
     document.getElementById('bed-plant-count').textContent = plants.length;
+
+    // Update total plant count in toolbar
+    const totalPlants = state.beds.reduce((sum, bed) => sum + bed.length, 0);
+    const totalCountEl = document.getElementById('total-plant-count');
+    if (totalCountEl) {
+        totalCountEl.innerHTML = `<span class="count-num">${totalPlants}</span> PLANT${totalPlants !== 1 ? 'S' : ''}`;
+    }
 
     // Coverage estimate (rough)
     const bedArea = 5 * 10 * 144; // sq inches
@@ -927,7 +984,7 @@ function updateBedDetails() {
     // Plant list with +/- quantity controls
     const listEl = document.getElementById('bed-plant-list');
     if (plants.length === 0) {
-        listEl.innerHTML = '<p class="muted-text">No plants in this bed</p>';
+        listEl.innerHTML = '<p class="muted-text">No plants yet \u2014 drag from the library!</p>';
     } else {
         const counts = {};
         plants.forEach(p => { counts[p.plantId] = (counts[p.plantId] || 0) + 1; });
@@ -1497,15 +1554,16 @@ function loadSavedState() {
 
 // ---- TOAST ----
 function showToast(msg) {
+    // Remove any existing toast
+    document.querySelectorAll('.toast-notification').forEach(t => t.remove());
     const toast = document.createElement('div');
-    toast.style.cssText = `
-        position: fixed; bottom: 2rem; right: 2rem; background: #10b981; color: #000;
-        font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: 700;
-        padding: 0.75rem 1.5rem; z-index: 9999; letter-spacing: 1px;
-    `;
+    toast.className = 'toast-notification';
     toast.textContent = msg;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2500);
+    setTimeout(() => {
+        toast.classList.add('toast-leaving');
+        setTimeout(() => toast.remove(), 300);
+    }, 2200);
 }
 
 // ---- EXPORT PDF (prints page) ----

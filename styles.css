@@ -4,18 +4,19 @@
    ============================================ */
 
 :root {
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #111111;
-    --bg-tertiary: #1a1a1a;
-    --bg-card: #141414;
-    --bg-elevated: #1e1e1e;
+    /* OLED-true blacks */
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --bg-tertiary: #111111;
+    --bg-card: #0d0d0d;
+    --bg-elevated: #141414;
 
     --emerald: #10b981;
     --emerald-dark: #059669;
     --emerald-glow: #34d399;
     --teal: #14b8a6;
     --teal-dark: #0d9488;
-    --red-accent: #dc2626;
+    --red-accent: #ef4444;
     --red-muted: #991b1b;
     --amber: #f59e0b;
     --amber-muted: #92400e;
@@ -25,7 +26,7 @@
     --text-muted: #525252;
     --text-accent: var(--emerald);
 
-    --border: #2a2a2a;
+    --border: #1e1e1e;
     --border-accent: #10b98133;
 
     --font-display: 'Anton', sans-serif;
@@ -48,11 +49,12 @@ body {
     overflow-x: hidden;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-secondary); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+/* Scrollbar - OLED-friendly thin rails */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--emerald-dark); }
+* { scrollbar-width: thin; scrollbar-color: #1a1a1a transparent; }
 
 /* ---- HEADER ---- */
 #main-header {
@@ -289,8 +291,9 @@ body {
     cursor: pointer;
     flex: 1;
     text-align: center;
+    transition: all 0.15s ease;
 }
-.filter-btn:hover { color: var(--text-secondary); }
+.filter-btn:hover { color: var(--text-secondary); border-color: var(--text-muted); }
 .filter-btn.active {
     background: var(--bg-tertiary);
     color: var(--emerald);
@@ -367,6 +370,32 @@ body {
     border-top: 1px dashed var(--border);
     margin-top: 0.5rem;
 }
+.shortcut-hints {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 6px;
+    margin-top: 0.4rem;
+    padding-top: 0.4rem;
+    border-top: 1px dotted var(--border);
+}
+.shortcut-hint {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.shortcut-hint kbd {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    padding: 0.05rem 0.25rem;
+    border-radius: 2px;
+    color: var(--text-secondary);
+    margin-right: 1px;
+}
 
 /* Garden Canvas */
 .garden-canvas-area {
@@ -396,7 +425,7 @@ body {
     color: var(--text-muted);
     margin-left: 0.75rem;
 }
-.toolbar-right { display: flex; gap: 4px; }
+.toolbar-right { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
 
 .garden-viewport {
     flex: 1;
@@ -513,6 +542,14 @@ body {
     z-index: 20;
     max-height: 40%;
     overflow-y: auto;
+    transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+    transform: translateY(0);
+}
+.plant-info-panel.hidden {
+    transform: translateY(100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    display: block !important;
 }
 .plant-info-grid {
     display: grid;
@@ -568,8 +605,9 @@ body {
     cursor: pointer;
     flex: 1;
     text-align: center;
+    transition: all 0.15s ease;
 }
-.bed-tab:hover { color: var(--text-secondary); }
+.bed-tab:hover { color: var(--text-secondary); border-color: var(--text-muted); }
 .bed-tab.active {
     background: var(--bg-tertiary);
     color: var(--emerald);
@@ -2372,6 +2410,139 @@ body {
     color: var(--text-muted);
     margin-top: 0.4rem;
     letter-spacing: 0.5px;
+}
+
+/* ==========================
+   ANIMATIONS
+   ========================== */
+/* Plant placement pop-in */
+@keyframes plant-pop-in {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+@keyframes plant-fade-out {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.5); opacity: 0; }
+}
+.placed-plant {
+    animation: plant-pop-in 0.25s ease-out;
+}
+.placed-plant.removing {
+    animation: plant-fade-out 0.2s ease-in forwards;
+    pointer-events: none;
+}
+
+/* Bed highlight pulse when selected in sidebar */
+@keyframes bed-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+    100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+}
+.garden-bed.active-highlight {
+    border-color: var(--emerald) !important;
+    animation: bed-pulse 0.6s ease-out;
+}
+
+/* Toast slide-in */
+@keyframes toast-slide-in {
+    0% { transform: translateX(100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+@keyframes toast-slide-out {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(100%); opacity: 0; }
+}
+.toast-notification {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: var(--emerald);
+    color: #000;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.65rem 1.25rem;
+    z-index: 9999;
+    letter-spacing: 1px;
+    border-left: 4px solid #000;
+    animation: toast-slide-in 0.3s ease-out;
+    max-width: 320px;
+}
+.toast-notification.toast-leaving {
+    animation: toast-slide-out 0.3s ease-in forwards;
+}
+
+/* Empty bed overlay */
+.bed-empty-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+}
+.garden-bed:hover .bed-empty-hint {
+    opacity: 0.6;
+}
+.bed-empty-hint .hint-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+}
+.bed-empty-hint .hint-text {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* Plant info panel slide-up animation */
+.plant-info-panel {
+    transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+    transform: translateY(0);
+}
+.plant-info-panel.hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Total plant count badge in toolbar */
+.total-plant-count {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    color: var(--emerald);
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--border);
+    background: var(--bg-tertiary);
+}
+.total-plant-count .count-num {
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+/* Drag ghost preview */
+.drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 10001;
+    font-size: 2rem;
+    opacity: 0.85;
+    filter: drop-shadow(0 2px 8px rgba(16,185,129,0.4));
+    transition: none;
+}
+
+/* Bed hover highlight during drag */
+.garden-bed.drag-over {
+    border-color: var(--emerald);
+    box-shadow: inset 0 0 30px rgba(16, 185, 129, 0.15), 0 0 15px rgba(16, 185, 129, 0.2);
+    transition: box-shadow 0.15s, border-color 0.15s;
 }
 
 /* Grungy texture overlays for anarchist feel */
