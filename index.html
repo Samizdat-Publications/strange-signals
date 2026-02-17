@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GardenSync // Food Not Bombs Canton</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- HEADER -->
+    <header id="main-header">
+        <div class="header-left">
+            <div class="logo-mark">
+                <svg viewBox="0 0 60 60" class="fist-icon">
+                    <circle cx="30" cy="30" r="28" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/>
+                    <text x="30" y="38" text-anchor="middle" font-size="28">&#x270A;</text>
+                </svg>
+            </div>
+            <div class="logo-text">
+                <h1>GARDEN<span class="accent">SYNC</span></h1>
+                <p class="tagline">FOOD NOT BOMBS // CANTON, OH</p>
+            </div>
+        </div>
+        <nav class="header-nav">
+            <button class="nav-btn active" data-tab="planner">BED PLANNER</button>
+            <button class="nav-btn" data-tab="schedule">GROW SCHEDULE</button>
+            <button class="nav-btn" data-tab="plantlog">PLANTING LOG</button>
+            <button class="nav-btn" data-tab="harvest">HARVEST</button>
+            <button class="nav-btn" data-tab="volunteers">VOLUNTEERS</button>
+            <button class="nav-btn" data-tab="climate">CLIMATE DATA</button>
+            <button class="nav-btn" data-tab="visualize">VISUALIZE</button>
+        </nav>
+        <div class="header-right">
+            <div class="zone-badge">ZONE 6a</div>
+            <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+        <!-- Mobile nav drawer -->
+        <nav id="mobile-nav" class="mobile-nav hidden">
+            <button class="mobile-nav-btn active" data-tab="planner">&#x1F33E; BED PLANNER</button>
+            <button class="mobile-nav-btn" data-tab="schedule">&#x1F4C5; GROW SCHEDULE</button>
+            <button class="mobile-nav-btn" data-tab="plantlog">&#x1F4D3; PLANTING LOG</button>
+            <button class="mobile-nav-btn" data-tab="harvest">&#x1F33E; HARVEST LOG</button>
+            <button class="mobile-nav-btn" data-tab="volunteers">&#x270A; VOLUNTEERS</button>
+            <button class="mobile-nav-btn" data-tab="climate">&#x1F327; CLIMATE DATA</button>
+            <button class="mobile-nav-btn" data-tab="visualize">&#x1F3A8; VISUALIZE</button>
+        </nav>
+    </header>
+
+    <!-- ANARCHIST BANNER -->
+    <div class="ticker-banner">
+        <div class="ticker-content">
+            <span>MUTUAL AID NOT CHARITY</span>
+            <span class="ticker-sep">&#x2605;</span>
+            <span>SOLIDARITY NOT CHARITY</span>
+            <span class="ticker-sep">&#x2605;</span>
+            <span>FOOD IS A RIGHT NOT A PRIVILEGE</span>
+            <span class="ticker-sep">&#x2605;</span>
+            <span>GROW FOOD NOT LAWNS</span>
+            <span class="ticker-sep">&#x2605;</span>
+            <span>FEED THE PEOPLE</span>
+            <span class="ticker-sep">&#x2605;</span>
+            <span>COMMUNITY OVER PROFIT</span>
+            <span class="ticker-sep">&#x2605;</span>
+            <span>MUTUAL AID NOT CHARITY</span>
+            <span class="ticker-sep">&#x2605;</span>
+            <span>SOLIDARITY NOT CHARITY</span>
+            <span class="ticker-sep">&#x2605;</span>
+            <span>FOOD IS A RIGHT NOT A PRIVILEGE</span>
+            <span class="ticker-sep">&#x2605;</span>
+            <span>GROW FOOD NOT LAWNS</span>
+            <span class="ticker-sep">&#x2605;</span>
+        </div>
+    </div>
+
+    <!-- ==================== TAB: BED PLANNER ==================== -->
+    <section id="tab-planner" class="tab-content active">
+        <div class="planner-layout">
+            <!-- PLANT PALETTE -->
+            <aside class="plant-palette">
+                <h2 class="section-title"><span class="title-icon">&#x1F331;</span> PLANT LIBRARY</h2>
+                <input type="text" id="plant-search" class="search-input" placeholder="Search plants...">
+                <div class="filter-row">
+                    <button class="filter-btn active" data-filter="all">ALL</button>
+                    <button class="filter-btn" data-filter="vegetable">VEG</button>
+                    <button class="filter-btn" data-filter="fruit">FRUIT</button>
+                    <button class="filter-btn" data-filter="herb">HERB</button>
+                    <button class="filter-btn" data-filter="flower">FLOWER</button>
+                </div>
+                <div id="plant-list" class="plant-list"></div>
+                <div class="palette-footer">
+                    <p class="helper-text">Drag or double-click to place</p>
+                </div>
+            </aside>
+
+            <!-- GARDEN CANVAS -->
+            <main class="garden-canvas-area">
+                <div class="canvas-toolbar">
+                    <div class="toolbar-left">
+                        <span class="toolbar-label">GARDEN OVERVIEW</span>
+                        <span class="toolbar-sublabel">4 beds &middot; 5' &times; 10' each</span>
+                    </div>
+                    <div class="toolbar-right">
+                        <button id="btn-undo" class="tool-btn disabled" title="Undo (Ctrl+Z)">UNDO</button>
+                        <button id="btn-redo" class="tool-btn disabled" title="Redo (Ctrl+Y)">REDO</button>
+                        <button id="btn-grid-toggle" class="tool-btn">GRID: OFF</button>
+                        <button id="btn-auto-organize" class="tool-btn accent">AUTO-ORGANIZE</button>
+                        <button id="btn-clear-all" class="tool-btn danger">CLEAR ALL</button>
+                        <button id="btn-save" class="tool-btn">SAVE PLAN</button>
+                        <button id="btn-load" class="tool-btn">LOAD PLAN</button>
+                        <button id="btn-export" class="tool-btn accent">EXPORT PDF</button>
+                    </div>
+                </div>
+                <div id="garden-viewport" class="garden-viewport">
+                    <div id="garden-grid" class="garden-grid">
+                        <!-- Beds generated by JS -->
+                    </div>
+                </div>
+                <!-- Plant info panel -->
+                <div id="plant-info-panel" class="plant-info-panel hidden">
+                    <button id="close-info" class="close-btn">&times;</button>
+                    <div id="plant-info-content"></div>
+                </div>
+            </main>
+
+            <!-- BED DETAILS SIDEBAR -->
+            <aside class="bed-details">
+                <h2 class="section-title"><span class="title-icon">&#x1F4CB;</span> BED DETAILS</h2>
+                <div id="bed-selector" class="bed-selector">
+                    <button class="bed-tab active" data-bed="0">BED 1</button>
+                    <button class="bed-tab" data-bed="1">BED 2</button>
+                    <button class="bed-tab" data-bed="2">BED 3</button>
+                    <button class="bed-tab" data-bed="3">BED 4</button>
+                </div>
+                <div class="bed-actions">
+                    <button id="btn-clear-bed" class="tool-btn small danger" title="Clear this bed">CLEAR BED</button>
+                    <button id="btn-copy-bed" class="tool-btn small" title="Copy this bed layout to another bed">COPY TO...</button>
+                </div>
+                <div id="bed-info" class="bed-info">
+                    <div class="stat-row">
+                        <span class="stat-label">PLANTS</span>
+                        <span id="bed-plant-count" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">COVERAGE</span>
+                        <span id="bed-coverage" class="stat-value">0%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">WATER NEED</span>
+                        <span id="bed-water" class="stat-value">--</span>
+                    </div>
+                </div>
+                <h3 class="subsection-title">PLANTED</h3>
+                <div id="bed-plant-list" class="bed-plant-list"></div>
+                <h3 class="subsection-title">COMPANION ALERTS</h3>
+                <div id="companion-alerts" class="companion-alerts">
+                    <p class="muted-text">Place plants to see companion tips</p>
+                </div>
+                <h3 class="subsection-title">&#x1F4DD; BED JOURNAL</h3>
+                <div class="bed-journal">
+                    <div class="journal-input-row">
+                        <input type="text" id="journal-entry-input" class="text-input" placeholder="Add a note for this bed...">
+                        <button id="btn-add-journal" class="tool-btn accent">+</button>
+                    </div>
+                    <div id="journal-entries" class="journal-entries">
+                        <p class="muted-text">No notes yet</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <!-- ==================== TAB: GROW SCHEDULE ==================== -->
+    <section id="tab-schedule" class="tab-content">
+        <div class="schedule-layout">
+            <div class="schedule-header-bar">
+                <h2 class="section-title"><span class="title-icon">&#x1F4C5;</span> GROW SCHEDULE &mdash; CANTON, OH</h2>
+                <div class="frost-badges">
+                    <div class="frost-badge">
+                        <span class="frost-label">LAST FROST</span>
+                        <span class="frost-date">APR 18</span>
+                    </div>
+                    <div class="frost-badge">
+                        <span class="frost-label">FIRST FROST</span>
+                        <span class="frost-date">OCT 28</span>
+                    </div>
+                    <div class="frost-badge">
+                        <span class="frost-label">SEASON</span>
+                        <span class="frost-date">193 DAYS</span>
+                    </div>
+                </div>
+            </div>
+            <p class="schedule-intro">Based on your planted beds, here's your complete growing calendar. All dates calibrated for Canton's Zone 6a climate.</p>
+            <div id="schedule-empty" class="schedule-empty">
+                <div class="empty-icon">&#x1F33F;</div>
+                <p>No plants placed yet. Use the <strong>Bed Planner</strong> to add plants, then return here for your custom grow schedule.</p>
+            </div>
+            <div id="schedule-content" class="schedule-content hidden">
+                <div id="schedule-timeline" class="schedule-timeline"></div>
+                <h3 class="subsection-title" style="font-size:1rem;margin-top:2rem;margin-bottom:1rem;border-bottom:2px solid var(--emerald-dark);padding-bottom:0.5rem;">PLANTING TASK TRACKER</h3>
+                <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">Check off each task as you complete it. Progress is saved automatically.</p>
+                <div id="schedule-tasks" class="schedule-tasks"></div>
+                <div id="schedule-instructions" class="schedule-instructions" style="margin-top:2rem;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== TAB: PLANTING LOG ==================== -->
+    <section id="tab-plantlog" class="tab-content">
+        <div class="plantlog-layout">
+            <div class="plantlog-header-bar">
+                <div>
+                    <h2 class="section-title"><span class="title-icon">&#x1F4D3;</span> PLANTING LOG</h2>
+                    <p class="section-intro">Week-by-week planting tasks for the full season. Check off each task as you complete it. Based on all plants in your library &mdash; no need to place them in beds first.</p>
+                </div>
+                <div class="plantlog-controls">
+                    <div class="plantlog-filter-row">
+                        <button class="filter-btn active" data-plantlog-filter="all">ALL</button>
+                        <button class="filter-btn" data-plantlog-filter="upcoming">UPCOMING</button>
+                        <button class="filter-btn" data-plantlog-filter="overdue">OVERDUE</button>
+                        <button class="filter-btn" data-plantlog-filter="done">DONE</button>
+                    </div>
+                    <div style="display:flex;gap:4px;margin-top:0.5rem;">
+                        <button id="btn-export-calendar" class="tool-btn accent">&#x1F4C5; EXPORT TO CALENDAR</button>
+                        <button id="btn-plantlog-reset" class="tool-btn danger">RESET ALL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="plantlog-progress-bar">
+                <div class="plantlog-progress-fill" id="plantlog-progress-fill"></div>
+                <span class="plantlog-progress-text" id="plantlog-progress-text">0 / 0 tasks done</span>
+            </div>
+
+            <!-- Current week highlight -->
+            <div id="plantlog-current-week" class="plantlog-current-week"></div>
+
+            <!-- Full timeline -->
+            <div id="plantlog-timeline" class="plantlog-timeline"></div>
+        </div>
+    </section>
+
+    <!-- ==================== TAB: HARVEST LOG ==================== -->
+    <section id="tab-harvest" class="tab-content">
+        <div class="harvest-layout">
+            <div class="harvest-header-bar">
+                <div>
+                    <h2 class="section-title"><span class="title-icon">&#x1F33E;</span> HARVEST LOG</h2>
+                    <p class="section-intro">Track what you pick, how much you grow, and how much food goes out to the community. Every pound counts for mutual aid.</p>
+                </div>
+            </div>
+
+            <!-- Season stats -->
+            <div class="harvest-stats-row">
+                <div class="harvest-stat-card">
+                    <div class="harvest-stat-label">TOTAL HARVESTS</div>
+                    <div class="harvest-stat-value" id="harvest-total-count">0</div>
+                </div>
+                <div class="harvest-stat-card accent">
+                    <div class="harvest-stat-label">TOTAL WEIGHT</div>
+                    <div class="harvest-stat-value" id="harvest-total-weight">0 lbs</div>
+                </div>
+                <div class="harvest-stat-card">
+                    <div class="harvest-stat-label">DISTRIBUTED TO COMMUNITY</div>
+                    <div class="harvest-stat-value" id="harvest-total-donated">0 lbs</div>
+                </div>
+                <div class="harvest-stat-card">
+                    <div class="harvest-stat-label">PLANT VARIETIES</div>
+                    <div class="harvest-stat-value" id="harvest-total-varieties">0</div>
+                </div>
+            </div>
+
+            <!-- Log entry form -->
+            <div class="harvest-form-card">
+                <h3 class="subsection-title">LOG A HARVEST</h3>
+                <div class="harvest-form">
+                    <div class="harvest-form-row">
+                        <div class="harvest-field">
+                            <label>PLANT</label>
+                            <select id="harvest-plant" class="select-input">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <div class="harvest-field">
+                            <label>BED</label>
+                            <select id="harvest-bed" class="select-input">
+                                <option value="1">BED 1</option>
+                                <option value="2">BED 2</option>
+                                <option value="3">BED 3</option>
+                                <option value="4">BED 4</option>
+                            </select>
+                        </div>
+                        <div class="harvest-field">
+                            <label>WEIGHT (lbs)</label>
+                            <input type="number" id="harvest-weight" class="text-input" placeholder="0.0" step="0.1" min="0">
+                        </div>
+                        <div class="harvest-field">
+                            <label>DATE</label>
+                            <input type="date" id="harvest-date" class="text-input">
+                        </div>
+                    </div>
+                    <div class="harvest-form-row">
+                        <div class="harvest-field" style="flex:2;">
+                            <label>NOTES (optional)</label>
+                            <input type="text" id="harvest-notes" class="text-input" placeholder="e.g. First tomato pick of the season!">
+                        </div>
+                        <div class="harvest-field">
+                            <label>DONATED TO FNB?</label>
+                            <select id="harvest-donated" class="select-input">
+                                <option value="yes">YES &mdash; DONATED</option>
+                                <option value="partial">PARTIAL</option>
+                                <option value="no">NO &mdash; PERSONAL</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="btn-log-harvest" class="tool-btn accent large-btn" style="margin-top:0.5rem;">&#x1F33E; LOG HARVEST</button>
+                </div>
+            </div>
+
+            <!-- Harvest entries -->
+            <h3 class="subsection-title" style="margin-top:1.5rem;font-size:0.85rem;">HARVEST HISTORY</h3>
+            <div id="harvest-entries" class="harvest-entries"></div>
+        </div>
+    </section>
+
+    <!-- ==================== TAB: VOLUNTEERS ==================== -->
+    <section id="tab-volunteers" class="tab-content">
+        <div class="volunteers-layout">
+            <h2 class="section-title"><span class="title-icon">&#x270A;</span> VOLUNTEER COLLECTIVE</h2>
+            <p class="section-intro">Manage your crew of 5 volunteers and assign bed responsibilities. Built for spotty availability &mdash; because mutual aid runs on real life, not corporate schedules.</p>
+            <div class="volunteers-grid">
+                <div class="vol-management">
+                    <h3 class="subsection-title">THE CREW</h3>
+                    <div id="volunteer-list" class="volunteer-list"></div>
+                    <div class="add-volunteer-form">
+                        <input type="text" id="vol-name" class="text-input" placeholder="Name">
+                        <input type="text" id="vol-phone" class="text-input" placeholder="Phone/Contact">
+                        <select id="vol-availability" class="select-input">
+                            <option value="high">HIGH AVAILABILITY</option>
+                            <option value="medium" selected>MEDIUM AVAILABILITY</option>
+                            <option value="low">LOW AVAILABILITY</option>
+                        </select>
+                        <button id="btn-add-volunteer" class="tool-btn accent">ADD VOLUNTEER</button>
+                    </div>
+                </div>
+                <div class="vol-assignments">
+                    <h3 class="subsection-title">BED ASSIGNMENTS</h3>
+                    <div id="bed-assignments" class="bed-assignments"></div>
+                    <button id="btn-auto-assign" class="tool-btn" style="margin-top:1rem;">AUTO-ASSIGN BY AVAILABILITY</button>
+                </div>
+                <div class="vol-schedule">
+                    <h3 class="subsection-title">WEEKLY TASKS</h3>
+                    <div id="weekly-tasks" class="weekly-tasks">
+                        <div class="task-week" id="current-week-tasks"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== TAB: CLIMATE ==================== -->
+    <section id="tab-climate" class="tab-content">
+        <div class="climate-layout">
+            <h2 class="section-title"><span class="title-icon">&#x1F327;</span> CANTON CLIMATE DATA</h2>
+            <p class="section-intro">Canton, OH sits in USDA Zone 6a with a humid continental climate (K&ouml;ppen Dfa). Annual precipitation ~42&Prime;. Here's what you need to know for low-maintenance gardening.</p>
+
+            <!-- LIVE WEATHER DASHBOARD -->
+            <div id="weather-dashboard" class="weather-dashboard">
+                <div class="weather-loading">
+                    <span class="weather-loading-text">FETCHING LIVE WEATHER DATA...</span>
+                </div>
+            </div>
+
+            <!-- FROST ALERTS -->
+            <div id="frost-alert-banner" class="frost-alert-banner hidden"></div>
+
+            <div class="climate-grid">
+                <div class="climate-card">
+                    <h3>MONTHLY RAINFALL</h3>
+                    <div class="chart-container">
+                        <canvas id="rainfall-chart"></canvas>
+                    </div>
+                </div>
+                <div class="climate-card">
+                    <h3>GROWING SEASON TEMPS</h3>
+                    <div class="chart-container">
+                        <canvas id="temp-chart"></canvas>
+                    </div>
+                </div>
+                <div class="climate-card rain-barrel-card">
+                    <h3>&#x1FAA3; RAIN BARREL CALCULATOR</h3>
+                    <div class="barrel-calc">
+                        <div class="calc-row">
+                            <label>Roof catchment area (sq ft)</label>
+                            <input type="number" id="roof-area" class="text-input" value="200" min="10">
+                        </div>
+                        <div class="calc-row">
+                            <label>Number of barrels (55 gal each)</label>
+                            <input type="number" id="barrel-count" class="text-input" value="2" min="1" max="10">
+                        </div>
+                        <div class="calc-row">
+                            <label>Storage capacity</label>
+                            <span id="barrel-capacity" class="calc-result">110 gallons</span>
+                        </div>
+                        <div class="calc-row">
+                            <label>Monthly collection (avg)</label>
+                            <span id="barrel-monthly" class="calc-result">--</span>
+                        </div>
+                        <div class="calc-row">
+                            <label>Garden water need (4 beds)</label>
+                            <span id="garden-need" class="calc-result">~250 gal/week peak</span>
+                        </div>
+                        <div id="barrel-verdict" class="barrel-verdict"></div>
+                    </div>
+                </div>
+                <div class="climate-card">
+                    <h3>RAINFALL VS GARDEN NEEDS</h3>
+                    <p class="card-note">Low-maintenance target: plants that need &le;1&Prime;/week. Canton averages 3.5&Prime;/month in growing season, so natural rainfall covers ~88% of needs for drought-tolerant selections.</p>
+                    <div class="rain-needs-grid">
+                        <div class="rain-month" data-month="Apr"><span class="rm-label">APR</span><div class="rm-bar"><div class="rm-fill" style="height:68%"></div></div><span class="rm-val">3.4&Prime;</span></div>
+                        <div class="rain-month" data-month="May"><span class="rm-label">MAY</span><div class="rm-bar"><div class="rm-fill" style="height:82%"></div></div><span class="rm-val">4.1&Prime;</span></div>
+                        <div class="rain-month" data-month="Jun"><span class="rm-label">JUN</span><div class="rm-bar"><div class="rm-fill" style="height:100%"></div></div><span class="rm-val">5.4&Prime;</span></div>
+                        <div class="rain-month" data-month="Jul"><span class="rm-label">JUL</span><div class="rm-bar"><div class="rm-fill" style="height:82%"></div></div><span class="rm-val">4.1&Prime;</span></div>
+                        <div class="rain-month" data-month="Aug"><span class="rm-label">AUG</span><div class="rm-bar"><div class="rm-fill" style="height:68%"></div></div><span class="rm-val">3.4&Prime;</span></div>
+                        <div class="rain-month" data-month="Sep"><span class="rm-label">SEP</span><div class="rm-bar"><div class="rm-fill" style="height:54%"></div></div><span class="rm-val">2.7&Prime;</span></div>
+                        <div class="rain-month" data-month="Oct"><span class="rm-label">OCT</span><div class="rm-bar"><div class="rm-fill" style="height:46%"></div></div><span class="rm-val">2.3&Prime;</span></div>
+                    </div>
+                    <div class="need-line-label">&#x25B6; 1&Prime;/week minimum line</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== TAB: VISUALIZE ==================== -->
+    <section id="tab-visualize" class="tab-content">
+        <div class="visualize-layout">
+            <h2 class="section-title"><span class="title-icon">&#x1F3A8;</span> GARDEN VISUALIZER</h2>
+            <p class="section-intro">Generate AI mockup images of your garden layout using Google Gemini. See what your beds will look like before you plant.</p>
+            <div class="viz-config">
+                <div class="viz-api-row">
+                    <label>GEMINI API KEY</label>
+                    <input type="password" id="gemini-key" class="text-input" placeholder="Enter your Google Gemini API key">
+                    <button id="btn-save-key" class="tool-btn">SAVE KEY</button>
+                </div>
+                <div class="viz-bed-select">
+                    <label>SELECT BED TO VISUALIZE</label>
+                    <select id="viz-bed-select" class="select-input">
+                        <option value="all">ALL BEDS (Full Garden)</option>
+                        <option value="0">BED 1</option>
+                        <option value="1">BED 2</option>
+                        <option value="2">BED 3</option>
+                        <option value="3">BED 4</option>
+                    </select>
+                </div>
+                <div class="viz-bed-select">
+                    <label>GEMINI MODEL</label>
+                    <select id="viz-model-select" class="select-input">
+                        <option value="gemini-2.5-flash-image">Nano Banana (gemini-2.5-flash-image) &mdash; Fast</option>
+                        <option value="gemini-3-pro-image-preview">Nano Banana Pro (gemini-3-pro-image-preview) &mdash; High Quality</option>
+                    </select>
+                </div>
+                <button id="btn-generate-viz" class="tool-btn accent large-btn">&#x2728; GENERATE GARDEN PREVIEW</button>
+                <div id="viz-status" class="viz-status hidden"></div>
+            </div>
+            <div id="viz-prompts" class="viz-prompts hidden">
+                <h3 class="subsection-title">GENERATED PROMPTS</h3>
+                <div id="viz-prompt-list"></div>
+            </div>
+            <div id="viz-gallery" class="viz-gallery hidden">
+                <h3 class="subsection-title">GARDEN PREVIEWS</h3>
+                <div id="viz-images" class="viz-images"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRESET MODAL -->
+    <div id="preset-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button id="close-preset-modal" class="close-btn">&times;</button>
+            <h2 class="section-title" style="margin-bottom:0.5rem;"><span class="title-icon">&#x1F33F;</span> LOAD GARDEN PLAN</h2>
+            <p style="color:var(--text-secondary);margin-bottom:1.25rem;font-size:0.9rem;">Choose a preset garden layout or load your saved plan.</p>
+            <div id="preset-list" class="preset-list"></div>
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--border);">
+                <button id="btn-load-saved" class="tool-btn" style="width:100%;">LOAD MY SAVED PLAN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+        <div class="footer-left">
+            <span class="footer-logo">&#x270A; GARDENSYNC</span>
+            <span class="footer-sep">//</span>
+            <span>Food Not Bombs Canton</span>
+        </div>
+        <div class="footer-center">
+            <button id="btn-export-data" class="footer-action-btn">EXPORT DATA</button>
+            <button id="btn-import-data" class="footer-action-btn">IMPORT DATA</button>
+            <input type="file" id="import-file-input" accept=".json" style="display:none;">
+        </div>
+        <div class="footer-right">
+            <span>NO COPYRIGHT &mdash; NO GODS NO MASTERS &mdash; SHARE FREELY</span>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
