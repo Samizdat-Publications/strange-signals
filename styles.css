@@ -546,6 +546,46 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+}
+
+/* Zoom controls */
+.zoom-controls {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 0.75rem;
+    display: flex;
+    gap: 2px;
+    z-index: 10;
+}
+.zoom-btn {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.zoom-btn:hover {
+    border-color: var(--emerald);
+    color: var(--emerald);
+    background: var(--bg-tertiary);
+}
+.zoom-level {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    letter-spacing: 0.5px;
 }
 .garden-grid {
     display: grid;
@@ -588,6 +628,47 @@ body {
     color: #5c4a2a;
     letter-spacing: 2px;
     z-index: 2;
+    cursor: pointer;
+    padding: 1px 4px;
+    border-radius: 2px;
+    transition: all 0.15s;
+}
+.bed-label:hover {
+    color: var(--emerald);
+    background: rgba(16,185,129,0.1);
+}
+.bed-label-input {
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    z-index: 10;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    background: var(--bg-primary);
+    color: var(--emerald);
+    border: 1px solid var(--emerald);
+    padding: 1px 4px;
+    width: 120px;
+    outline: none;
+}
+
+/* Plant count badge on beds */
+.bed-count-badge {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+    font-weight: 700;
+    color: var(--emerald);
+    background: rgba(0,0,0,0.6);
+    padding: 1px 5px;
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 2px;
+    z-index: 2;
+    letter-spacing: 0.5px;
     pointer-events: none;
 }
 .bed-dimensions {
@@ -622,6 +703,58 @@ body {
     box-shadow: 0 0 10px rgba(16,185,129,0.4);
     border-color: var(--emerald);
     z-index: 4;
+}
+
+/* Water need color-coding ring on placed plants */
+.placed-plant[data-water="low"] {
+    border-color: rgba(16,185,129,0.4);
+    box-shadow: 0 0 4px rgba(16,185,129,0.2);
+}
+.placed-plant[data-water="medium"] {
+    border-color: rgba(245,158,11,0.4);
+    box-shadow: 0 0 4px rgba(245,158,11,0.2);
+}
+.placed-plant[data-water="high"] {
+    border-color: rgba(220,38,38,0.4);
+    box-shadow: 0 0 4px rgba(220,38,38,0.2);
+}
+
+/* Spacing radius circle on hover/select */
+.spacing-radius {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px dashed rgba(16,185,129,0.35);
+    background: rgba(16,185,129,0.05);
+    pointer-events: none;
+    z-index: 2;
+    transition: opacity 0.15s;
+}
+
+/* Companion planting lines */
+.companion-line {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+}
+.companion-line-good {
+    stroke: rgba(16,185,129,0.25);
+    stroke-dasharray: 4 4;
+}
+.companion-line-bad {
+    stroke: rgba(220,38,38,0.3);
+    stroke-dasharray: 4 4;
+}
+
+/* Snap-to-grid visual marker */
+.garden-bed.show-grid::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(16,185,129,0.06) 19px, rgba(16,185,129,0.06) 20px),
+        repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(16,185,129,0.06) 19px, rgba(16,185,129,0.06) 20px);
+    pointer-events: none;
+    z-index: 1;
 }
 .placed-plant .plant-tooltip {
     position: absolute;

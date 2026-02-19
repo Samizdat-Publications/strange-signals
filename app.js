@@ -412,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ['DataExportImport', initDataExportImport],
         ['Weather', initWeather],
         ['KeyboardShortcuts', initKeyboardShortcuts],
+        ['ZoomControls', initZoomControls],
         ['LoadSavedState', loadSavedState],
     ];
     for (const [name, fn] of inits) {
@@ -654,6 +655,13 @@ function renderPlantList(plants, searchQ) {
     });
 }
 
+// ---- BED NAMES ----
+const bedNames = JSON.parse(localStorage.getItem('gardensync_bed_names') || 'null') || ['BED 1','BED 2','BED 3','BED 4'];
+
+function saveBedNames() {
+    localStorage.setItem('gardensync_bed_names', JSON.stringify(bedNames));
+}
+
 // ---- GARDEN BEDS ----
 function initGardenBeds() {
     const grid = document.getElementById('garden-grid');
@@ -663,13 +671,46 @@ function initGardenBeds() {
         bed.className = 'garden-bed';
         bed.dataset.bedIndex = i;
         bed.innerHTML = `
-            <span class="bed-label">BED ${i + 1}</span>
+            <span class="bed-label" data-bed="${i}" title="Click to rename">${bedNames[i]}</span>
+            <span class="bed-count-badge" style="display:none;"></span>
             <span class="bed-dimensions">5' \u00D7 10'</span>
             <div class="bed-empty-hint">
                 <span class="hint-icon">\u{1F331}</span>
                 <span class="hint-text">drag or double-click to plant</span>
             </div>
         `;
+
+        // Bed name editing on click
+        const label = bed.querySelector('.bed-label');
+        label.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (bed.querySelector('.bed-label-input')) return;
+            const input = document.createElement('input');
+            input.className = 'bed-label-input';
+            input.value = bedNames[i];
+            input.maxLength = 20;
+            label.style.display = 'none';
+            bed.appendChild(input);
+            input.focus();
+            input.select();
+
+            function finishEdit() {
+                const newName = input.value.trim() || `BED ${i + 1}`;
+                bedNames[i] = newName;
+                saveBedNames();
+                label.textContent = newName;
+                label.style.display = '';
+                input.remove();
+                // Also update bed tab in sidebar
+                const bedTab = document.querySelector(`.bed-tab[data-bed="${i}"]`);
+                if (bedTab) bedTab.textContent = newName;
+            }
+            input.addEventListener('blur', finishEdit);
+            input.addEventListener('keydown', (ke) => {
+                if (ke.key === 'Enter') input.blur();
+                if (ke.key === 'Escape') { input.value = bedNames[i]; input.blur(); }
+            });
+        });
         // Drag & drop
         bed.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -764,9 +805,48 @@ function initKeyboardShortcuts() {
     });
 }
 
+// ---- ZOOM CONTROLS ----
+let currentZoom = 1;
+function initZoomControls() {
+    const grid = document.getElementById('garden-grid');
+    const zoomIn = document.getElementById('zoom-in');
+    const zoomOut = document.getElementById('zoom-out');
+    const zoomReset = document.getElementById('zoom-reset');
+    const zoomLevel = document.getElementById('zoom-level');
+
+    function setZoom(level) {
+        currentZoom = Math.max(0.5, Math.min(2, level));
+        grid.style.transform = `scale(${currentZoom})`;
+        grid.style.transformOrigin = 'center center';
+        zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
+    }
+
+    zoomIn.addEventListener('click', () => setZoom(currentZoom + 0.1));
+    zoomOut.addEventListener('click', () => setZoom(currentZoom - 0.1));
+    zoomReset.addEventListener('click', () => setZoom(1));
+
+    // Mouse wheel zoom on viewport
+    document.getElementById('garden-viewport').addEventListener('wheel', (e) => {
+        if (e.ctrlKey) {
+            e.preventDefault();
+            setZoom(currentZoom + (e.deltaY > 0 ? -0.1 : 0.1));
+        }
+    }, { passive: false });
+}
+
+// Snap-to-grid helper (20px grid cells)
+function snapToGrid(val, gridSize) {
+    gridSize = gridSize || 20;
+    return Math.round(val / gridSize) * gridSize;
+}
+
 function placePlant(bedIndex, plantId, x, y) {
     const plant = PLANT_LIBRARY.find(p => p.id === plantId);
     if (!plant) return;
+
+    // Snap to 20px grid for cleaner layouts
+    x = snapToGrid(x);
+    y = snapToGrid(y);
 
     pushUndo();
     const placement = {
@@ -786,10 +866,23 @@ function renderPlacedPlants(bedIndex) {
     const bedEl = document.querySelectorAll('.garden-bed')[bedIndex];
     bedEl.querySelectorAll('.placed-plant').forEach(el => el.remove());
     bedEl.querySelectorAll('.spacing-warning').forEach(el => el.remove());
+    bedEl.querySelectorAll('.spacing-radius').forEach(el => el.remove());
+    bedEl.querySelectorAll('.companion-svg').forEach(el => el.remove());
 
     // Show/hide empty bed hint
     const hint = bedEl.querySelector('.bed-empty-hint');
     if (hint) hint.style.display = state.beds[bedIndex].length === 0 ? '' : 'none';
+
+    // Update bed count badge
+    const countBadge = bedEl.querySelector('.bed-count-badge');
+    if (countBadge) {
+        const cnt = state.beds[bedIndex].length;
+        countBadge.textContent = cnt > 0 ? `${cnt} plant${cnt !== 1 ? 's' : ''}` : '';
+        countBadge.style.display = cnt > 0 ? '' : 'none';
+    }
+
+    // Draw companion lines (SVG overlay)
+    drawCompanionLines(bedIndex, bedEl);
 
     state.beds[bedIndex].forEach((placement) => {
         const plant = PLANT_LIBRARY.find(p => p.id === placement.plantId);
@@ -797,6 +890,7 @@ function renderPlacedPlants(bedIndex) {
 
         const el = document.createElement('div');
         el.className = 'placed-plant';
+        el.dataset.water = plant.waterNeed; // water need color-coding
         if (state.selectedPlacement && state.selectedPlacement.placementId === placement.id) {
             el.classList.add('selected');
         }
@@ -822,8 +916,11 @@ function renderPlacedPlants(bedIndex) {
                 hasMoved = true;
                 const dx = me.clientX - startX;
                 const dy = me.clientY - startY;
-                placement.x = Math.max(0, Math.min(origX + dx, bedRect.width - 36));
-                placement.y = Math.max(0, Math.min(origY + dy, bedRect.height - 36));
+                let newX = Math.max(0, Math.min(origX + dx, bedRect.width - 36));
+                let newY = Math.max(0, Math.min(origY + dy, bedRect.height - 36));
+                // Snap to grid on release (smooth while dragging)
+                placement.x = newX;
+                placement.y = newY;
                 el.style.left = placement.x + 'px';
                 el.style.top = placement.y + 'px';
             }
@@ -837,6 +934,11 @@ function renderPlacedPlants(bedIndex) {
                     // Pop the undo since nothing changed
                     state.undoStack.pop();
                 } else {
+                    // Snap to grid on release
+                    placement.x = snapToGrid(placement.x);
+                    placement.y = snapToGrid(placement.y);
+                    el.style.left = placement.x + 'px';
+                    el.style.top = placement.y + 'px';
                     updateSpacingWarnings(bedIndex);
                 }
                 saveState();
@@ -852,10 +954,69 @@ function renderPlacedPlants(bedIndex) {
             showContextMenu(e.clientX, e.clientY, bedIndex, placement);
         });
 
+        // Spacing radius on hover
+        el.addEventListener('mouseenter', () => showSpacingRadius(bedEl, placement, plant));
+        el.addEventListener('mouseleave', () => removeSpacingRadii(bedEl));
+
         bedEl.appendChild(el);
     });
 
     updateSpacingWarnings(bedIndex);
+}
+
+// ---- COMPANION LINES ----
+function drawCompanionLines(bedIndex, bedEl) {
+    const plants = state.beds[bedIndex];
+    if (plants.length < 2) return;
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add('companion-svg');
+    svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;';
+    svg.setAttribute('viewBox', `0 0 ${bedEl.offsetWidth} ${bedEl.offsetHeight}`);
+
+    for (let i = 0; i < plants.length; i++) {
+        for (let j = i + 1; j < plants.length; j++) {
+            const p1 = PLANT_LIBRARY.find(p => p.id === plants[i].plantId);
+            const p2 = PLANT_LIBRARY.find(p => p.id === plants[j].plantId);
+            if (!p1 || !p2) continue;
+
+            const isCompanion = p1.companions.includes(p2.id) || p2.companions.includes(p1.id);
+            const isEnemy = p1.enemies.includes(p2.id) || p2.enemies.includes(p1.id);
+
+            if (isCompanion || isEnemy) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', plants[i].x + 18);
+                line.setAttribute('y1', plants[i].y + 18);
+                line.setAttribute('x2', plants[j].x + 18);
+                line.setAttribute('y2', plants[j].y + 18);
+                line.setAttribute('class', isCompanion ? 'companion-line-good' : 'companion-line-bad');
+                line.setAttribute('stroke-width', '1.5');
+                svg.appendChild(line);
+            }
+        }
+    }
+
+    bedEl.appendChild(svg);
+}
+
+// ---- SPACING RADIUS on hover ----
+function showSpacingRadius(bedEl, placement, plant) {
+    removeSpacingRadii(bedEl);
+    const pxPerInchX = bedEl.offsetWidth / 120;
+    const pxPerInchY = bedEl.offsetHeight / 60;
+    const radiusPx = (plant.spacing / 2) * Math.min(pxPerInchX, pxPerInchY);
+
+    const circle = document.createElement('div');
+    circle.className = 'spacing-radius';
+    circle.style.width = (radiusPx * 2) + 'px';
+    circle.style.height = (radiusPx * 2) + 'px';
+    circle.style.left = (placement.x + 18 - radiusPx) + 'px';
+    circle.style.top = (placement.y + 18 - radiusPx) + 'px';
+    bedEl.appendChild(circle);
+}
+
+function removeSpacingRadii(bedEl) {
+    bedEl.querySelectorAll('.spacing-radius').forEach(el => el.remove());
 }
 
 // ---- SPACING VALIDATION & OVERLAP WARNINGS ----
@@ -1039,6 +1200,12 @@ function showPlantInfo(plantId) {
 
 // ---- BED SELECTOR & DETAILS ----
 function initBedSelector() {
+    // Set initial bed tab names from saved names
+    document.querySelectorAll('.bed-tab').forEach(tab => {
+        const bedIdx = parseInt(tab.dataset.bed);
+        tab.textContent = bedNames[bedIdx];
+    });
+
     document.querySelectorAll('.bed-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             document.querySelectorAll('.bed-tab').forEach(t => t.classList.remove('active'));
