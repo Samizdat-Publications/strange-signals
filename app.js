@@ -462,37 +462,120 @@ function initNavigation() {
 }
 
 // ---- PLANT PALETTE ----
-function initPlantPalette() {
-    renderPlantList(PLANT_LIBRARY);
+function getFilteredSortedPlants() {
+    const searchQ = (document.getElementById('plant-search')?.value || '').toLowerCase();
+    const activeFilter = document.querySelector('.filter-btn[data-filter].active')?.dataset.filter || 'all';
+    const sortBy = document.getElementById('plant-sort')?.value || 'name';
 
-    document.getElementById('plant-search').addEventListener('input', (e) => {
-        const q = e.target.value.toLowerCase();
-        const filtered = PLANT_LIBRARY.filter(p =>
-            p.name.toLowerCase().includes(q) || p.type.includes(q)
-        );
-        renderPlantList(filtered);
-    });
+    let plants = [...PLANT_LIBRARY];
+
+    // Filter by type
+    if (activeFilter !== 'all') plants = plants.filter(p => p.type === activeFilter);
+
+    // Filter by search
+    if (searchQ) plants = plants.filter(p => p.name.toLowerCase().includes(searchQ) || p.type.includes(searchQ));
+
+    // Sort
+    const sorters = {
+        'name': (a, b) => a.name.localeCompare(b.name),
+        'name-desc': (a, b) => b.name.localeCompare(a.name),
+        'spacing': (a, b) => a.spacing - b.spacing,
+        'days': (a, b) => a.daysToHarvest - b.daysToHarvest,
+        'water': (a, b) => { const w = {low:1,medium:2,high:3}; return w[a.waterNeed] - w[b.waterNeed]; },
+        'type': (a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name),
+    };
+    if (sorters[sortBy]) plants.sort(sorters[sortBy]);
+
+    return { plants, searchQ };
+}
+
+function getPlantSeasonBadge(plant) {
+    const now = new Date();
+    const month = now.getMonth();
+    const day = now.getDate();
+    const lastFrost = new Date(now.getFullYear(), CANTON_CLIMATE.lastFrost.month, CANTON_CLIMATE.lastFrost.day);
+    const firstFrost = new Date(now.getFullYear(), CANTON_CLIMATE.firstFrost.month, CANTON_CLIMATE.firstFrost.day);
+
+    // Determine activity window
+    let startWeek = null, endWeek = null;
+    if (plant.sowIndoors) {
+        startWeek = new Date(lastFrost);
+        startWeek.setDate(startWeek.getDate() + plant.sowIndoors * 7);
+    } else if (plant.directSow !== null) {
+        startWeek = new Date(lastFrost);
+        startWeek.setDate(startWeek.getDate() + plant.directSow * 7);
+    } else if (plant.transplantAfterFrost !== null) {
+        startWeek = new Date(lastFrost);
+        startWeek.setDate(startWeek.getDate() + plant.transplantAfterFrost * 7);
+    }
+    if (startWeek) {
+        endWeek = new Date(startWeek);
+        endWeek.setDate(endWeek.getDate() + (plant.harvestWeeks || 10) * 7 + plant.daysToHarvest);
+    }
+
+    if (!startWeek || !endWeek) return { cls: 'off-season', text: 'N/A' };
+
+    const twoWeeksFromNow = new Date(now);
+    twoWeeksFromNow.setDate(twoWeeksFromNow.getDate() + 21);
+
+    if (now >= startWeek && now <= endWeek) return { cls: 'in-season', text: 'IN SEASON' };
+    if (now < startWeek && twoWeeksFromNow >= startWeek) return { cls: 'upcoming', text: 'SOON' };
+    return { cls: 'off-season', text: 'OFF SEASON' };
+}
+
+function initPlantPalette() {
+    refreshPlantList();
+
+    document.getElementById('plant-search').addEventListener('input', refreshPlantList);
+
+    document.getElementById('plant-sort').addEventListener('change', refreshPlantList);
 
     document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            const f = btn.dataset.filter;
-            const filtered = f === 'all' ? PLANT_LIBRARY : PLANT_LIBRARY.filter(p => p.type === f);
-            renderPlantList(filtered);
+            refreshPlantList();
         });
     });
+
+    // Create hover card element
+    const hoverCard = document.createElement('div');
+    hoverCard.className = 'plant-hover-card';
+    hoverCard.id = 'plant-hover-card';
+    document.body.appendChild(hoverCard);
 }
 
-function renderPlantList(plants) {
+function refreshPlantList() {
+    const { plants, searchQ } = getFilteredSortedPlants();
+    renderPlantList(plants, searchQ);
+}
+
+function renderPlantList(plants, searchQ) {
     const container = document.getElementById('plant-list');
-    container.innerHTML = plants.map(p => `
+    searchQ = searchQ || '';
+
+    container.innerHTML = plants.map(p => {
+        // Search highlight
+        let displayName = p.name;
+        if (searchQ) {
+            const idx = p.name.toLowerCase().indexOf(searchQ);
+            if (idx !== -1) {
+                displayName = p.name.substring(0, idx) + '<span class="search-match">' + p.name.substring(idx, idx + searchQ.length) + '</span>' + p.name.substring(idx + searchQ.length);
+            }
+        }
+        // Season badge
+        const badge = getPlantSeasonBadge(p);
+        return `
         <div class="plant-item" draggable="true" data-plant-id="${p.id}" data-type="${p.type}">
             <span class="plant-emoji">${p.emoji}</span>
-            <span class="plant-name">${p.name}</span>
+            <span class="plant-name">${displayName}</span>
+            <span class="season-badge ${badge.cls}">${badge.text}</span>
             <span class="plant-type-badge">${p.type.toUpperCase()}</span>
         </div>
-    `).join('');
+    `}).join('');
+
+    const hoverCard = document.getElementById('plant-hover-card');
+    let hoverTimeout;
 
     container.querySelectorAll('.plant-item').forEach(item => {
         item.addEventListener('dragstart', (e) => {
@@ -513,6 +596,8 @@ function renderPlantList(plants) {
                 e.dataTransfer.setDragImage(ghost, 18, 18);
                 setTimeout(() => ghost.remove(), 0);
             }
+            // Hide hover card on drag
+            if (hoverCard) { hoverCard.classList.remove('visible'); clearTimeout(hoverTimeout); }
         });
         item.addEventListener('dragend', () => {
             item.style.opacity = '1';
@@ -530,6 +615,41 @@ function renderPlantList(plants) {
                 item.classList.add('click-place-active');
                 enterClickPlaceMode(item.dataset.plantId);
             }
+        });
+
+        // Hover card on mouseenter
+        item.addEventListener('mouseenter', (e) => {
+            if (!hoverCard) return;
+            clearTimeout(hoverTimeout);
+            hoverTimeout = setTimeout(() => {
+                const plant = PLANT_LIBRARY.find(p => p.id === item.dataset.plantId);
+                if (!plant) return;
+                const waterColors = { low: '#10b981', medium: '#f59e0b', high: '#dc2626' };
+                const companions = plant.companions.map(c => { const cp = PLANT_LIBRARY.find(pl=>pl.id===c); return cp ? cp.emoji : c; }).join(' ');
+                hoverCard.innerHTML = `
+                    <div class="hover-title">${plant.emoji} ${plant.name}</div>
+                    <div class="hover-stats">
+                        <div class="hover-stat">SPACE: <span>${plant.spacing}"</span></div>
+                        <div class="hover-stat">DAYS: <span>${plant.daysToHarvest}d</span></div>
+                        <div class="hover-stat">WATER: <span style="color:${waterColors[plant.waterNeed]}">${plant.waterNeed.toUpperCase()}</span></div>
+                        <div class="hover-stat">SUN: <span>${plant.sunNeed.toUpperCase()}</span></div>
+                    </div>
+                    ${companions ? `<div class="hover-companions">COMPANIONS: ${companions}</div>` : ''}
+                `;
+                const rect = item.getBoundingClientRect();
+                hoverCard.style.left = (rect.right + 8) + 'px';
+                hoverCard.style.top = rect.top + 'px';
+                // Keep in viewport
+                const cardRect = hoverCard.getBoundingClientRect();
+                if (rect.right + 8 + 220 > window.innerWidth) {
+                    hoverCard.style.left = (rect.left - 228) + 'px';
+                }
+                hoverCard.classList.add('visible');
+            }, 350);
+        });
+        item.addEventListener('mouseleave', () => {
+            clearTimeout(hoverTimeout);
+            if (hoverCard) hoverCard.classList.remove('visible');
         });
     });
 }

@@ -367,6 +367,116 @@ body {
 .plant-item[data-type="herb"] { border-left-color: var(--teal); }
 .plant-item[data-type="flower"] { border-left-color: #ec4899; }
 
+/* Sort row */
+.sort-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0.25rem 0 0.5rem;
+}
+.sort-label {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+.sort-select {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 0.2rem 0.4rem;
+    cursor: pointer;
+    flex: 1;
+}
+.sort-select:focus {
+    outline: none;
+    border-color: var(--emerald);
+}
+
+/* Search highlight */
+.search-match {
+    background: rgba(16,185,129,0.25);
+    color: var(--emerald-glow);
+    border-radius: 1px;
+    padding: 0 1px;
+}
+
+/* Plant hover card (tooltip preview) */
+.plant-hover-card {
+    position: fixed;
+    z-index: 10001;
+    background: var(--bg-secondary);
+    border: 1px solid var(--emerald-dark);
+    padding: 0.6rem 0.8rem;
+    min-width: 180px;
+    max-width: 220px;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.plant-hover-card.visible { opacity: 1; }
+.plant-hover-card .hover-title {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    margin-bottom: 0.3rem;
+}
+.plant-hover-card .hover-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 8px;
+}
+.plant-hover-card .hover-stat {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+}
+.plant-hover-card .hover-stat span {
+    color: var(--emerald);
+    font-weight: 700;
+}
+.plant-hover-card .hover-companions {
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+    border-top: 1px dotted var(--border);
+    padding-top: 0.3rem;
+    letter-spacing: 0.5px;
+}
+
+/* In-season badge on plant palette items */
+.season-badge {
+    font-family: var(--font-mono);
+    font-size: 0.45rem;
+    letter-spacing: 0.5px;
+    padding: 0.1rem 0.3rem;
+    border-radius: var(--radius);
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-weight: 700;
+}
+.season-badge.in-season {
+    background: rgba(16,185,129,0.2);
+    color: var(--emerald);
+    border: 1px solid rgba(16,185,129,0.3);
+}
+.season-badge.upcoming {
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    border: 1px solid rgba(245,158,11,0.2);
+}
+.season-badge.off-season {
+    background: rgba(82,82,82,0.15);
+    color: var(--text-muted);
+    border: 1px solid rgba(82,82,82,0.2);
+}
+
 .palette-footer {
     padding-top: 0.75rem;
     border-top: 1px dashed var(--border);
