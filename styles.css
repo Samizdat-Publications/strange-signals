@@ -2485,6 +2485,12 @@ body {
         border: none;
         border-bottom: 1px solid var(--border);
     }
+    .plant-palette {
+        max-height: 50vh;
+    }
+    .plant-list {
+        max-height: 30vh;
+    }
     .garden-grid {
         grid-template-columns: 1fr;
     }
@@ -2516,14 +2522,129 @@ body {
     #main-header { padding: 0.5rem 0.75rem; }
     .logo-text h1 { font-size: 1.3rem; }
     .zone-badge { font-size: 0.6rem; padding: 0.3rem 0.5rem; }
+    /* Footer stacks vertically */
+    .main-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    .footer-center { flex-wrap: wrap; justify-content: center; }
 }
+
+/* ---- PHONE-SPECIFIC (iPhone 16 / Galaxy S24) ---- */
 @media (max-width: 480px) {
+    /* Garden beds must fit inside ~393px viewport */
+    .garden-bed {
+        width: calc(100vw - 2rem) !important;
+        max-width: 100% !important;
+        height: 180px;
+    }
+    .garden-viewport {
+        padding: 0.75rem;
+    }
+    .garden-grid {
+        gap: 12px;
+        justify-items: center;
+        width: 100%;
+    }
+    /* Header: compact */
+    #main-header {
+        padding: 0.4rem 0.5rem;
+        gap: 0.25rem;
+    }
+    .fist-icon { width: 28px; height: 28px; }
+    .logo-text h1 { font-size: 1.1rem; letter-spacing: 1px; }
+    .logo-text .tagline { font-size: 0.5rem; letter-spacing: 1px; }
+    .zone-badge { font-size: 0.5rem; padding: 0.2rem 0.4rem; }
+    .zone-badge::before { display: none; }
+    /* Toolbar: tighter */
+    .canvas-toolbar { padding: 0.4rem 0.5rem; }
+    .toolbar-sublabel { display: none; }
+    .tool-btn {
+        font-size: 0.55rem;
+        padding: 0.35rem 0.5rem;
+        letter-spacing: 0.5px;
+    }
+    /* Hide desktop-only things */
+    .shortcut-hints { display: none; }
+    .plant-hover-card { display: none !important; }
+    /* Plant palette: more compact */
+    .plant-palette { padding: 0.5rem; }
+    .plant-list { max-height: 25vh; }
+    .section-title { font-size: 0.85rem; }
+    /* Bed details sidebar */
+    .bed-details { padding: 0.5rem; }
+    .bed-details .subsection-title { font-size: 0.7rem; }
+    /* Stats dashboard: 2-col on phone */
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .mini-stat { padding: 0.25rem 0.35rem; }
+    .mini-stat-val { font-size: 1rem; }
+    .mini-stat-label { font-size: 0.45rem; }
+    /* Harvest stats cards */
+    .harvest-stats-row { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .harvest-stat-card { padding: 0.5rem; }
+    .harvest-stat-value { font-size: 1.3rem; }
+    .harvest-stat-label { font-size: 0.55rem; }
+    /* Harvest goals */
+    .harvest-goals-form { flex-wrap: wrap; }
+    /* Weather */
     .forecast-grid { grid-template-columns: repeat(3, 1fr); }
     .forecast-day:nth-child(n+7) { display: none; }
     .weather-big-value { font-size: 2rem; }
+    /* Planting log */
     .plantlog-week-title { font-size: 0.8rem; }
     .plantlog-week-dates { display: none; }
+    /* Mobile nav buttons: bigger touch targets */
     .mobile-nav-btn { font-size: 1.1rem; padding: 0.75rem 1.5rem; }
+    /* Footer: full-width buttons */
+    .footer-center {
+        flex-direction: column;
+        width: 100%;
+    }
+    .footer-action-btn {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 0.65rem;
+    }
+    .footer-left, .footer-right {
+        font-size: 0.55rem;
+    }
+    /* Forms: prevent iOS zoom on focus */
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    input[type="password"],
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+    /* Toast: full-width on phone */
+    .toast-notification {
+        left: 0.75rem;
+        right: 0.75rem;
+        max-width: none;
+        text-align: center;
+    }
+    /* Modals: ensure they fit */
+    .modal-content {
+        max-width: calc(100vw - 1.5rem);
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+    .confirm-modal {
+        max-width: calc(100vw - 1.5rem);
+    }
+    /* Frost badges */
+    .frost-badges { gap: 0.25rem; }
+    .frost-badge { padding: 0.35rem 0.5rem; }
+    /* Viz tab */
+    .viz-config { padding: 0; }
+    .viz-api-row { flex-direction: column; }
+    /* Schedule */
+    .schedule-header-bar { flex-direction: column; gap: 0.5rem; }
+    /* Planting log controls */
+    .plantlog-filter-row { flex-wrap: wrap; gap: 2px; }
+    .filter-btn { font-size: 0.6rem; padding: 0.3rem 0.5rem; }
 }
 
 /* ==========================
