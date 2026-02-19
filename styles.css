@@ -2658,6 +2658,72 @@ body {
 }
 
 /* ==========================
+   CONFIRMATION MODAL
+   ========================== */
+.confirm-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fade-in 0.15s ease-out;
+}
+@keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+.confirm-modal {
+    background: var(--bg-secondary);
+    border: 2px solid var(--red-accent);
+    padding: 1.5rem 2rem;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+    animation: modal-pop 0.2s ease-out;
+}
+@keyframes modal-pop {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.confirm-modal h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    color: var(--red-accent);
+    margin-bottom: 0.5rem;
+}
+.confirm-modal p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+    line-height: 1.4;
+}
+.confirm-modal .confirm-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+/* Qty flyup animation */
+.qty-flyup {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--emerald);
+    pointer-events: none;
+    z-index: 100;
+    animation: flyup 0.6s ease-out forwards;
+}
+.qty-flyup.minus { color: var(--red-accent); }
+@keyframes flyup {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-30px); opacity: 0; }
+}
+
+/* ==========================
    ANIMATIONS
    ========================== */
 /* Plant placement pop-in */

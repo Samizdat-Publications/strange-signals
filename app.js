@@ -1295,6 +1295,7 @@ function updateBedDetails() {
                 const pid = btn.dataset.plantId;
                 const idx = state.beds[bedIndex].findLastIndex(p => p.plantId === pid);
                 if (idx !== -1) {
+                    showQtyFlyup(btn, '-1', true);
                     state.beds[bedIndex].splice(idx, 1);
                     renderPlacedPlants(bedIndex);
                     updateBedDetails();
@@ -1305,6 +1306,7 @@ function updateBedDetails() {
 
         listEl.querySelectorAll('.qty-plus').forEach(btn => {
             btn.addEventListener('click', () => {
+                showQtyFlyup(btn, '+1', false);
                 const pid = btn.dataset.plantId;
                 const bedEl = document.querySelectorAll('.garden-bed')[bedIndex];
                 const bedW = bedEl.offsetWidth;
@@ -1438,12 +1440,16 @@ function renderJournalEntries() {
 // ---- TOOLBAR BUTTONS ----
 function initToolbarButtons() {
     document.getElementById('btn-clear-all').addEventListener('click', () => {
-        if (!confirm('Clear all plants from all beds?')) return;
-        pushUndo();
-        state.beds = [[], [], [], []];
-        for (let i = 0; i < 4; i++) renderPlacedPlants(i);
-        updateBedDetails();
-        saveState();
+        const totalPlants = state.beds.reduce((s, b) => s + b.length, 0);
+        if (totalPlants === 0) { showToast('All beds are already empty!'); return; }
+        showConfirm('CLEAR ALL BEDS', `Remove all ${totalPlants} plant(s) from every bed? This can be undone with Ctrl+Z.`, () => {
+            pushUndo();
+            state.beds = [[], [], [], []];
+            for (let i = 0; i < 4; i++) renderPlacedPlants(i);
+            updateBedDetails();
+            saveState();
+            showToast('All beds cleared');
+        });
     });
 
     document.getElementById('btn-save').addEventListener('click', () => {
@@ -1482,12 +1488,14 @@ function initToolbarButtons() {
     document.getElementById('btn-clear-bed').addEventListener('click', () => {
         const bedIdx = state.selectedBed;
         if (state.beds[bedIdx].length === 0) { showToast('Bed is already empty!'); return; }
-        pushUndo();
-        state.beds[bedIdx] = [];
-        renderPlacedPlants(bedIdx);
-        updateBedDetails();
-        saveState();
-        showToast(`Bed ${bedIdx + 1} cleared`);
+        showConfirm('CLEAR BED', `Remove all ${state.beds[bedIdx].length} plant(s) from ${bedNames[bedIdx]}? This can be undone with Ctrl+Z.`, () => {
+            pushUndo();
+            state.beds[bedIdx] = [];
+            renderPlacedPlants(bedIdx);
+            updateBedDetails();
+            saveState();
+            showToast(`${bedNames[bedIdx]} cleared`);
+        });
     });
 
     // Copy bed to another bed
@@ -1837,6 +1845,42 @@ function loadSavedState() {
         if (data.bedAssignments) state.bedAssignments = data.bedAssignments;
         updateBedDetails();
     } catch(e) { console.error('Failed to load state', e); }
+}
+
+// ---- CONFIRM MODAL ----
+function showConfirm(title, message, onConfirm) {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-modal-overlay';
+    overlay.innerHTML = `
+        <div class="confirm-modal">
+            <h3>\u26A0\uFE0F ${title}</h3>
+            <p>${message}</p>
+            <div class="confirm-actions">
+                <button class="tool-btn danger confirm-yes">YES, DO IT</button>
+                <button class="tool-btn confirm-no">CANCEL</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('.confirm-yes').addEventListener('click', () => {
+        overlay.remove();
+        onConfirm();
+    });
+    overlay.querySelector('.confirm-no').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+}
+
+// ---- QTY FLYUP ----
+function showQtyFlyup(el, text, isMinus) {
+    const rect = el.getBoundingClientRect();
+    const flyup = document.createElement('div');
+    flyup.className = 'qty-flyup' + (isMinus ? ' minus' : '');
+    flyup.textContent = text;
+    flyup.style.left = rect.left + rect.width / 2 - 8 + 'px';
+    flyup.style.top = rect.top - 4 + 'px';
+    document.body.appendChild(flyup);
+    setTimeout(() => flyup.remove(), 600);
 }
 
 // ---- TOAST ----
@@ -3520,29 +3564,29 @@ function importAllData(event) {
                 return;
             }
 
-            if (!confirm('Import this backup? This will replace all current data.')) return;
+            showConfirm('IMPORT DATA', 'Import this backup? This will replace all current data.', () => {
+                // Restore state
+                if (data.state.beds) {
+                    state.beds = data.state.beds;
+                    for (let i = 0; i < 4; i++) renderPlacedPlants(i);
+                }
+                if (data.state.volunteers) state.volunteers = data.state.volunteers;
+                if (data.state.bedAssignments) state.bedAssignments = data.state.bedAssignments;
 
-            // Restore state
-            if (data.state.beds) {
-                state.beds = data.state.beds;
-                for (let i = 0; i < 4; i++) renderPlacedPlants(i);
-            }
-            if (data.state.volunteers) state.volunteers = data.state.volunteers;
-            if (data.state.bedAssignments) state.bedAssignments = data.state.bedAssignments;
+                // Restore localStorage items
+                if (data.plantingLog) savePlantingLogData(data.plantingLog);
+                if (data.harvests) saveHarvestData(data.harvests);
+                if (data.journal) saveJournalData(data.journal);
+                if (data.completedTasks) localStorage.setItem('gardensync_completed_tasks', JSON.stringify(data.completedTasks));
+                if (data.geminiKey) {
+                    localStorage.setItem('gardensync_gemini_key', data.geminiKey);
+                    state.geminiKey = data.geminiKey;
+                }
 
-            // Restore localStorage items
-            if (data.plantingLog) savePlantingLogData(data.plantingLog);
-            if (data.harvests) saveHarvestData(data.harvests);
-            if (data.journal) saveJournalData(data.journal);
-            if (data.completedTasks) localStorage.setItem('gardensync_completed_tasks', JSON.stringify(data.completedTasks));
-            if (data.geminiKey) {
-                localStorage.setItem('gardensync_gemini_key', data.geminiKey);
-                state.geminiKey = data.geminiKey;
-            }
-
-            saveState();
-            updateBedDetails();
-            showToast('Data imported successfully!');
+                saveState();
+                updateBedDetails();
+                showToast('Data imported successfully!');
+            });
         } catch (err) {
             showToast('Error reading backup: ' + err.message);
         }
