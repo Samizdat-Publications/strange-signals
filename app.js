@@ -3706,6 +3706,56 @@ function initDataExportImport() {
         document.getElementById('import-file-input').click();
     });
     document.getElementById('import-file-input').addEventListener('change', importAllData);
+
+    // Demo data loader
+    document.getElementById('btn-load-demo').addEventListener('click', loadDemoData);
+}
+
+async function loadDemoData() {
+    showConfirm('LOAD DEMO GARDEN', 'Load a fully-planned demo garden with 4 themed beds, 5 volunteers, and harvest history? This replaces all current data.', async () => {
+        try {
+            const resp = await fetch('demo-data.json');
+            if (!resp.ok) throw new Error('Could not load demo data file');
+            const data = await resp.json();
+
+            // Restore state
+            if (data.state.beds) {
+                state.beds = data.state.beds;
+                for (let i = 0; i < 4; i++) renderPlacedPlants(i);
+            }
+            if (data.state.volunteers) state.volunteers = data.state.volunteers;
+            if (data.state.bedAssignments) state.bedAssignments = data.state.bedAssignments;
+
+            // Restore localStorage items
+            if (data.plantingLog) savePlantingLogData(data.plantingLog);
+            if (data.harvests) saveHarvestData(data.harvests);
+            if (data.journal) saveJournalData(data.journal);
+            if (data.completedTasks) localStorage.setItem('gardensync_completed_tasks', JSON.stringify(data.completedTasks));
+
+            // Bed names
+            if (data.bedNames) {
+                data.bedNames.forEach((name, i) => { bedNames[i] = name; });
+                saveBedNames();
+                document.querySelectorAll('.bed-label').forEach((lbl, i) => { lbl.textContent = bedNames[i]; });
+                document.querySelectorAll('.bed-tab').forEach((tab, i) => { tab.textContent = bedNames[i]; });
+            }
+
+            // Harvest goal
+            if (data.harvestGoal) {
+                localStorage.setItem('gardensync_harvest_goal', data.harvestGoal);
+                const goalInput = document.getElementById('harvest-goal-weight');
+                if (goalInput) goalInput.value = data.harvestGoal;
+            }
+
+            saveState();
+            updateBedDetails();
+            updateHarvestGoalDisplay();
+            showToast('Demo garden loaded! Explore all tabs to see it in action.');
+        } catch (err) {
+            showToast('Failed to load demo: ' + err.message);
+            console.error('[GardenSync] Demo load error:', err);
+        }
+    });
 }
 
 function exportAllData() {

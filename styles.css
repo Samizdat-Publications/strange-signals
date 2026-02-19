@@ -2420,6 +2420,15 @@ body {
     color: var(--emerald);
     border-color: var(--emerald);
 }
+.footer-action-btn.demo-btn {
+    border-color: var(--amber-muted);
+    color: var(--amber);
+}
+.footer-action-btn.demo-btn:hover {
+    background: var(--amber-muted);
+    color: #fff;
+    border-color: var(--amber);
+}
 
 /* ==========================
    MOBILE NAV
