@@ -413,7 +413,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ['DataExportImport', initDataExportImport],
         ['Weather', initWeather],
         ['KeyboardShortcuts', initKeyboardShortcuts],
-        ['ZoomControls', initZoomControls],
         ['LoadSavedState', loadSavedState],
     ];
     for (const [name, fn] of inits) {
@@ -806,34 +805,6 @@ function initKeyboardShortcuts() {
     });
 }
 
-// ---- ZOOM CONTROLS ----
-let currentZoom = 1;
-function initZoomControls() {
-    const grid = document.getElementById('garden-grid');
-    const zoomIn = document.getElementById('zoom-in');
-    const zoomOut = document.getElementById('zoom-out');
-    const zoomReset = document.getElementById('zoom-reset');
-    const zoomLevel = document.getElementById('zoom-level');
-
-    function setZoom(level) {
-        currentZoom = Math.max(0.5, Math.min(2, level));
-        grid.style.transform = `scale(${currentZoom})`;
-        grid.style.transformOrigin = 'center center';
-        zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
-    }
-
-    zoomIn.addEventListener('click', () => setZoom(currentZoom + 0.1));
-    zoomOut.addEventListener('click', () => setZoom(currentZoom - 0.1));
-    zoomReset.addEventListener('click', () => setZoom(1));
-
-    // Mouse wheel zoom on viewport
-    document.getElementById('garden-viewport').addEventListener('wheel', (e) => {
-        if (e.ctrlKey) {
-            e.preventDefault();
-            setZoom(currentZoom + (e.deltaY > 0 ? -0.1 : 0.1));
-        }
-    }, { passive: false });
-}
 
 // Snap-to-grid helper (20px grid cells)
 function snapToGrid(val, gridSize) {
