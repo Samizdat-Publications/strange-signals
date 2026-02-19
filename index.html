@@ -126,6 +126,7 @@
                         <span id="total-plant-count" class="total-plant-count"><span class="count-num">0</span> PLANTS</span>
                     </div>
                     <div class="toolbar-right">
+                        <button id="btn-stats-toggle" class="tool-btn" title="Toggle garden stats">STATS</button>
                         <button id="btn-undo" class="tool-btn disabled" title="Undo (Ctrl+Z)">UNDO</button>
                         <button id="btn-redo" class="tool-btn disabled" title="Redo (Ctrl+Y)">REDO</button>
                         <button id="btn-grid-toggle" class="tool-btn">GRID: OFF</button>
@@ -133,7 +134,20 @@
                         <button id="btn-clear-all" class="tool-btn danger">CLEAR ALL</button>
                         <button id="btn-save" class="tool-btn">SAVE PLAN</button>
                         <button id="btn-load" class="tool-btn">LOAD PLAN</button>
-                        <button id="btn-export" class="tool-btn accent">EXPORT PDF</button>
+                        <button id="btn-export" class="tool-btn accent">EXPORT PNG</button>
+                    </div>
+                </div>
+                <!-- Garden Stats Dashboard -->
+                <div id="stats-dashboard" class="stats-dashboard hidden">
+                    <div class="stats-grid">
+                        <div class="mini-stat"><span class="mini-stat-val" id="stat-total-plants">0</span><span class="mini-stat-label">PLANTS</span></div>
+                        <div class="mini-stat"><span class="mini-stat-val" id="stat-varieties">0</span><span class="mini-stat-label">VARIETIES</span></div>
+                        <div class="mini-stat"><span class="mini-stat-val" id="stat-beds-used">0</span><span class="mini-stat-label">BEDS USED</span></div>
+                        <div class="mini-stat"><span class="mini-stat-val" id="stat-avg-coverage">0%</span><span class="mini-stat-label">AVG COVERAGE</span></div>
+                        <div class="mini-stat"><span class="mini-stat-val" id="stat-companions">0</span><span class="mini-stat-label">COMPANIONS</span></div>
+                        <div class="mini-stat"><span class="mini-stat-val" id="stat-conflicts">0</span><span class="mini-stat-label">CONFLICTS</span></div>
+                        <div class="mini-stat"><span class="mini-stat-val" id="stat-water-avg">--</span><span class="mini-stat-label">AVG WATER</span></div>
+                        <div class="mini-stat"><span class="mini-stat-val" id="stat-harvest-days">--</span><span class="mini-stat-label">FIRST HARVEST</span></div>
                     </div>
                 </div>
                 <div id="garden-viewport" class="garden-viewport">
@@ -346,6 +360,20 @@
                         </div>
                     </div>
                     <button id="btn-log-harvest" class="tool-btn accent large-btn" style="margin-top:0.5rem;">&#x1F33E; LOG HARVEST</button>
+                </div>
+            </div>
+
+            <!-- Harvest Goals -->
+            <div class="harvest-goals-card">
+                <h3 class="subsection-title" style="margin-top:0;">&#x1F3AF; HARVEST GOALS</h3>
+                <div class="harvest-goals-form">
+                    <input type="number" id="harvest-goal-weight" class="text-input" placeholder="Target lbs" min="0" step="1" style="width:100px;">
+                    <button id="btn-set-goal" class="tool-btn accent">SET SEASON GOAL</button>
+                    <span id="goal-display" class="goal-display"></span>
+                </div>
+                <div id="goal-progress-bar" class="goal-progress-wrap hidden">
+                    <div class="goal-progress-fill" id="goal-progress-fill"></div>
+                    <span class="goal-progress-text" id="goal-progress-text">0%</span>
                 </div>
             </div>
 

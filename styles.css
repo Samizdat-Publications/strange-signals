@@ -549,6 +549,90 @@ body {
     position: relative;
 }
 
+/* Stats Dashboard */
+.stats-dashboard {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+    animation: tab-fade-in 0.2s ease-out;
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.4rem;
+}
+.mini-stat {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--emerald-dark);
+    padding: 0.35rem 0.5rem;
+    text-align: center;
+}
+.mini-stat-val {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--emerald);
+    line-height: 1.2;
+}
+.mini-stat-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.45rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    margin-top: 1px;
+}
+
+/* Harvest goals */
+.harvest-goals-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    padding: 1rem;
+    margin-top: 1rem;
+}
+.harvest-goals-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+.goal-display {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--amber);
+    letter-spacing: 0.5px;
+}
+.goal-progress-wrap {
+    margin-top: 0.5rem;
+    height: 20px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+}
+.goal-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--emerald-dark), var(--emerald));
+    transition: width 0.5s ease;
+    width: 0%;
+}
+.goal-progress-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 1px;
+}
+
 /* Zoom controls */
 .zoom-controls {
     position: absolute;

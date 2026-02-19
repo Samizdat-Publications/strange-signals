@@ -409,6 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ['PlantingLog', initPlantingLog],
         ['CalendarExport', initCalendarExport],
         ['HarvestLog', initHarvestLog],
+        ['HarvestGoals', initHarvestGoals],
         ['DataExportImport', initDataExportImport],
         ['Weather', initWeather],
         ['KeyboardShortcuts', initKeyboardShortcuts],
@@ -1363,6 +1364,11 @@ function updateBedDetails() {
 
     // Update journal entries for this bed
     renderJournalEntries();
+
+    // Update stats dashboard if visible
+    if (!document.getElementById('stats-dashboard')?.classList.contains('hidden')) {
+        updateStatsDashboard();
+    }
 }
 
 // ---- BED JOURNAL ----
@@ -1461,7 +1467,16 @@ function initToolbarButtons() {
         showPresetModal();
     });
 
-    document.getElementById('btn-export').addEventListener('click', exportPDF);
+    document.getElementById('btn-export').addEventListener('click', exportPNG);
+
+    // Stats toggle
+    document.getElementById('btn-stats-toggle').addEventListener('click', () => {
+        const dash = document.getElementById('stats-dashboard');
+        const btn = document.getElementById('btn-stats-toggle');
+        const isHidden = dash.classList.toggle('hidden');
+        btn.classList.toggle('accent', !isHidden);
+        if (!isHidden) updateStatsDashboard();
+    });
 
     // Grid toggle
     let gridOn = false;
@@ -1897,9 +1912,180 @@ function showToast(msg) {
     }, 2200);
 }
 
-// ---- EXPORT PDF (prints page) ----
-function exportPDF() {
-    window.print();
+// ---- GARDEN STATS DASHBOARD ----
+function updateStatsDashboard() {
+    const allPlacements = state.beds.flat();
+    const totalPlants = allPlacements.length;
+    const varieties = new Set(allPlacements.map(p => p.plantId)).size;
+    const bedsUsed = state.beds.filter(b => b.length > 0).length;
+
+    // Average coverage
+    const bedArea = 5 * 10 * 144;
+    let totalCoverage = 0;
+    state.beds.forEach(bed => {
+        let used = 0;
+        bed.forEach(p => {
+            const plant = PLANT_LIBRARY.find(pl => pl.id === p.plantId);
+            if (plant) used += Math.PI * Math.pow(plant.spacing / 2, 2);
+        });
+        totalCoverage += Math.min(100, Math.round((used / bedArea) * 100));
+    });
+    const avgCoverage = bedsUsed > 0 ? Math.round(totalCoverage / 4) : 0;
+
+    // Companion/conflict counts
+    let companions = 0, conflicts = 0;
+    state.beds.forEach(bed => {
+        const unique = [...new Set(bed.map(p => p.plantId))];
+        for (let i = 0; i < unique.length; i++) {
+            for (let j = i + 1; j < unique.length; j++) {
+                const p1 = PLANT_LIBRARY.find(p => p.id === unique[i]);
+                const p2 = PLANT_LIBRARY.find(p => p.id === unique[j]);
+                if (p1 && p2) {
+                    if (p1.companions.includes(p2.id) || p2.companions.includes(p1.id)) companions++;
+                    if (p1.enemies.includes(p2.id) || p2.enemies.includes(p1.id)) conflicts++;
+                }
+            }
+        }
+    });
+
+    // Average water need
+    const waterLevels = { low: 1, medium: 2, high: 3 };
+    const waterLabels = ['--', 'LOW', 'MEDIUM', 'HIGH'];
+    let avgWater = 0;
+    if (totalPlants > 0) {
+        avgWater = allPlacements.reduce((sum, p) => {
+            const plant = PLANT_LIBRARY.find(pl => pl.id === p.plantId);
+            return sum + (plant ? waterLevels[plant.waterNeed] : 0);
+        }, 0) / totalPlants;
+    }
+
+    // Days to first harvest
+    let minDays = '--';
+    if (totalPlants > 0) {
+        const days = allPlacements.map(p => PLANT_LIBRARY.find(pl => pl.id === p.plantId)?.daysToHarvest).filter(Boolean);
+        if (days.length > 0) minDays = Math.min(...days) + 'd';
+    }
+
+    const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+    el('stat-total-plants', totalPlants);
+    el('stat-varieties', varieties);
+    el('stat-beds-used', bedsUsed + '/4');
+    el('stat-avg-coverage', avgCoverage + '%');
+    el('stat-companions', companions);
+    el('stat-conflicts', conflicts);
+    el('stat-water-avg', waterLabels[Math.round(avgWater)] || '--');
+    el('stat-harvest-days', minDays);
+}
+
+// ---- HARVEST GOAL TRACKER ----
+function initHarvestGoals() {
+    const goalInput = document.getElementById('harvest-goal-weight');
+    const setBtn = document.getElementById('btn-set-goal');
+    const goalDisplay = document.getElementById('goal-display');
+    const progressWrap = document.getElementById('goal-progress-bar');
+
+    const savedGoal = localStorage.getItem('gardensync_harvest_goal');
+    if (savedGoal) {
+        goalInput.value = savedGoal;
+        updateHarvestGoalDisplay();
+    }
+
+    setBtn.addEventListener('click', () => {
+        const goal = parseFloat(goalInput.value);
+        if (!goal || goal <= 0) { showToast('Enter a valid weight goal'); return; }
+        localStorage.setItem('gardensync_harvest_goal', goal);
+        updateHarvestGoalDisplay();
+        showToast(`Harvest goal set: ${goal} lbs!`);
+    });
+}
+
+function updateHarvestGoalDisplay() {
+    const goal = parseFloat(localStorage.getItem('gardensync_harvest_goal'));
+    const goalDisplay = document.getElementById('goal-display');
+    const progressWrap = document.getElementById('goal-progress-bar');
+    const progressFill = document.getElementById('goal-progress-fill');
+    const progressText = document.getElementById('goal-progress-text');
+
+    if (!goal) {
+        if (goalDisplay) goalDisplay.textContent = 'No goal set';
+        if (progressWrap) progressWrap.classList.add('hidden');
+        return;
+    }
+
+    // Get total harvested weight
+    const harvests = getHarvestData();
+    const totalWeight = harvests.reduce((sum, h) => sum + (parseFloat(h.weight) || 0), 0);
+    const pct = Math.min(100, Math.round((totalWeight / goal) * 100));
+
+    if (goalDisplay) goalDisplay.textContent = `GOAL: ${goal} lbs (${totalWeight.toFixed(1)} / ${goal} lbs)`;
+    if (progressWrap) progressWrap.classList.remove('hidden');
+    if (progressFill) progressFill.style.width = pct + '%';
+    if (progressText) progressText.textContent = pct + '% of goal';
+}
+
+// ---- EXPORT PNG (canvas snapshot) ----
+function exportPNG() {
+    const viewport = document.getElementById('garden-viewport');
+    const grid = document.getElementById('garden-grid');
+
+    // Use html2canvas-like approach: capture as canvas
+    // Since we don't have html2canvas lib, we'll use a simpler SVG foreignObject method
+    const width = grid.offsetWidth;
+    const height = grid.offsetHeight;
+
+    // Create a temp canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = width * 2; // 2x for retina
+    canvas.height = height * 2;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(2, 2);
+
+    // Draw soil background
+    ctx.fillStyle = '#1a1208';
+    ctx.fillRect(0, 0, width, height);
+
+    // Draw each bed
+    const beds = document.querySelectorAll('.garden-bed');
+    beds.forEach((bed, i) => {
+        const rect = bed.getBoundingClientRect();
+        const gridRect = grid.getBoundingClientRect();
+        const x = rect.left - gridRect.left;
+        const y = rect.top - gridRect.top;
+        const w = rect.width;
+        const h = rect.height;
+
+        // Bed background
+        ctx.fillStyle = '#1a1208';
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = '#3d2b0f';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, w, h);
+
+        // Bed label
+        ctx.fillStyle = '#5c4a2a';
+        ctx.font = 'bold 10px monospace';
+        ctx.fillText(bedNames[i], x + 6, y + 14);
+
+        // Plants
+        state.beds[i].forEach(placement => {
+            const plant = PLANT_LIBRARY.find(p => p.id === placement.plantId);
+            if (!plant) return;
+            ctx.font = '20px serif';
+            ctx.fillText(plant.emoji, x + placement.x + 6, y + placement.y + 26);
+        });
+    });
+
+    // Title
+    ctx.fillStyle = '#10b981';
+    ctx.font = 'bold 14px monospace';
+    ctx.fillText('GARDENSYNC // FOOD NOT BOMBS CANTON', 10, height - 10);
+
+    // Download
+    const link = document.createElement('a');
+    link.download = `gardensync-layout-${new Date().toISOString().split('T')[0]}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('Garden layout exported as PNG!');
 }
 
 // ---- GROW SCHEDULE ----
