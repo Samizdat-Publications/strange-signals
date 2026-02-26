@@ -1566,6 +1566,7 @@ function initToolbarButtons() {
     });
 
     document.getElementById('btn-export').addEventListener('click', exportPNG);
+    document.getElementById('btn-print-map').addEventListener('click', printBedMap);
 
     // Stats toggle
     document.getElementById('btn-stats-toggle').addEventListener('click', () => {
@@ -2316,6 +2317,101 @@ function exportPNG() {
     link.href = canvas.toDataURL('image/png');
     link.click();
     showToast('Garden layout exported as PNG!');
+}
+
+// ---- PRINT BED MAP ----
+function printBedMap() {
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const bedWidth = 5, bedHeight = 10; // feet
+
+    // Build plant legend (all unique plants across all beds)
+    const allPlantIds = new Set();
+    state.beds.forEach(bed => bed.forEach(p => allPlantIds.add(p.plantId)));
+    const legendPlants = [...allPlantIds].map(id => PLANT_LIBRARY.find(p => p.id === id)).filter(Boolean);
+
+    // Build bed HTML
+    let bedsHTML = '';
+    state.beds.forEach((bed, i) => {
+        if (bed.length === 0) return;
+        const plantCounts = {};
+        bed.forEach(p => {
+            plantCounts[p.plantId] = (plantCounts[p.plantId] || 0) + 1;
+        });
+        const plantList = Object.entries(plantCounts).map(([id, count]) => {
+            const plant = PLANT_LIBRARY.find(p => p.id === id);
+            return plant ? `${plant.emoji} ${plant.name} x${count}` : `${id} x${count}`;
+        }).join(', ');
+
+        // Build an SVG bed representation
+        const svgW = 300, svgH = 166;
+        let plantDots = '';
+        bed.forEach(p => {
+            const plant = PLANT_LIBRARY.find(pl => pl.id === p.plantId);
+            const px = (p.x / 400) * svgW;
+            const py = (p.y / 220) * svgH;
+            plantDots += `<text x="${px + 12}" y="${py + 14}" font-size="14" text-anchor="middle">${plant?.emoji || '?'}</text>`;
+        });
+
+        bedsHTML += `
+            <div class="print-bed">
+                <h3>${bedNames[i] || 'Bed ' + (i + 1)} <span class="bed-dim">(${bedWidth}' x ${bedHeight}')</span></h3>
+                <svg viewBox="0 0 ${svgW} ${svgH}" class="bed-svg">
+                    <rect x="0" y="0" width="${svgW}" height="${svgH}" fill="#f5f0e8" stroke="#333" stroke-width="2" rx="4"/>
+                    ${plantDots}
+                </svg>
+                <p class="bed-contents">${plantList}</p>
+            </div>
+        `;
+    });
+
+    // Legend
+    let legendHTML = legendPlants.map(p =>
+        `<span class="legend-item">${p.emoji} ${p.name} <small>(${p.spacing}" spacing, ${p.daysToHarvest}d)</small></span>`
+    ).join('');
+
+    const printHTML = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>GardenSync Bed Map</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 0.5in; color: #111; background: #fff; }
+    h1 { font-size: 18pt; margin-bottom: 2px; }
+    .subtitle { font-size: 9pt; color: #666; margin-bottom: 16px; }
+    .beds-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .print-bed h3 { font-size: 11pt; margin-bottom: 4px; }
+    .bed-dim { font-weight: normal; color: #666; font-size: 9pt; }
+    .bed-svg { width: 100%; border: 1px solid #ccc; }
+    .bed-contents { font-size: 8pt; color: #444; margin-top: 4px; line-height: 1.4; }
+    .legend { border-top: 1px solid #ccc; padding-top: 10px; }
+    .legend h3 { font-size: 10pt; margin-bottom: 6px; }
+    .legend-grid { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+    .legend-item { font-size: 8pt; white-space: nowrap; }
+    .legend-item small { color: #888; }
+    .footer { margin-top: 16px; font-size: 7pt; color: #aaa; text-align: center; border-top: 1px solid #eee; padding-top: 6px; }
+    @media print {
+        body { padding: 0.25in; }
+        @page { size: landscape; margin: 0.25in; }
+    }
+</style>
+</head><body>
+    <h1>GardenSync // Food Not Bombs Canton</h1>
+    <div class="subtitle">Garden Bed Map &mdash; ${today} &mdash; Zone 6a</div>
+    <div class="beds-grid">${bedsHTML}</div>
+    <div class="legend">
+        <h3>PLANT KEY</h3>
+        <div class="legend-grid">${legendHTML}</div>
+    </div>
+    <div class="footer">GardenSync &mdash; No Copyright, No Gods, No Masters &mdash; Share Freely</div>
+    <script>window.onload = function() { window.print(); }</script>
+</body></html>`;
+
+    const printWin = window.open('', '_blank');
+    if (!printWin) {
+        showToast('Popup blocked! Please allow popups for this site.');
+        return;
+    }
+    printWin.document.write(printHTML);
+    printWin.document.close();
+    showToast('Print map opened in new window!');
 }
 
 // ---- GROW SCHEDULE ----
