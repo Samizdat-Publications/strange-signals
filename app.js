@@ -1373,6 +1373,49 @@ function initQuickAdd() {
         placePlant(bedIndex, plantId, pos.x, pos.y);
         showToast(`${PLANT_LIBRARY.find(p => p.id === plantId)?.emoji} planted in ${bedNames[bedIndex]}`);
     });
+    document.getElementById('btn-fill-row').addEventListener('click', () => {
+        const plantId = select.value;
+        if (!plantId) { showToast('Select a plant first'); return; }
+        const bedIndex = state.selectedBed;
+        const plant = PLANT_LIBRARY.find(p => p.id === plantId);
+        if (!plant) return;
+        const positions = findRowPositions(bedIndex, plant);
+        if (positions.length === 0) { showToast('No room for a row!'); return; }
+        // Single undo snapshot for the whole row
+        pushUndo();
+        positions.forEach(pos => {
+            const placement = {
+                id: `${plantId}-${Date.now()}-${Math.random().toString(36).substr(2,5)}`,
+                plantId, x: pos.x, y: pos.y
+            };
+            state.beds[bedIndex].push(placement);
+        });
+        renderPlacedPlants(bedIndex);
+        updateBedDetails();
+        updateSpacingWarnings(bedIndex);
+        saveState();
+        showToast(`${plant.emoji} x${positions.length} row planted in ${bedNames[bedIndex]}`);
+    });
+}
+
+function findRowPositions(bedIndex, plant) {
+    const bedW = 400, bedH = 220;
+    // Convert inches to pixels: bed is 400px = 60 inches (5 feet)
+    const pxPerInch = 400 / 60;
+    const spacingPx = Math.max(20, Math.round(plant.spacing * pxPerInch));
+    const existing = state.beds[bedIndex].map(p => ({ x: p.x + 18, y: p.y + 18 }));
+    // Scan rows from top to find one that's mostly clear
+    for (let y = 14; y < bedH - 20; y += spacingPx) {
+        const rowPositions = [];
+        let rowClear = true;
+        for (let x = 14; x < bedW - 20; x += spacingPx) {
+            const tooClose = existing.some(e => Math.hypot(e.x - x, e.y - y) < spacingPx * 0.6);
+            if (tooClose) { rowClear = false; break; }
+            rowPositions.push({ x: snapToGrid(x - 18), y: snapToGrid(y - 18) });
+        }
+        if (rowClear && rowPositions.length >= 2) return rowPositions;
+    }
+    return [];
 }
 
 function findNextOpenPosition(bedIndex, plantId) {
