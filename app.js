@@ -567,12 +567,40 @@ function renderPlantList(plants, searchQ) {
         }
         // Season badge
         const badge = getPlantSeasonBadge(p);
+        // Companion/enemy info for expanded view
+        const waterColors = { low: '#10b981', medium: '#f59e0b', high: '#dc2626' };
+        const companions = p.companions.map(c => { const cp = PLANT_LIBRARY.find(pl=>pl.id===c); return cp ? cp.emoji + ' ' + cp.name : c; }).join(', ') || 'None';
+        const enemies = p.enemies.map(c => { const cp = PLANT_LIBRARY.find(pl=>pl.id===c); return cp ? cp.emoji + ' ' + cp.name : c; }).join(', ') || 'None';
+        const dates = getPlantDates(p);
+        let scheduleHTML = '';
+        if (dates.seedIndoor) scheduleHTML += `<span class="pex-sched-item">SEED INDOORS: ${formatDateRange(dates.seedIndoor)}</span>`;
+        if (dates.transplant) scheduleHTML += `<span class="pex-sched-item">TRANSPLANT: ${formatDateRange(dates.transplant)}</span>`;
+        if (dates.directSow) scheduleHTML += `<span class="pex-sched-item">DIRECT SOW: ${formatDateRange(dates.directSow)}</span>`;
         return `
-        <div class="plant-item" draggable="true" data-plant-id="${p.id}" data-type="${p.type}">
-            <span class="plant-emoji">${p.emoji}</span>
-            <span class="plant-name">${displayName}</span>
-            <span class="season-badge ${badge.cls}">${badge.text}</span>
-            <span class="plant-type-badge">${p.type.toUpperCase()}</span>
+        <div class="plant-item-wrap" data-plant-id="${p.id}">
+            <div class="plant-item" draggable="true" data-plant-id="${p.id}" data-type="${p.type}">
+                <span class="plant-emoji">${p.emoji}</span>
+                <span class="plant-name">${displayName}</span>
+                <span class="season-badge ${badge.cls}">${badge.text}</span>
+                <span class="plant-type-badge">${p.type.toUpperCase()}</span>
+                <span class="plant-expand-icon">&#x25BC;</span>
+            </div>
+            <div class="plant-expand-panel" hidden>
+                <div class="pex-stats">
+                    <span class="pex-stat">${p.spacing}" spacing</span>
+                    <span class="pex-stat">${p.daysToHarvest}d harvest</span>
+                    <span class="pex-stat" style="color:${waterColors[p.waterNeed]}">${p.waterNeed} water</span>
+                    <span class="pex-stat">${p.sunNeed} sun</span>
+                    ${p.lowMaintenance ? '<span class="pex-stat pex-easy">easy care</span>' : ''}
+                </div>
+                ${p.seedStartInstructions ? `<p class="pex-note"><strong>SEED START:</strong> ${p.seedStartInstructions}</p>` : ''}
+                ${p.careNotes ? `<p class="pex-note"><strong>CARE:</strong> ${p.careNotes}</p>` : ''}
+                ${scheduleHTML ? `<div class="pex-schedule">${scheduleHTML}</div>` : ''}
+                <div class="pex-relations">
+                    <span class="pex-companions">FRIENDS: ${companions}</span>
+                    <span class="pex-enemies">FOES: ${enemies}</span>
+                </div>
+            </div>
         </div>
     `}).join('');
 
@@ -605,7 +633,19 @@ function renderPlantList(plants, searchQ) {
             item.style.opacity = '1';
         });
         item.addEventListener('click', () => {
-            showPlantInfo(item.dataset.plantId);
+            const wrap = item.closest('.plant-item-wrap');
+            const panel = wrap ? wrap.querySelector('.plant-expand-panel') : null;
+            if (!panel) return;
+            const isOpen = !panel.hidden;
+            // Close all other open panels
+            container.querySelectorAll('.plant-expand-panel:not([hidden])').forEach(p => {
+                p.hidden = true;
+                p.closest('.plant-item-wrap').querySelector('.plant-expand-icon').textContent = '\u25BC';
+            });
+            if (!isOpen) {
+                panel.hidden = false;
+                wrap.querySelector('.plant-expand-icon').textContent = '\u25B2';
+            }
         });
         // Double-click to enter click-to-place mode
         item.addEventListener('dblclick', (e) => {

@@ -367,6 +367,76 @@ body {
 .plant-item[data-type="herb"] { border-left-color: var(--teal); }
 .plant-item[data-type="flower"] { border-left-color: #ec4899; }
 
+/* Plant expand icon */
+.plant-expand-icon {
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    margin-left: 0.25rem;
+    transition: transform 0.2s;
+}
+/* Plant expand panel (inline detail) */
+.plant-expand-panel {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+.pex-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+}
+.pex-stat {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+.pex-stat.pex-easy { color: var(--emerald); border-color: var(--emerald-dark); }
+.pex-note {
+    margin: 0.35rem 0;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+.pex-note strong {
+    color: var(--text-primary);
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    font-family: var(--font-mono);
+}
+.pex-schedule {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin: 0.4rem 0;
+}
+.pex-sched-item {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    padding: 0.15rem 0.4rem;
+    background: rgba(16,185,129,0.08);
+    border: 1px solid var(--emerald-dark);
+    color: var(--emerald);
+    letter-spacing: 0.5px;
+}
+.pex-relations {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-top: 0.35rem;
+    font-size: 0.7rem;
+}
+.pex-companions { color: var(--emerald); }
+.pex-enemies { color: var(--red-accent); }
+.pex-companions strong, .pex-enemies strong { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 1px; }
+
 /* Sort row */
 .sort-row {
     display: flex;
