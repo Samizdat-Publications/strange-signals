@@ -1134,6 +1134,26 @@ body {
     padding: 0.25rem 0.5rem;
     letter-spacing: 0.5px;
 }
+.quick-add-row {
+    display: flex;
+    gap: 0.3rem;
+    margin: 0.4rem 0 0.6rem;
+}
+.quick-add-select {
+    flex: 1;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    padding: 0.25rem 0.4rem;
+    letter-spacing: 0.3px;
+}
+.quick-add-select:focus {
+    border-color: var(--emerald);
+    outline: none;
+}
 
 /* Undo/Redo disabled state */
 .tool-btn.disabled {

@@ -432,6 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ['PlantPalette', initPlantPalette],
         ['GardenBeds', initGardenBeds],
         ['BedSelector', initBedSelector],
+        ['QuickAdd', initQuickAdd],
         ['ToolbarButtons', initToolbarButtons],
         ['Volunteers', initVolunteers],
         ['ClimateCharts', initClimateCharts],
@@ -1328,6 +1329,46 @@ function initBedSelector() {
             highlightActiveBed(state.selectedBed);
         });
     });
+}
+
+function initQuickAdd() {
+    const select = document.getElementById('quick-add-select');
+    if (!select) return;
+    // Populate with all plants sorted alphabetically
+    PLANT_LIBRARY.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.emoji} ${p.name}`;
+        select.appendChild(opt);
+    });
+    document.getElementById('btn-quick-add').addEventListener('click', () => {
+        const plantId = select.value;
+        if (!plantId) { showToast('Select a plant first'); return; }
+        const bedIndex = state.selectedBed;
+        const pos = findNextOpenPosition(bedIndex, plantId);
+        placePlant(bedIndex, plantId, pos.x, pos.y);
+        showToast(`${PLANT_LIBRARY.find(p => p.id === plantId)?.emoji} planted in ${bedNames[bedIndex]}`);
+    });
+}
+
+function findNextOpenPosition(bedIndex, plantId) {
+    const plant = PLANT_LIBRARY.find(p => p.id === plantId);
+    const spacing = plant ? plant.spacing : 12;
+    const gridStep = Math.max(20, Math.round(spacing * 0.8));
+    const bedW = 400, bedH = 220;
+    const existing = state.beds[bedIndex].map(p => ({ x: p.x + 18, y: p.y + 18 }));
+    // Scan grid positions to find the first one that doesn't overlap
+    for (let y = 10; y < bedH - 20; y += gridStep) {
+        for (let x = 10; x < bedW - 20; x += gridStep) {
+            const cx = x, cy = y;
+            const tooClose = existing.some(e =>
+                Math.hypot(e.x - cx, e.y - cy) < gridStep * 0.8
+            );
+            if (!tooClose) return { x: snapToGrid(x - 18), y: snapToGrid(y - 18) };
+        }
+    }
+    // Fallback: random position
+    return { x: snapToGrid(Math.random() * (bedW - 60)), y: snapToGrid(Math.random() * (bedH - 60)) };
 }
 
 function highlightActiveBed(bedIndex) {
