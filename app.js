@@ -414,6 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ['Weather', initWeather],
         ['KeyboardShortcuts', initKeyboardShortcuts],
         ['LoadSavedState', loadSavedState],
+        ['TodayDashboard', updateTodayDashboard],
     ];
     for (const [name, fn] of inits) {
         try { fn(); }
@@ -1946,6 +1947,138 @@ function updateStatsDashboard() {
     el('stat-conflicts', conflicts);
     el('stat-water-avg', waterLabels[Math.round(avgWater)] || '--');
     el('stat-harvest-days', minDays);
+}
+
+// ---- TODAY'S TASKS DASHBOARD ----
+function updateTodayDashboard() {
+    const today = new Date();
+    const todayStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    const dateEl = document.getElementById('today-date');
+    if (dateEl) dateEl.textContent = todayStr.toUpperCase();
+
+    // Season progress
+    const lastFrostDate = new Date(today.getFullYear(), 3, 18);
+    const firstFrostDate = new Date(today.getFullYear(), 9, 28);
+    const seasonStartDate = new Date(today.getFullYear(), 1, 15); // Feb 15 — indoor seeds start
+    const seasonEndDate = new Date(today.getFullYear(), 10, 15); // Nov 15 — cleanup
+    const seasonTotal = seasonEndDate - seasonStartDate;
+    const seasonElapsed = Math.max(0, Math.min(today - seasonStartDate, seasonTotal));
+    const seasonPct = Math.round((seasonElapsed / seasonTotal) * 100);
+    const weekNum = Math.max(1, Math.ceil(seasonElapsed / (7 * 86400000)));
+    const totalWeeks = Math.ceil(seasonTotal / (7 * 86400000));
+
+    let seasonPhase = 'PRE-SEASON';
+    if (today < seasonStartDate) seasonPhase = 'OFF-SEASON';
+    else if (today < lastFrostDate) seasonPhase = 'EARLY START';
+    else if (today < new Date(today.getFullYear(), 5, 15)) seasonPhase = 'PLANTING';
+    else if (today < new Date(today.getFullYear(), 7, 15)) seasonPhase = 'PEAK GROWING';
+    else if (today < firstFrostDate) seasonPhase = 'HARVEST TIME';
+    else if (today < seasonEndDate) seasonPhase = 'LATE SEASON';
+    else seasonPhase = 'OFF-SEASON';
+
+    const progressFill = document.getElementById('season-progress-fill');
+    const progressLabel = document.getElementById('season-progress-label');
+    if (progressFill) progressFill.style.width = Math.min(100, seasonPct) + '%';
+    if (progressLabel) progressLabel.textContent = `WK ${weekNum}/${totalWeeks} \u2014 ${seasonPhase}`;
+
+    // Build task chips
+    const tasks = [];
+    const plantlogData = JSON.parse(localStorage.getItem('gardensync_plantlog') || '{}');
+    const currentWeek = getWeekKey(today);
+    const oneWeekAgo = new Date(today);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const twoWeeksOut = new Date(today);
+    twoWeeksOut.setDate(twoWeeksOut.getDate() + 14);
+
+    // Check all plants for upcoming/overdue tasks
+    PLANT_LIBRARY.forEach(plant => {
+        const dates = getPlantDates(plant);
+
+        // Seed indoor
+        if (dates.seedIndoor) {
+            const taskId = `${plant.id}-seed-indoor`;
+            const done = plantlogData[taskId];
+            if (!done && dates.seedIndoor.end >= oneWeekAgo && dates.seedIndoor.start <= twoWeeksOut) {
+                const overdue = today > dates.seedIndoor.end;
+                tasks.push({
+                    emoji: plant.emoji,
+                    label: `Start ${plant.name} indoors`,
+                    type: 'seed-indoor',
+                    overdue,
+                    date: dates.seedIndoor.start
+                });
+            }
+        }
+        // Transplant
+        if (dates.transplant) {
+            const taskId = `${plant.id}-transplant`;
+            const done = plantlogData[taskId];
+            if (!done && dates.transplant.end >= oneWeekAgo && dates.transplant.start <= twoWeeksOut) {
+                const overdue = today > dates.transplant.end;
+                tasks.push({
+                    emoji: plant.emoji,
+                    label: `Transplant ${plant.name}`,
+                    type: 'transplant',
+                    overdue,
+                    date: dates.transplant.start
+                });
+            }
+        }
+        // Direct sow
+        if (dates.directSow) {
+            const taskId = `${plant.id}-direct-sow`;
+            const done = plantlogData[taskId];
+            if (!done && dates.directSow.end >= oneWeekAgo && dates.directSow.start <= twoWeeksOut) {
+                const overdue = today > dates.directSow.end;
+                tasks.push({
+                    emoji: plant.emoji,
+                    label: `Direct sow ${plant.name}`,
+                    type: 'direct-sow',
+                    overdue,
+                    date: dates.directSow.start
+                });
+            }
+        }
+        // Harvest ready (only for plants actually in beds)
+        if (dates.harvestStart) {
+            const inBeds = state.beds.some(bed => bed.some(p => p.plantId === plant.id));
+            if (inBeds && today >= dates.harvestStart.start && today <= dates.harvestStart.end) {
+                tasks.push({
+                    emoji: plant.emoji,
+                    label: `Harvest ${plant.name}`,
+                    type: 'harvest',
+                    overdue: false,
+                    date: dates.harvestStart.start
+                });
+            }
+        }
+    });
+
+    // Sort: overdue first, then by date
+    tasks.sort((a, b) => {
+        if (a.overdue !== b.overdue) return a.overdue ? -1 : 1;
+        return a.date - b.date;
+    });
+
+    // Render
+    const container = document.getElementById('today-tasks-list');
+    if (!container) return;
+
+    if (tasks.length === 0) {
+        const phase = seasonPhase;
+        if (phase === 'OFF-SEASON') {
+            container.innerHTML = '<p class="today-no-tasks">Nothing to do right now \u2014 <span class="all-good">enjoy the off-season!</span></p>';
+        } else {
+            container.innerHTML = '<p class="today-no-tasks"><span class="all-good">All caught up!</span> No urgent tasks this week.</p>';
+        }
+        return;
+    }
+
+    container.innerHTML = tasks.map(t => {
+        const chipClass = `today-task-chip chip-${t.type}${t.overdue ? ' chip-overdue' : ''}`;
+        const overdueTag = t.overdue ? ' <span class="chip-type">OVERDUE</span>' : '';
+        return `<div class="${chipClass}"><span class="chip-emoji">${t.emoji}</span><span class="chip-label">${t.label}</span>${overdueTag}</div>`;
+    }).join('');
 }
 
 // ---- HARVEST GOAL TRACKER ----

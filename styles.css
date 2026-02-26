@@ -3081,3 +3081,135 @@ body::before {
     pointer-events: none;
     z-index: 9999;
 }
+
+/* ==========================
+   TODAY'S TASKS DASHBOARD
+   ========================== */
+.today-dashboard {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1.25rem;
+}
+.today-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+.today-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+.today-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    letter-spacing: 2px;
+    color: var(--emerald);
+    white-space: nowrap;
+}
+.today-date {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+/* Season progress bar */
+.season-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+.season-progress-bar {
+    width: 120px;
+    height: 6px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+.season-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--emerald-dark), var(--emerald), var(--amber));
+    transition: width 0.3s ease;
+}
+.season-progress-label {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+/* Task list */
+.today-tasks-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.today-task-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border: 1px solid var(--border);
+    background: var(--bg-tertiary);
+    cursor: default;
+    transition: all 0.15s;
+}
+.today-task-chip:hover {
+    border-color: var(--text-muted);
+}
+.today-task-chip .chip-emoji {
+    font-size: 0.85rem;
+}
+.today-task-chip.chip-seed-indoor {
+    border-left: 3px solid #7c3aed;
+}
+.today-task-chip.chip-transplant {
+    border-left: 3px solid var(--emerald);
+}
+.today-task-chip.chip-direct-sow {
+    border-left: 3px solid var(--teal);
+}
+.today-task-chip.chip-harvest {
+    border-left: 3px solid var(--amber);
+}
+.today-task-chip.chip-water {
+    border-left: 3px solid #3b82f6;
+}
+.today-task-chip.chip-overdue {
+    border-color: var(--red-accent);
+    background: rgba(239,68,68,0.08);
+}
+.today-task-chip.chip-overdue .chip-label {
+    color: var(--red-accent);
+}
+.today-task-chip .chip-label {
+    color: var(--text-primary);
+}
+.today-task-chip .chip-type {
+    font-size: 0.5rem;
+    color: var(--text-muted);
+}
+.today-no-tasks {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    padding: 0.25rem 0;
+}
+.today-no-tasks .all-good {
+    color: var(--emerald);
+}
+@media (max-width: 900px) {
+    .today-header { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+}
+@media (max-width: 480px) {
+    .today-dashboard { padding: 0.5rem 0.75rem; }
+    .today-title { font-size: 0.85rem; }
+    .season-progress-bar { width: 80px; }
+}

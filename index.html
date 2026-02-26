@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=13">
 </head>
 <body>
     <!-- HEADER -->
@@ -81,6 +81,22 @@
 
     <!-- ==================== TAB: BED PLANNER ==================== -->
     <section id="tab-planner" class="tab-content active">
+        <!-- TODAY'S TASKS DASHBOARD -->
+        <div id="today-dashboard" class="today-dashboard">
+            <div class="today-header">
+                <div class="today-title-row">
+                    <h2 class="today-title">&#x1F4CB; TODAY'S TASKS</h2>
+                    <span id="today-date" class="today-date"></span>
+                </div>
+                <div id="season-progress" class="season-progress">
+                    <div class="season-progress-bar"><div id="season-progress-fill" class="season-progress-fill"></div></div>
+                    <span id="season-progress-label" class="season-progress-label"></span>
+                </div>
+            </div>
+            <div id="today-tasks-list" class="today-tasks-list">
+                <p class="muted-text">Loading...</p>
+            </div>
+        </div>
         <div class="planner-layout">
             <!-- PLANT PALETTE -->
             <aside class="plant-palette">
@@ -558,6 +574,6 @@
         </div>
     </footer>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=13"></script>
 </body>
 </html>
