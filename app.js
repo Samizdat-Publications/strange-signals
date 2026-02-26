@@ -448,6 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ['DataExportImport', initDataExportImport],
         ['KeyboardShortcuts', initKeyboardShortcuts],
         ['LoadSavedState', loadSavedState],
+        ['ShareURL', initShareURL],
         ['Weather', initWeather],
         ['TodayDashboard', updateTodayDashboard],
     ];
@@ -4570,6 +4571,104 @@ function exportAllData() {
     URL.revokeObjectURL(url);
 
     showToast('All data exported!');
+}
+
+// ---- SHARE VIA URL ----
+function generateShareURL() {
+    // Compact encoding: beds → array of arrays of [plantIdIndex, x, y]
+    // Build plant ID lookup table from what's actually used
+    const usedIds = new Set();
+    state.beds.forEach(bed => bed.forEach(p => usedIds.add(p.plantId)));
+    const idList = [...usedIds].sort();
+    const idMap = {};
+    idList.forEach((id, i) => idMap[id] = i);
+
+    const compact = {
+        v: 1,
+        n: bedNames.slice(0, 4),
+        s: bedSizes.slice(0, 4),
+        k: idList,
+        b: state.beds.map(bed =>
+            bed.map(p => [idMap[p.plantId], Math.round(p.x), Math.round(p.y)])
+        )
+    };
+
+    const json = JSON.stringify(compact);
+    // Use TextEncoder + btoa for URL-safe base64
+    const encoded = btoa(unescape(encodeURIComponent(json)));
+    return window.location.origin + window.location.pathname + '#plan=' + encoded;
+}
+
+function loadSharedPlan(encoded) {
+    try {
+        const json = decodeURIComponent(escape(atob(encoded)));
+        const compact = JSON.parse(json);
+        if (compact.v !== 1 || !compact.b || !compact.k) throw new Error('Invalid share format');
+
+        const idList = compact.k;
+        const beds = compact.b.map(bed =>
+            bed.map(([idIdx, x, y]) => ({
+                id: `${idList[idIdx]}-${Date.now()}-${Math.random().toString(36).substr(2,5)}`,
+                plantId: idList[idIdx],
+                x, y
+            }))
+        );
+
+        const totalPlants = beds.reduce((s, b) => s + b.length, 0);
+        const names = compact.n || ['Bed 1', 'Bed 2', 'Bed 3', 'Bed 4'];
+        const desc = names.join(', ') + ` (${totalPlants} plants)`;
+
+        showConfirm('LOAD SHARED PLAN', `Load shared garden plan? This replaces your current bed layouts.<br><br><strong>${desc}</strong>`, () => {
+            pushUndo();
+            state.beds = beds;
+            // Restore names
+            if (compact.n) {
+                compact.n.forEach((name, i) => { if (i < 4) bedNames[i] = name; });
+                saveBedNames();
+                document.querySelectorAll('.bed-label').forEach((lbl, i) => { lbl.textContent = bedNames[i]; });
+                document.querySelectorAll('.bed-tab').forEach((tab, i) => { tab.textContent = bedNames[i]; });
+            }
+            // Restore sizes
+            if (compact.s) {
+                compact.s.forEach((size, i) => { if (i < 4) bedSizes[i] = size; });
+                saveBedSizes();
+            }
+            for (let i = 0; i < 4; i++) renderPlacedPlants(i);
+            updateBedDetails();
+            saveState();
+            // Clear the hash so refresh doesn't re-prompt
+            history.replaceState(null, '', window.location.pathname);
+            showToast(`Shared plan loaded! ${totalPlants} plants across 4 beds.`);
+        });
+    } catch (err) {
+        showToast('Invalid share link: ' + err.message);
+        console.error('[GardenSync] Share load error:', err);
+    }
+}
+
+function initShareURL() {
+    const btn = document.getElementById('btn-share-url');
+    if (btn) {
+        btn.addEventListener('click', () => {
+            const totalPlants = state.beds.reduce((s, b) => s + b.length, 0);
+            if (totalPlants === 0) { showToast('Nothing to share — plant some seeds first!'); return; }
+            const url = generateShareURL();
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('Share link copied to clipboard!');
+            }).catch(() => {
+                // Fallback: show in a prompt
+                prompt('Copy this share link:', url);
+            });
+        });
+    }
+
+    // Check for shared plan in URL on load
+    const hash = window.location.hash;
+    if (hash.startsWith('#plan=')) {
+        const encoded = hash.substring(6);
+        // Small delay to let the app finish loading
+        setTimeout(() => loadSharedPlan(encoded), 500);
+    }
 }
 
 function importAllData(event) {
