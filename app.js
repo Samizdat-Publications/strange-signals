@@ -433,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ['GardenBeds', initGardenBeds],
         ['BedSelector', initBedSelector],
         ['QuickAdd', initQuickAdd],
+        ['BedTemplates', initBedTemplates],
         ['ThemeToggle', initThemeToggle],
         ['ToolbarButtons', initToolbarButtons],
         ['Volunteers', initVolunteers],
@@ -1488,6 +1489,166 @@ function findNextOpenPosition(bedIndex, plantId) {
     }
     // Fallback: random position
     return { x: snapToGrid(Math.random() * (bedW - 60)), y: snapToGrid(Math.random() * (bedH - 60)) };
+}
+
+// ---- BED TEMPLATES ----
+const BED_TEMPLATES = [
+    {
+        name: 'Salsa Garden',
+        desc: 'Tomatoes, peppers, onion, basil & cilantro — everything for fresh salsa',
+        plants: [
+            { id: 'tomato', count: 4 },
+            { id: 'pepper', count: 3 },
+            { id: 'onion', count: 4 },
+            { id: 'basil', count: 3 },
+        ]
+    },
+    {
+        name: 'Pizza Garden',
+        desc: 'Tomatoes, basil, pepper & oregano — grow your own pizza toppings',
+        plants: [
+            { id: 'tomato', count: 4 },
+            { id: 'basil', count: 4 },
+            { id: 'pepper', count: 3 },
+        ]
+    },
+    {
+        name: 'Three Sisters',
+        desc: 'Corn, beans & squash — classic Native American companion planting',
+        plants: [
+            { id: 'zucchini', count: 2 },
+            { id: 'green-beans', count: 8 },
+        ]
+    },
+    {
+        name: 'Salad Bowl',
+        desc: 'Lettuce, spinach, radish & carrot — quick-harvest salad greens',
+        plants: [
+            { id: 'lettuce', count: 8 },
+            { id: 'spinach', count: 6 },
+            { id: 'radish', count: 6 },
+            { id: 'carrot', count: 5 },
+        ]
+    },
+    {
+        name: 'Pollinator Patch',
+        desc: 'Sunflowers, marigolds, nasturtium & sweet peas — attract bees & butterflies',
+        plants: [
+            { id: 'sunflower', count: 3 },
+            { id: 'marigold', count: 5 },
+            { id: 'nasturtium', count: 4 },
+            { id: 'sweet-peas', count: 4 },
+        ]
+    },
+    {
+        name: 'Herb Haven',
+        desc: 'Basil, thyme, chives, dill & mint — a complete kitchen herb garden',
+        plants: [
+            { id: 'basil', count: 4 },
+            { id: 'thyme', count: 3 },
+            { id: 'chive', count: 4 },
+            { id: 'dill', count: 3 },
+            { id: 'mint', count: 2 },
+        ]
+    },
+    {
+        name: 'Kids Garden',
+        desc: 'Sunflowers, strawberries, radish & carrots — fun, fast & easy for kids',
+        plants: [
+            { id: 'sunflower', count: 2 },
+            { id: 'strawberry', count: 4 },
+            { id: 'radish', count: 6 },
+            { id: 'carrot', count: 5 },
+        ]
+    },
+];
+
+function applyBedTemplate(bedIndex, template) {
+    pushUndo();
+    // Clear the bed first
+    state.beds[bedIndex] = [];
+    // Place each plant type using grid placement
+    template.plants.forEach(({ id: plantId, count }) => {
+        for (let n = 0; n < count; n++) {
+            const pos = findNextOpenPosition(bedIndex, plantId);
+            const placement = {
+                id: `${plantId}-${Date.now()}-${Math.random().toString(36).substr(2,5)}`,
+                plantId, x: pos.x, y: pos.y
+            };
+            state.beds[bedIndex].push(placement);
+        }
+    });
+    renderPlacedPlants(bedIndex);
+    updateBedDetails();
+    updateSpacingWarnings(bedIndex);
+    saveState();
+}
+
+function initBedTemplates() {
+    const btn = document.getElementById('btn-bed-template');
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+        // Close existing dropdown if open
+        const existing = document.querySelector('.template-dropdown');
+        if (existing) { existing.remove(); return; }
+
+        const dropdown = document.createElement('div');
+        dropdown.className = 'template-dropdown';
+        dropdown.innerHTML = `<div class="template-dropdown-title">BED TEMPLATES</div>` +
+            BED_TEMPLATES.map((t, i) => `
+                <div class="template-option" data-idx="${i}">
+                    <span class="template-name">${t.name}</span>
+                    <span class="template-desc">${t.desc}</span>
+                </div>
+            `).join('');
+
+        // Position relative to button
+        btn.style.position = 'relative';
+        btn.parentElement.style.position = 'relative';
+        btn.parentElement.appendChild(dropdown);
+
+        // Handle clicks
+        dropdown.addEventListener('click', (e) => {
+            const opt = e.target.closest('.template-option');
+            if (!opt) return;
+            const idx = parseInt(opt.dataset.idx);
+            const template = BED_TEMPLATES[idx];
+            const bedIndex = state.selectedBed;
+            const bedHasPlants = state.beds[bedIndex].length > 0;
+
+            if (bedHasPlants) {
+                showConfirm('APPLY TEMPLATE', `Replace all plants in ${bedNames[bedIndex]} with "${template.name}" template?`, () => {
+                    applyBedTemplate(bedIndex, template);
+                    bedNames[bedIndex] = template.name;
+                    saveBedNames();
+                    document.querySelectorAll('.bed-label')[bedIndex].textContent = template.name;
+                    document.querySelectorAll('.bed-tab')[bedIndex].textContent = template.name;
+                    showToast(`${template.name} template applied to ${bedNames[bedIndex]}`);
+                    dropdown.remove();
+                });
+            } else {
+                applyBedTemplate(bedIndex, template);
+                bedNames[bedIndex] = template.name;
+                saveBedNames();
+                document.querySelectorAll('.bed-label')[bedIndex].textContent = template.name;
+                document.querySelectorAll('.bed-tab')[bedIndex].textContent = template.name;
+                showToast(`${template.name} template applied to ${bedNames[bedIndex]}`);
+                dropdown.remove();
+            }
+        });
+
+        // Close on outside click
+        setTimeout(() => {
+            const closeHandler = (e) => {
+                if (!dropdown.contains(e.target) && e.target !== btn) {
+                    dropdown.remove();
+                    document.removeEventListener('click', closeHandler);
+                }
+            };
+            document.addEventListener('click', closeHandler);
+        }, 10);
+    });
 }
 
 function highlightActiveBed(bedIndex) {
