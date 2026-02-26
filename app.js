@@ -433,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ['GardenBeds', initGardenBeds],
         ['BedSelector', initBedSelector],
         ['QuickAdd', initQuickAdd],
+        ['ThemeToggle', initThemeToggle],
         ['ToolbarButtons', initToolbarButtons],
         ['Volunteers', initVolunteers],
         ['ClimateCharts', initClimateCharts],
@@ -1328,6 +1329,29 @@ function initBedSelector() {
             updateBedDetails();
             highlightActiveBed(state.selectedBed);
         });
+    });
+}
+
+function initThemeToggle() {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    // Restore saved theme
+    const saved = localStorage.getItem('gardensync_theme') || 'dark';
+    if (saved === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        btn.textContent = 'DARK';
+    }
+    btn.addEventListener('click', () => {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        if (isLight) {
+            document.documentElement.removeAttribute('data-theme');
+            btn.textContent = 'LIGHT';
+            localStorage.setItem('gardensync_theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            btn.textContent = 'DARK';
+            localStorage.setItem('gardensync_theme', 'light');
+        }
     });
 }
 
