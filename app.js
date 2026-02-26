@@ -784,8 +784,14 @@ function renderPlantList(plants, searchQ) {
     });
 }
 
-// ---- BED NAMES ----
+// ---- BED NAMES & SIZES ----
 const bedNames = JSON.parse(localStorage.getItem('gardensync_bed_names') || 'null') || ['BED 1','BED 2','BED 3','BED 4'];
+const bedSizes = JSON.parse(localStorage.getItem('gardensync_bed_sizes') || 'null') || [
+    {w:5,h:10},{w:5,h:10},{w:5,h:10},{w:5,h:10}
+];
+function getBedArea(i) { return bedSizes[i].w * bedSizes[i].h * 144; } // sq inches
+function getBedPxPerInch(i) { return 400 / (bedSizes[i].w * 12); } // pixels per inch
+function saveBedSizes() { localStorage.setItem('gardensync_bed_sizes', JSON.stringify(bedSizes)); }
 
 function saveBedNames() {
     localStorage.setItem('gardensync_bed_names', JSON.stringify(bedNames));
@@ -802,7 +808,7 @@ function initGardenBeds() {
         bed.innerHTML = `
             <span class="bed-label" data-bed="${i}" title="Click to rename">${bedNames[i]}</span>
             <span class="bed-count-badge" style="display:none;"></span>
-            <span class="bed-dimensions">5' \u00D7 10'</span>
+            <span class="bed-dimensions" data-bed="${i}" title="Click to resize">${bedSizes[i].w}' \u00D7 ${bedSizes[i].h}'</span>
             <div class="bed-empty-hint">
                 <span class="hint-icon">\u{1F331}</span>
                 <span class="hint-text">drag or double-click to plant</span>
@@ -840,6 +846,52 @@ function initGardenBeds() {
                 if (ke.key === 'Escape') { input.value = bedNames[i]; input.blur(); }
             });
         });
+
+        // Bed dimensions editing on click
+        const dimLabel = bed.querySelector('.bed-dimensions');
+        dimLabel.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (bed.querySelector('.dim-edit-row')) return;
+            const row = document.createElement('div');
+            row.className = 'dim-edit-row';
+            row.innerHTML = `<input type="number" class="dim-input" value="${bedSizes[i].w}" min="2" max="20" step="1">
+                <span style="color:var(--text-muted);font-size:0.6rem;">x</span>
+                <input type="number" class="dim-input" value="${bedSizes[i].h}" min="2" max="30" step="1">
+                <span style="color:var(--text-muted);font-size:0.55rem;">ft</span>`;
+            dimLabel.style.display = 'none';
+            bed.appendChild(row);
+            const inputs = row.querySelectorAll('input');
+            inputs[0].focus();
+            inputs[0].select();
+            function finishDimEdit() {
+                const w = Math.max(2, Math.min(20, parseInt(inputs[0].value) || 5));
+                const h = Math.max(2, Math.min(30, parseInt(inputs[1].value) || 10));
+                bedSizes[i] = { w, h };
+                saveBedSizes();
+                dimLabel.textContent = `${w}' \u00D7 ${h}'`;
+                dimLabel.style.display = '';
+                row.remove();
+                updateBedDetails();
+                // Update toolbar text
+                const sublabel = document.querySelector('.toolbar-sublabel');
+                if (sublabel) {
+                    const allSame = bedSizes.every(s => s.w === bedSizes[0].w && s.h === bedSizes[0].h);
+                    sublabel.textContent = allSame
+                        ? `4 beds \u00B7 ${bedSizes[0].w}' \u00D7 ${bedSizes[0].h}' each`
+                        : `4 beds \u00B7 custom sizes`;
+                }
+            }
+            inputs.forEach(inp => {
+                inp.addEventListener('blur', () => {
+                    setTimeout(() => { if (!row.contains(document.activeElement)) finishDimEdit(); }, 100);
+                });
+                inp.addEventListener('keydown', (ke) => {
+                    if (ke.key === 'Enter') finishDimEdit();
+                    if (ke.key === 'Escape') { row.remove(); dimLabel.style.display = ''; }
+                });
+            });
+        });
+
         // Drag & drop
         bed.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -983,7 +1035,7 @@ function renderPlacedPlants(bedIndex) {
     }
 
     // Bed coverage visualization — green tint that intensifies with fullness
-    const bedArea = 5 * 10 * 144;
+    const bedArea = getBedArea(bedIndex);
     let usedArea = 0;
     state.beds[bedIndex].forEach(p => {
         const pl = PLANT_LIBRARY.find(lib => lib.id === p.plantId);
@@ -1400,8 +1452,8 @@ function initQuickAdd() {
 
 function findRowPositions(bedIndex, plant) {
     const bedW = 400, bedH = 220;
-    // Convert inches to pixels: bed is 400px = 60 inches (5 feet)
-    const pxPerInch = 400 / 60;
+    // Convert inches to pixels using actual bed width
+    const pxPerInch = getBedPxPerInch(bedIndex);
     const spacingPx = Math.max(20, Math.round(plant.spacing * pxPerInch));
     const existing = state.beds[bedIndex].map(p => ({ x: p.x + 18, y: p.y + 18 }));
     // Scan rows from top to find one that's mostly clear
@@ -1467,7 +1519,7 @@ function updateBedDetails() {
     }
 
     // Coverage estimate (rough)
-    const bedArea = 5 * 10 * 144; // sq inches
+    const bedArea = getBedArea(bedIndex);
     let usedArea = 0;
     plants.forEach(p => {
         const plant = PLANT_LIBRARY.find(pl => pl.id === p.plantId);
@@ -2141,15 +2193,14 @@ function updateStatsDashboard() {
     const bedsUsed = state.beds.filter(b => b.length > 0).length;
 
     // Average coverage
-    const bedArea = 5 * 10 * 144;
     let totalCoverage = 0;
-    state.beds.forEach(bed => {
+    state.beds.forEach((bed, idx) => {
         let used = 0;
         bed.forEach(p => {
             const plant = PLANT_LIBRARY.find(pl => pl.id === p.plantId);
             if (plant) used += Math.PI * Math.pow(plant.spacing / 2, 2);
         });
-        totalCoverage += Math.min(100, Math.round((used / bedArea) * 100));
+        totalCoverage += Math.min(100, Math.round((used / getBedArea(idx)) * 100));
     });
     const avgCoverage = bedsUsed > 0 ? Math.round(totalCoverage / 4) : 0;
 
@@ -2444,8 +2495,6 @@ function exportPNG() {
 // ---- PRINT BED MAP ----
 function printBedMap() {
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const bedWidth = 5, bedHeight = 10; // feet
-
     // Build plant legend (all unique plants across all beds)
     const allPlantIds = new Set();
     state.beds.forEach(bed => bed.forEach(p => allPlantIds.add(p.plantId)));
@@ -2476,7 +2525,7 @@ function printBedMap() {
 
         bedsHTML += `
             <div class="print-bed">
-                <h3>${bedNames[i] || 'Bed ' + (i + 1)} <span class="bed-dim">(${bedWidth}' x ${bedHeight}')</span></h3>
+                <h3>${bedNames[i] || 'Bed ' + (i + 1)} <span class="bed-dim">(${bedSizes[i].w}' x ${bedSizes[i].h}')</span></h3>
                 <svg viewBox="0 0 ${svgW} ${svgH}" class="bed-svg">
                     <rect x="0" y="0" width="${svgW}" height="${svgH}" fill="#f5f0e8" stroke="#333" stroke-width="2" rx="4"/>
                     ${plantDots}
