@@ -980,6 +980,20 @@ function renderPlacedPlants(bedIndex) {
         countBadge.style.display = cnt > 0 ? '' : 'none';
     }
 
+    // Bed coverage visualization — green tint that intensifies with fullness
+    const bedArea = 5 * 10 * 144;
+    let usedArea = 0;
+    state.beds[bedIndex].forEach(p => {
+        const pl = PLANT_LIBRARY.find(lib => lib.id === p.plantId);
+        if (pl) usedArea += Math.PI * Math.pow(pl.spacing / 2, 2);
+    });
+    const coveragePct = Math.min(100, Math.round((usedArea / bedArea) * 100));
+    bedEl.classList.remove('coverage-low', 'coverage-med', 'coverage-high', 'coverage-full');
+    if (coveragePct >= 70) bedEl.classList.add('coverage-full');
+    else if (coveragePct >= 40) bedEl.classList.add('coverage-high');
+    else if (coveragePct >= 15) bedEl.classList.add('coverage-med');
+    else if (coveragePct > 0) bedEl.classList.add('coverage-low');
+
     // Draw companion lines (SVG overlay)
     drawCompanionLines(bedIndex, bedEl);
 

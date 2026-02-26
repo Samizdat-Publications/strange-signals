@@ -734,6 +734,30 @@ body {
     border-color: var(--emerald);
     box-shadow: inset 0 0 30px rgba(16, 185, 129, 0.15), 0 0 15px rgba(16, 185, 129, 0.2);
 }
+/* Bed coverage visualization — green tint intensifies with fullness */
+.garden-bed {
+    transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+.garden-bed.coverage-low {
+    background: #1a150a;
+    border-color: #3d2e10;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.45), inset 0 0 50px rgba(16,185,129,0.02);
+}
+.garden-bed.coverage-med {
+    background: #181a0c;
+    border-color: #3a3d12;
+    box-shadow: inset 0 0 28px rgba(0,0,0,0.35), inset 0 0 60px rgba(16,185,129,0.05);
+}
+.garden-bed.coverage-high {
+    background: #161d0d;
+    border-color: #344513;
+    box-shadow: inset 0 0 24px rgba(0,0,0,0.3), inset 0 0 60px rgba(16,185,129,0.09);
+}
+.garden-bed.coverage-full {
+    background: #142010;
+    border-color: #2d5015;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.25), inset 0 0 60px rgba(16,185,129,0.13);
+}
 /* Companion placement indicators */
 .companion-badge {
     position: absolute;
