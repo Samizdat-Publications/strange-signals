@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GardenSync Guide // Food Not Bombs Canton</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0f0d;
+            --bg-secondary: #111916;
+            --bg-card: #151d19;
+            --emerald: #10b981;
+            --emerald-dim: rgba(16,185,129,0.15);
+            --text-primary: #e8efe8;
+            --text-secondary: #a3b8a3;
+            --text-muted: #5a7a5a;
+            --font-display: 'Anton', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --font-body: 'Barlow Condensed', sans-serif;
+            --radius: 4px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .guide-header {
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--emerald);
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+        .guide-header h1 {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+        }
+        .guide-header h1 span { color: var(--emerald); }
+        .guide-header .subtitle {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+        .guide-nav {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--emerald-dim);
+            padding: 0.5rem 1rem;
+            display: flex; flex-wrap: wrap; gap: 0.4rem;
+            justify-content: center;
+        }
+        .guide-nav a {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.3rem 0.6rem;
+            border: 1px solid transparent;
+            border-radius: var(--radius);
+            transition: all 0.2s;
+        }
+        .guide-nav a:hover {
+            color: var(--emerald);
+            border-color: var(--emerald);
+        }
+        .guide-container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+        .section {
+            margin-bottom: 2.5rem;
+        }
+        .section-anchor { scroll-margin-top: 60px; }
+        .section h2 {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            letter-spacing: 1.5px;
+            color: var(--emerald);
+            border-bottom: 1px solid var(--emerald-dim);
+            padding-bottom: 0.4rem;
+            margin-bottom: 1rem;
+        }
+        .section h3 {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+            margin: 1.2rem 0 0.5rem;
+        }
+        .section p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.6rem;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--emerald-dim);
+            border-left: 3px solid var(--emerald);
+            border-radius: var(--radius);
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .feature-card .fc-title {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--emerald);
+            letter-spacing: 0.5px;
+        }
+        .feature-card .fc-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.2rem;
+        }
+        .kbd {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 3px;
+            padding: 0.15rem 0.4rem;
+            color: var(--emerald);
+        }
+        .shortcut-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.5rem 0;
+        }
+        .shortcut-table th {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-align: left;
+            color: var(--text-muted);
+            padding: 0.4rem 0.6rem;
+            border-bottom: 1px solid var(--emerald-dim);
+        }
+        .shortcut-table td {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.4rem 0.6rem;
+            border-bottom: 1px solid rgba(16,185,129,0.08);
+            color: var(--text-secondary);
+        }
+        .shortcut-table tr:hover td { background: rgba(16,185,129,0.03); }
+        .tip-box {
+            background: rgba(59,130,246,0.08);
+            border: 1px solid rgba(59,130,246,0.3);
+            border-left: 3px solid #3b82f6;
+            border-radius: var(--radius);
+            padding: 0.6rem 0.8rem;
+            margin: 0.75rem 0;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #93c5fd;
+        }
+        .tip-box strong { color: #60a5fa; }
+        .warn-box {
+            background: rgba(245,158,11,0.08);
+            border: 1px solid rgba(245,158,11,0.3);
+            border-left: 3px solid #f59e0b;
+            border-radius: var(--radius);
+            padding: 0.6rem 0.8rem;
+            margin: 0.75rem 0;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #fcd34d;
+        }
+        ul { padding-left: 1.2rem; margin: 0.4rem 0; }
+        li {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+        }
+        li strong { color: var(--text-primary); }
+        .badge {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 0.12rem 0.4rem;
+            border-radius: 2px;
+            vertical-align: middle;
+        }
+        .badge-green { background: rgba(16,185,129,0.2); color: #34d399; }
+        .badge-red { background: rgba(239,68,68,0.2); color: #f87171; }
+        .badge-purple { background: rgba(168,85,247,0.2); color: #c084fc; }
+        .badge-blue { background: rgba(59,130,246,0.2); color: #93c5fd; }
+        .back-link {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--emerald);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--emerald);
+            border-radius: var(--radius);
+            margin-top: 1rem;
+            transition: all 0.2s;
+        }
+        .back-link:hover { background: var(--emerald); color: var(--bg-primary); }
+        .guide-footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--emerald-dim);
+            margin-top: 2rem;
+        }
+        .guide-footer p {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+        @media (max-width: 600px) {
+            .guide-header h1 { font-size: 1.8rem; }
+            .guide-container { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="guide-header">
+    <h1>GARDEN<span>SYNC</span> GUIDE</h1>
+    <p class="subtitle">FOOD NOT BOMBS // CANTON, OH // COMMUNITY GARDEN PLANNER</p>
+</header>
+
+<nav class="guide-nav">
+    <a href="#overview">OVERVIEW</a>
+    <a href="#beds">BED PLANNER</a>
+    <a href="#plants">PLANT LIBRARY</a>
+    <a href="#custom">CUSTOM SEEDS</a>
+    <a href="#companion">COMPANION LINES</a>
+    <a href="#coverage">COVERAGE</a>
+    <a href="#templates">TEMPLATES</a>
+    <a href="#schedule">GROW SCHEDULE</a>
+    <a href="#harvest">HARVEST LOG</a>
+    <a href="#volunteers">VOLUNTEERS</a>
+    <a href="#weather">WEATHER</a>
+    <a href="#sharing">SHARING</a>
+    <a href="#shortcuts">SHORTCUTS</a>
+    <a href="#visualize">VISUALIZE</a>
+    <a href="#data">DATA</a>
+</nav>
+
+<div class="guide-container">
+
+    <!-- OVERVIEW -->
+    <div class="section" id="overview">
+        <span class="section-anchor"></span>
+        <h2>OVERVIEW</h2>
+        <p>GardenSync is a free, no-account-needed garden planner built for the Food Not Bombs community garden in Canton, OH (USDA Zone 6a). Plan your beds, track harvests, coordinate volunteers, and share garden layouts — all from a single page that saves everything locally in your browser.</p>
+        <div class="tip-box">
+            <strong>TIP:</strong> All data is stored in your browser's localStorage. Use EXPORT DATA in the footer to back up your garden, or SHARE LINK to send a snapshot to someone else.
+        </div>
+    </div>
+
+    <!-- BED PLANNER -->
+    <div class="section" id="beds">
+        <span class="section-anchor"></span>
+        <h2>BED PLANNER</h2>
+        <p>The main workspace shows 4 raised garden beds. Each bed can be independently sized, named, and filled with plants.</p>
+
+        <h3>PLACING PLANTS</h3>
+        <ul>
+            <li><strong>Drag and drop</strong> a plant from the library onto any bed</li>
+            <li><strong>Double-click</strong> a plant in the library to enter click-to-place mode, then click on any bed to place it. Click again to place more. Press <span class="kbd">Esc</span> to exit</li>
+            <li><strong>Right-click</strong> a placed plant for a context menu: view info, duplicate, remove, or move to another bed</li>
+            <li><strong>Drag</strong> a placed plant within its bed to reposition it</li>
+        </ul>
+
+        <h3>BED MANAGEMENT</h3>
+        <div class="feature-card">
+            <div class="fc-title">BED NAMES</div>
+            <div class="fc-desc">Click the bed tab at the top of the details panel to rename it. Names persist across sessions.</div>
+        </div>
+        <div class="feature-card">
+            <div class="fc-title">BED DIMENSIONS</div>
+            <div class="fc-desc">Click the dimension label (e.g. "5' x 10'") below any bed to edit its width and height in feet. This affects coverage calculations and plant spacing.</div>
+        </div>
+        <div class="feature-card">
+            <div class="fc-title">QUICK ADD</div>
+            <div class="fc-desc">Use the dropdown at the top of the Bed Details panel to pick a plant and click ADD to place it in the next open spot, or FILL ROW to fill an entire row with proper spacing.</div>
+        </div>
+        <div class="feature-card">
+            <div class="fc-title">COPY TO...</div>
+            <div class="fc-desc">Duplicate the entire layout of the selected bed to another bed.</div>
+        </div>
+
+        <h3>TOOLBAR</h3>
+        <ul>
+            <li><strong>STATS</strong> — Toggle a statistics overlay on the garden</li>
+            <li><strong>UNDO / REDO</strong> — Reverse or replay your last actions</li>
+            <li><strong>GRID</strong> — Toggle a snap grid overlay on beds</li>
+            <li><strong>AUTO-ORGANIZE</strong> — Automatically arrange all plants in neat rows with proper spacing</li>
+            <li><strong>CLEAR ALL</strong> — Remove all plants from all beds (can be undone)</li>
+            <li><strong>SAVE / LOAD PLAN</strong> — Save named snapshots and restore them later</li>
+            <li><strong>EXPORT PNG</strong> — Download the garden layout as an image</li>
+            <li><strong>PRINT MAP</strong> — Open a printer-friendly bed map with plant legends</li>
+            <li><strong>SHARE LINK</strong> — Generate a URL that encodes your entire garden layout</li>
+        </ul>
+    </div>
+
+    <!-- PLANT LIBRARY -->
+    <div class="section" id="plants">
+        <span class="section-anchor"></span>
+        <h2>PLANT LIBRARY</h2>
+        <p>The left sidebar contains a curated library of plants suited for Zone 6a. Each plant has spacing, harvest time, water and sun needs, companion/enemy info, and seed-start instructions.</p>
+
+        <h3>FILTERING &amp; SEARCH</h3>
+        <ul>
+            <li>Filter by category: <span class="badge badge-green">VEG</span> <span class="badge badge-green">FRUIT</span> <span class="badge badge-green">HERB</span> <span class="badge badge-green">FLOWER</span> <span class="badge badge-purple">CUSTOM</span></li>
+            <li>Search by name, traits (e.g. "low water", "easy care"), or companion relationships (e.g. "companion to tomato")</li>
+            <li>Sort by name, spacing, harvest time, water need, or type</li>
+        </ul>
+
+        <h3>PLANT DETAILS</h3>
+        <p>Click any plant in the library to expand its info card showing spacing, days to harvest, water/sun needs, seed start instructions, care notes, and companion/enemy lists.</p>
+
+        <h3>SEASON BADGES</h3>
+        <ul>
+            <li><span class="badge badge-green">IN SEASON</span> — Currently within the plant's active growing window</li>
+            <li><span class="badge badge-blue">SOON</span> — Coming into season within 3 weeks</li>
+            <li><span class="badge badge-red">OFF SEASON</span> — Outside the growing window</li>
+        </ul>
+    </div>
+
+    <!-- CUSTOM SEEDS -->
+    <div class="section" id="custom">
+        <span class="section-anchor"></span>
+        <h2>CUSTOM SEEDS</h2>
+        <p>Add your own seed varieties to the library. Great for heirloom seeds, specific cultivars, or anything not in the built-in collection.</p>
+
+        <h3>MANUAL ENTRY</h3>
+        <p>Click <span class="kbd">+ CUSTOM</span> in the filter row, then fill in the plant details: name, emoji, type, spacing, days to harvest, sun/water needs, planting depth, and growing notes. Required fields are marked with *.</p>
+
+        <h3>PHOTO SCAN (OCR)</h3>
+        <p>Switch to the PHOTO SCAN tab to upload a photo of the back of your seed packet. The OCR engine will attempt to extract:</p>
+        <ul>
+            <li>Days to maturity / harvest</li>
+            <li>Plant spacing</li>
+            <li>Planting depth</li>
+            <li>Sun and water requirements</li>
+        </ul>
+        <div class="tip-box">
+            <strong>TIP:</strong> After extraction, review and correct the pre-filled form. OCR works best on high-contrast, well-lit photos of seed packet text. The manual form is always available as a fallback.
+        </div>
+
+        <h3>MANAGING CUSTOM SEEDS</h3>
+        <p>Custom plants show a <span class="badge badge-purple">CUSTOM</span> badge in the library. Hover over a custom plant to see edit (pencil) and delete (X) buttons. Custom plants work exactly like built-in plants — they can be dragged into beds, show in search results, and appear in bed details.</p>
+    </div>
+
+    <!-- COMPANION LINES -->
+    <div class="section" id="companion">
+        <span class="section-anchor"></span>
+        <h2>COMPANION PLANTING LINES</h2>
+        <p>The colored lines drawn between plants in each bed indicate companion planting relationships.</p>
+        <ul>
+            <li><span style="color:#34d399;font-weight:bold;">Green lines</span> connect plants that are <strong>good companions</strong> — they help each other grow (e.g. Tomato + Basil, Corn + Beans)</li>
+            <li><span style="color:#f87171;font-weight:bold;">Red lines</span> connect plants that are <strong>enemies</strong> — they compete or inhibit growth (e.g. Tomato + Fennel)</li>
+        </ul>
+        <p>Lines automatically redraw when you move plants within a bed, so you can optimize placement by watching which connections form.</p>
+        <div class="feature-card">
+            <div class="fc-title">COMPANION ALERTS</div>
+            <div class="fc-desc">The Bed Details panel shows a COMPANION ALERTS section listing good and bad pairings currently in each bed. Use this to spot problems before planting.</div>
+        </div>
+    </div>
+
+    <!-- COVERAGE -->
+    <div class="section" id="coverage">
+        <span class="section-anchor"></span>
+        <h2>BED COVERAGE</h2>
+        <p>Coverage is a density indicator showing how full each bed is based on the spacing requirements of your plants. It calculates the total growing area your plants need (each plant as a circle with its spacing diameter) compared to the bed's total square footage.</p>
+
+        <h3>COVERAGE TIERS</h3>
+        <ul>
+            <li><strong>Low</strong> (faint tint) — Under 15% filled</li>
+            <li><strong>Medium</strong> — 15-40% filled</li>
+            <li><strong>High</strong> — 40-70% filled</li>
+            <li><strong>Full</strong> (intense tint) — 70%+ filled</li>
+        </ul>
+        <p>The exact coverage percentage is shown in the Bed Details panel for the selected bed. Coverage is based on plant count and spacing — it doesn't depend on where plants are positioned.</p>
+        <div class="warn-box">
+            <strong>NOTE:</strong> 100% coverage doesn't mean every inch is used. It means your plants' combined spacing circles fill the bed's area. Overcrowding (>100%) may cause poor air circulation and nutrient competition.
+        </div>
+    </div>
+
+    <!-- TEMPLATES -->
+    <div class="section" id="templates">
+        <span class="section-anchor"></span>
+        <h2>BED TEMPLATES</h2>
+        <p>Click the TEMPLATE button in the Bed Details panel to apply a pre-designed plant arrangement to any bed. Templates auto-place plants with correct spacing.</p>
+
+        <h3>AVAILABLE TEMPLATES</h3>
+        <div class="feature-card">
+            <div class="fc-title">SALSA GARDEN</div>
+            <div class="fc-desc">Tomatoes, peppers, onion, basil, and cilantro</div>
+        </div>
+        <div class="feature-card">
+            <div class="fc-title">PIZZA GARDEN</div>
+            <div class="fc-desc">Tomatoes, basil, oregano, peppers, and onion</div>
+        </div>
+        <div class="feature-card">
+            <div class="fc-title">THREE SISTERS</div>
+            <div class="fc-desc">Traditional corn, beans, and squash companion planting</div>
+        </div>
+        <div class="feature-card">
+            <div class="fc-title">SALAD BOWL</div>
+            <div class="fc-desc">Lettuce, spinach, radish, carrots, cucumber, and tomato</div>
+        </div>
+        <div class="feature-card">
+            <div class="fc-title">POLLINATOR PATCH</div>
+            <div class="fc-desc">Sunflower, marigold, lavender, and mint for beneficial insects</div>
+        </div>
+        <div class="feature-card">
+            <div class="fc-title">HERB HAVEN</div>
+            <div class="fc-desc">Basil, cilantro, dill, thyme, oregano, parsley, chive, and mint</div>
+        </div>
+        <div class="feature-card">
+            <div class="fc-title">KIDS GARDEN</div>
+            <div class="fc-desc">Fast-growing, kid-friendly: sunflower, radish, peas, strawberry, and beans</div>
+        </div>
+        <div class="tip-box">
+            <strong>TIP:</strong> Templates will prompt for confirmation if the bed already has plants. They auto-rename the bed to the template name.
+        </div>
+    </div>
+
+    <!-- GROW SCHEDULE -->
+    <div class="section" id="schedule">
+        <span class="section-anchor"></span>
+        <h2>GROW SCHEDULE &amp; PLANTING LOG</h2>
+        <p>The GROW SCHEDULE tab shows a location-specific calendar for Canton, OH (Zone 6a). It uses the last frost date (April 18) and first frost date (October 28) to calculate when to start seeds, transplant, and direct sow each plant.</p>
+
+        <h3>TODAY'S DASHBOARD</h3>
+        <p>A smart landing widget at the top of the Bed Planner shows today's planting tasks, season progress, and upcoming milestones. Tasks scroll as a ticker banner when there are things to do.</p>
+
+        <h3>PLANTING LOG</h3>
+        <p>The PLANTING LOG tab provides a week-by-week checklist for the entire growing season. Filter by ALL, UPCOMING, OVERDUE, or DONE. Check off tasks as you complete them — progress persists across sessions.</p>
+
+        <h3>CALENDAR EXPORT</h3>
+        <p>Click EXPORT TO CALENDAR to download an .ics file with all planting tasks. Import into Google Calendar, Apple Calendar, or Outlook.</p>
+    </div>
+
+    <!-- HARVEST -->
+    <div class="section" id="harvest">
+        <span class="section-anchor"></span>
+        <h2>HARVEST LOG &amp; GOALS</h2>
+        <p>Track everything your garden produces in the HARVEST tab.</p>
+
+        <h3>LOGGING HARVESTS</h3>
+        <p>Click LOG HARVEST to record: the crop, weight (lbs), and destination (kept, donated, composted). Each entry is timestamped and stored locally.</p>
+
+        <h3>SEASON GOALS</h3>
+        <p>Set a weight target for the season and track progress. The goal tracker shows total harvested, total donated, and percentage toward your target.</p>
+
+        <h3>SEASON INSIGHTS</h3>
+        <p>A summary card at the bottom shows your top-producing crops, donation percentage, and harvest timeline.</p>
+    </div>
+
+    <!-- VOLUNTEERS -->
+    <div class="section" id="volunteers">
+        <span class="section-anchor"></span>
+        <h2>VOLUNTEER COLLECTIVE</h2>
+        <p>Manage your garden crew in the VOLUNTEERS tab. Add up to 5 volunteers with names and availability.</p>
+        <ul>
+            <li><strong>Bed Assignments</strong> — Assign specific beds to each volunteer</li>
+            <li><strong>Task Management</strong> — Create weekly task assignments</li>
+            <li><strong>Auto-Assign</strong> — Automatically distribute tasks based on availability</li>
+        </ul>
+    </div>
+
+    <!-- WEATHER -->
+    <div class="section" id="weather">
+        <span class="section-anchor"></span>
+        <h2>WEATHER &amp; WATERING</h2>
+        <p>GardenSync checks current weather data for Canton, OH and provides intelligent watering reminders.</p>
+
+        <h3>WATERING ALERT BANNER</h3>
+        <p>A blue alert banner appears at the top of the Bed Planner when conditions suggest you should water your beds. It considers:</p>
+        <ul>
+            <li>Rainfall over the past 3 days (dry spell if &lt; 0.15 inches)</li>
+            <li>Whether you have high-water-need plants in your beds</li>
+            <li>Current temperature (above 85&deg;F increases water demand)</li>
+        </ul>
+        <p>Click the X to dismiss the banner for the current session.</p>
+
+        <h3>CLIMATE DATA</h3>
+        <p>The CLIMATE DATA tab shows Canton's annual rainfall and temperature patterns, useful for planning your planting season.</p>
+    </div>
+
+    <!-- SHARING -->
+    <div class="section" id="sharing">
+        <span class="section-anchor"></span>
+        <h2>SHARING &amp; DATA</h2>
+
+        <h3>SHARE LINK</h3>
+        <p>Click SHARE LINK in the toolbar to generate a URL that encodes your entire garden layout (bed names, sizes, and all plant placements). The link is copied to your clipboard — send it to anyone and they'll see your exact garden plan when they open it.</p>
+        <div class="tip-box">
+            <strong>TIP:</strong> Share links are compact (~2000 characters for a full 95-plant garden) and contain no personal data — just bed layouts.
+        </div>
+
+        <h3>SAVE &amp; LOAD PLANS</h3>
+        <p>SAVE PLAN stores a named snapshot of your garden. LOAD PLAN lets you restore any saved snapshot. Great for trying different layouts and comparing options.</p>
+
+        <h3>EXPORT / IMPORT DATA</h3>
+        <p>In the footer: EXPORT DATA downloads all your garden data as a JSON file. IMPORT DATA restores from a previously exported file. Use this to back up your garden or move it to another browser.</p>
+
+        <h3>DEMO GARDEN</h3>
+        <p>Click LOAD DEMO GARDEN in the footer to populate all 4 beds with example plants. Useful for exploring the app before building your own plan.</p>
+    </div>
+
+    <!-- SHORTCUTS -->
+    <div class="section" id="shortcuts">
+        <span class="section-anchor"></span>
+        <h2>KEYBOARD SHORTCUTS</h2>
+        <table class="shortcut-table">
+            <thead>
+                <tr><th>KEY</th><th>ACTION</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><span class="kbd">Ctrl+Z</span></td><td>Undo last action</td></tr>
+                <tr><td><span class="kbd">Ctrl+Y</span></td><td>Redo last action</td></tr>
+                <tr><td><span class="kbd">Delete</span></td><td>Remove selected plant from bed</td></tr>
+                <tr><td><span class="kbd">Backspace</span></td><td>Remove selected plant from bed</td></tr>
+                <tr><td><span class="kbd">Escape</span></td><td>Cancel click-to-place mode / deselect plant</td></tr>
+                <tr><td><span class="kbd">Right-click</span></td><td>Open context menu on a placed plant</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- VISUALIZE -->
+    <div class="section" id="visualize">
+        <span class="section-anchor"></span>
+        <h2>GARDEN VISUALIZER</h2>
+        <p>The VISUALIZE tab generates AI preview images of your garden using Google's Gemini API. See a photorealistic mockup of what your garden could look like based on the plants you've placed.</p>
+        <div class="warn-box">
+            <strong>NOTE:</strong> Requires a free Google Gemini API key. Your key is stored locally and never sent anywhere except Google's API.
+        </div>
+    </div>
+
+    <!-- DATA -->
+    <div class="section" id="data">
+        <span class="section-anchor"></span>
+        <h2>THEME &amp; INTERFACE</h2>
+
+        <h3>DARK / LIGHT MODE</h3>
+        <p>Click LIGHT or DARK in the top-right corner to switch themes. Your preference is saved across sessions.</p>
+
+        <h3>PRINT MAP</h3>
+        <p>Click PRINT MAP to open a printer-friendly popup showing all 4 beds with plant layouts and a complete legend. Perfect for taking to the garden on planting day.</p>
+
+        <h3>EXPORT PNG</h3>
+        <p>Click EXPORT PNG to download the garden overview as an image file. Share on social media or include in newsletters.</p>
+    </div>
+
+    <a href="index.html" class="back-link">&larr; BACK TO GARDENSYNC</a>
+</div>
+
+<footer class="guide-footer">
+    <p>GARDENSYNC // FOOD NOT BOMBS CANTON, OH</p>
+    <p>NO COPYRIGHT &mdash; NO GODS NO MASTERS &mdash; SHARE FREELY</p>
+</footer>
+
+</body>
+</html>
