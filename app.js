@@ -5,13 +5,14 @@
 
 // ---- PLANT LIBRARY (Zone 6a compatible) ----
 let PLANT_LIBRARY = [
+    // ---- VEGETABLES ----
     {
         id: 'tomato', name: 'Tomato', emoji: '\u{1F345}', type: 'vegetable',
         spacing: 24, daysToHarvest: 75, waterNeed: 'medium',
         sunNeed: 'full', sowIndoors: -6, transplantAfterFrost: 2,
         directSow: null, harvestWeeks: 10,
-        companions: ['basil', 'marigold', 'carrot', 'parsley'],
-        enemies: ['cabbage', 'fennel', 'dill'],
+        companions: ['basil', 'marigold', 'carrot', 'parsley', 'onion', 'garlic', 'chive', 'nasturtium', 'lettuce', 'spinach', 'borage'],
+        enemies: ['cabbage', 'fennel', 'dill', 'potato', 'broccoli', 'kale'],
         notes: 'Stake or cage. Indeterminate types produce all season.',
         seedStartInstructions: 'Start seeds indoors 6-8 weeks before last frost (Mar 1-7). Use seed starting mix, 1/4" deep. Keep at 70-80\u00B0F. Transplant out after May 1 when soil is 60\u00B0F+.',
         careNotes: 'Water deeply 1-2x/week. Mulch heavily. Remove suckers for determinate types. Side-dress with compost mid-season.',
@@ -22,8 +23,8 @@ let PLANT_LIBRARY = [
         spacing: 18, daysToHarvest: 60, waterNeed: 'high',
         sunNeed: 'full', sowIndoors: -3, transplantAfterFrost: 2,
         directSow: 2, harvestWeeks: 8,
-        companions: ['beans', 'peas', 'lettuce', 'sunflower'],
-        enemies: ['potato', 'sage', 'melon'],
+        companions: ['green-beans', 'peas', 'lettuce', 'sunflower', 'radish', 'dill', 'marigold', 'nasturtium', 'corn', 'borage'],
+        enemies: ['potato', 'sage', 'cantaloupe', 'rosemary'],
         notes: 'Can trellis vertically to save space. Pick frequently.',
         seedStartInstructions: 'Start indoors 3-4 weeks before last frost (Mar 21-28) OR direct sow after May 1. Plant 1" deep. Needs 70\u00B0F soil.',
         careNotes: 'Needs consistent moisture. Trellis to save space & improve air flow. Pick daily once producing.',
@@ -34,7 +35,7 @@ let PLANT_LIBRARY = [
         spacing: 8, daysToHarvest: 45, waterNeed: 'medium',
         sunNeed: 'partial', sowIndoors: -4, transplantAfterFrost: -2,
         directSow: -2, harvestWeeks: 6,
-        companions: ['carrot', 'radish', 'strawberry', 'chive'],
+        companions: ['carrot', 'radish', 'strawberry', 'chive', 'onion', 'garlic', 'green-beans', 'peas', 'spinach', 'dill'],
         enemies: [],
         notes: 'Cool season crop. Succession plant every 2 weeks. Bolts in heat.',
         seedStartInstructions: 'Start indoors mid-March or direct sow as early as April 1. Surface sow (needs light). Succession plant every 2 weeks through May, resume in Aug.',
@@ -46,8 +47,8 @@ let PLANT_LIBRARY = [
         spacing: 6, daysToHarvest: 40, waterNeed: 'medium',
         sunNeed: 'partial', sowIndoors: null, transplantAfterFrost: null,
         directSow: -4, harvestWeeks: 4,
-        companions: ['strawberry', 'peas', 'beans'],
-        enemies: [],
+        companions: ['strawberry', 'peas', 'green-beans', 'lettuce', 'radish', 'kale'],
+        enemies: ['potato'],
         notes: 'Very cold-hardy. One of the first crops to plant. Bolts fast in heat.',
         seedStartInstructions: 'Direct sow 4-6 weeks before last frost (Mar 7-21). Plant 1/2" deep, 1" apart, thin to 6". Can also fall sow in September.',
         careNotes: 'Keep cool & moist. Mulch to retain moisture. Harvest outer leaves. Plant again in fall.',
@@ -58,71 +59,11 @@ let PLANT_LIBRARY = [
         spacing: 6, daysToHarvest: 55, waterNeed: 'low',
         sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
         directSow: 1, harvestWeeks: 6,
-        companions: ['corn', 'squash', 'cucumber', 'strawberry', 'marigold'],
-        enemies: ['onion', 'garlic', 'fennel'],
+        companions: ['corn', 'zucchini', 'cucumber', 'strawberry', 'marigold', 'radish', 'nasturtium', 'carrot', 'lettuce', 'eggplant', 'potato', 'borage'],
+        enemies: ['onion', 'garlic', 'fennel', 'chive'],
         notes: 'Nitrogen fixer. Bush types need no support. Very productive.',
         seedStartInstructions: 'Direct sow 1 week after last frost (Apr 25-May 1). Plant 1" deep, 6" apart. Soil must be 60\u00B0F+. Do NOT start indoors \u2014 beans hate transplanting.',
         careNotes: 'Minimal care once established. Water during drought only. Pick regularly to encourage production. Bush types are lowest maintenance.',
-        lowMaintenance: true
-    },
-    {
-        id: 'sweet-peas', name: 'Sweet Peas', emoji: '\u{1F33C}', type: 'flower',
-        spacing: 6, daysToHarvest: 65, waterNeed: 'medium',
-        sunNeed: 'full', sowIndoors: -6, transplantAfterFrost: -2,
-        directSow: -4, harvestWeeks: 8,
-        companions: ['beans', 'carrot', 'radish'],
-        enemies: ['onion', 'garlic'],
-        notes: 'Beautiful cut flowers. Cool season \u2014 plant early. Needs trellis.',
-        seedStartInstructions: 'Soak seeds 24hrs. Start indoors 6 weeks before last frost (Mar 7) or direct sow 4 weeks before (Mar 21). Nick seed coat with file before soaking.',
-        careNotes: 'Provide trellis or netting. Keep soil cool with mulch. Deadhead regularly for continuous bloom.',
-        lowMaintenance: true
-    },
-    {
-        id: 'strawberry', name: 'Strawberry', emoji: '\u{1F353}', type: 'fruit',
-        spacing: 12, daysToHarvest: 90, waterNeed: 'medium',
-        sunNeed: 'full', sowIndoors: null, transplantAfterFrost: 0,
-        directSow: null, harvestWeeks: 4,
-        companions: ['lettuce', 'spinach', 'beans', 'thyme'],
-        enemies: ['cabbage', 'broccoli'],
-        notes: 'Perennial! Plant once, harvest for years. Use bare root transplants.',
-        seedStartInstructions: 'Purchase bare root crowns. Plant as soon as soil is workable (mid-April). Set crown at soil level. Pinch first-year flowers on June-bearers for bigger second-year crop.',
-        careNotes: 'Mulch with straw to keep fruit clean. Remove runners unless you want spreading. Very low maintenance once established.',
-        lowMaintenance: true
-    },
-    {
-        id: 'cantaloupe', name: 'Cantaloupe', emoji: '\u{1F348}', type: 'fruit',
-        spacing: 36, daysToHarvest: 85, waterNeed: 'medium',
-        sunNeed: 'full', sowIndoors: -3, transplantAfterFrost: 2,
-        directSow: 2, harvestWeeks: 4,
-        companions: ['corn', 'sunflower', 'marigold'],
-        enemies: ['potato', 'cucumber'],
-        notes: 'Space hog \u2014 needs room to sprawl. Warm soil essential.',
-        seedStartInstructions: 'Start indoors 3-4 weeks before last frost (Mar 28). Use peat pots to avoid root disturbance. Transplant after May 1 when soil is 65\u00B0F+.',
-        careNotes: 'Black plastic mulch warms soil. Reduce water as fruit ripens. Slip test: ripe when stem separates easily.',
-        lowMaintenance: false
-    },
-    {
-        id: 'marigold', name: 'Marigold', emoji: '\u{1F33B}', type: 'flower',
-        spacing: 8, daysToHarvest: 50, waterNeed: 'low',
-        sunNeed: 'full', sowIndoors: -6, transplantAfterFrost: 0,
-        directSow: 0, harvestWeeks: 16,
-        companions: ['tomato', 'pepper', 'beans', 'squash'],
-        enemies: [],
-        notes: 'Pest deterrent powerhouse. Plant everywhere as companion. Deer resistant.',
-        seedStartInstructions: 'Start indoors 6-8 weeks before last frost (Mar 1) or direct sow after last frost (Apr 18). Easy germinators. Cover lightly with soil.',
-        careNotes: 'Nearly indestructible. Deadhead for continuous bloom. Drought tolerant once established. French marigolds best for pest control.',
-        lowMaintenance: true
-    },
-    {
-        id: 'basil', name: 'Basil', emoji: '\u{1F33F}', type: 'herb',
-        spacing: 10, daysToHarvest: 60, waterNeed: 'medium',
-        sunNeed: 'full', sowIndoors: -6, transplantAfterFrost: 2,
-        directSow: 2, harvestWeeks: 14,
-        companions: ['tomato', 'pepper', 'marigold'],
-        enemies: ['sage', 'rue'],
-        notes: 'Classic tomato companion. Pinch flowers for bushy growth.',
-        seedStartInstructions: 'Start indoors 6-8 weeks before last frost (Mar 1-7). Surface sow, press into soil. Needs light & warmth (70\u00B0F+). Transplant after all frost danger.',
-        careNotes: 'Pinch growing tips regularly for bushy plants. Harvest before flowering. Very frost-sensitive \u2014 cover or harvest at season end.',
         lowMaintenance: true
     },
     {
@@ -130,7 +71,7 @@ let PLANT_LIBRARY = [
         spacing: 18, daysToHarvest: 70, waterNeed: 'medium',
         sunNeed: 'full', sowIndoors: -8, transplantAfterFrost: 2,
         directSow: null, harvestWeeks: 10,
-        companions: ['tomato', 'basil', 'carrot', 'marigold'],
+        companions: ['tomato', 'basil', 'carrot', 'marigold', 'onion', 'garlic', 'oregano', 'parsley', 'spinach', 'lettuce'],
         enemies: ['fennel', 'kohlrabi'],
         notes: 'Slow to start. Needs warm soil. Very productive once going.',
         seedStartInstructions: 'Start indoors 8-10 weeks before last frost (Feb 15-Mar 1). Needs warmth (75-85\u00B0F) for germination. Slow grower. Harden off carefully. Transplant after May 1.',
@@ -138,11 +79,11 @@ let PLANT_LIBRARY = [
         lowMaintenance: true
     },
     {
-        id: 'zucchini', name: 'Zucchini', emoji: '\u{1F33D}', type: 'vegetable',
+        id: 'zucchini', name: 'Zucchini', emoji: '\u{1F95C}', type: 'vegetable',
         spacing: 24, daysToHarvest: 50, waterNeed: 'medium',
         sunNeed: 'full', sowIndoors: -3, transplantAfterFrost: 1,
         directSow: 1, harvestWeeks: 10,
-        companions: ['corn', 'beans', 'marigold', 'nasturtium'],
+        companions: ['corn', 'green-beans', 'marigold', 'nasturtium', 'dill', 'radish', 'sunflower', 'borage'],
         enemies: ['potato'],
         notes: 'Incredibly productive. One plant feeds many. Pick small.',
         seedStartInstructions: 'Start indoors 3-4 weeks before last frost (Mar 28) or direct sow 1 week after (Apr 25). Plant 1" deep. Germinates fast in warm soil.',
@@ -154,7 +95,7 @@ let PLANT_LIBRARY = [
         spacing: 3, daysToHarvest: 25, waterNeed: 'low',
         sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
         directSow: -4, harvestWeeks: 2,
-        companions: ['lettuce', 'peas', 'beans', 'carrot'],
+        companions: ['lettuce', 'peas', 'green-beans', 'carrot', 'cucumber', 'spinach', 'nasturtium', 'zucchini'],
         enemies: [],
         notes: 'Fastest veggie! Great row marker. Succession plant biweekly.',
         seedStartInstructions: 'Direct sow 4-6 weeks before last frost (Mar 7-21). Plant 1/2" deep, 1" apart. Succession sow every 2 weeks. Also great fall crop (Sept).',
@@ -166,7 +107,7 @@ let PLANT_LIBRARY = [
         spacing: 3, daysToHarvest: 70, waterNeed: 'low',
         sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
         directSow: -2, harvestWeeks: 8,
-        companions: ['tomato', 'lettuce', 'onion', 'rosemary'],
+        companions: ['tomato', 'lettuce', 'onion', 'rosemary', 'radish', 'peas', 'green-beans', 'chive', 'garlic'],
         enemies: ['dill'],
         notes: 'Direct sow only \u2014 doesn\'t transplant. Loose soil essential.',
         seedStartInstructions: 'Direct sow 2-3 weeks before last frost (Apr 1). Tiny seeds \u2014 mix with sand for even sowing. Press into soil surface, barely cover. Keep moist until germination (14-21 days).',
@@ -178,8 +119,8 @@ let PLANT_LIBRARY = [
         spacing: 18, daysToHarvest: 55, waterNeed: 'low',
         sunNeed: 'full', sowIndoors: -6, transplantAfterFrost: -2,
         directSow: -4, harvestWeeks: 20,
-        companions: ['beans', 'beet', 'celery', 'lettuce'],
-        enemies: ['strawberry'],
+        companions: ['green-beans', 'beet', 'lettuce', 'onion', 'garlic', 'dill', 'nasturtium', 'marigold', 'spinach'],
+        enemies: ['strawberry', 'tomato'],
         notes: 'Cold-hardy champion. Sweetens after frost. Harvest all season.',
         seedStartInstructions: 'Start indoors 6 weeks before last frost (Mar 7) or direct sow 4 weeks before (Mar 21). Plant 1/4" deep. Cold tolerant \u2014 can go out early.',
         careNotes: 'Extremely low maintenance. Harvest lower leaves, plant keeps producing. Gets SWEETER after frost. Can overwinter in Zone 6a with mulch.',
@@ -190,8 +131,8 @@ let PLANT_LIBRARY = [
         spacing: 4, daysToHarvest: 100, waterNeed: 'low',
         sunNeed: 'full', sowIndoors: -10, transplantAfterFrost: -2,
         directSow: null, harvestWeeks: 2,
-        companions: ['carrot', 'lettuce', 'tomato', 'strawberry'],
-        enemies: ['beans', 'peas'],
+        companions: ['carrot', 'lettuce', 'tomato', 'strawberry', 'pepper', 'kale', 'spinach', 'garlic', 'chive', 'beet'],
+        enemies: ['green-beans', 'peas'],
         notes: 'Start from sets for easiest results. Long day varieties for Ohio.',
         seedStartInstructions: 'Start from seeds 10-12 weeks before last frost (Jan 15-Feb 1) or plant onion sets as soon as soil is workable (mid-March). Use long-day varieties for Ohio.',
         careNotes: 'Weed carefully \u2014 shallow roots. Stop watering when tops fall over. Cure in sun for 2 weeks before storage.',
@@ -202,11 +143,145 @@ let PLANT_LIBRARY = [
         spacing: 6, daysToHarvest: 240, waterNeed: 'low',
         sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
         directSow: null, harvestWeeks: 2,
-        companions: ['tomato', 'pepper', 'lettuce', 'strawberry'],
-        enemies: ['beans', 'peas'],
+        companions: ['tomato', 'pepper', 'lettuce', 'strawberry', 'carrot', 'kale', 'spinach', 'onion', 'chive'],
+        enemies: ['green-beans', 'peas'],
         notes: 'Plant in FALL (October). Harvest following July. Easiest crop ever.',
         seedStartInstructions: 'Plant individual cloves in mid-October, 2" deep, pointy end up, 6" apart. Mulch heavily with straw. They grow roots in fall, go dormant in winter, and shoot up in spring.',
         careNotes: 'Almost zero effort. Remove scapes in June for bigger bulbs. Harvest when lower 1/3 of leaves are brown (July). Cure 2 weeks. ULTIMATE low-maintenance crop.',
+        lowMaintenance: true
+    },
+    {
+        id: 'corn', name: 'Sweet Corn', emoji: '\u{1F33D}', type: 'vegetable',
+        spacing: 12, daysToHarvest: 75, waterNeed: 'high',
+        sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
+        directSow: 2, harvestWeeks: 3,
+        companions: ['green-beans', 'zucchini', 'cucumber', 'peas', 'sunflower', 'marigold'],
+        enemies: ['tomato'],
+        notes: 'Three Sisters crop! Plant in blocks (not rows) for pollination. Heavy feeder.',
+        seedStartInstructions: 'Direct sow 2 weeks after last frost (May 2) when soil is 60\u00B0F+. Plant 1" deep, 12" apart in blocks of at least 4 rows for wind pollination. Succession plant every 2 weeks through June.',
+        careNotes: 'Heavy feeder \u2014 side-dress with compost when knee-high. Needs 1" water/week, critical during silking. Harvest when silks are brown and kernels milky.',
+        lowMaintenance: false
+    },
+    {
+        id: 'broccoli', name: 'Broccoli', emoji: '\u{1F966}', type: 'vegetable',
+        spacing: 18, daysToHarvest: 70, waterNeed: 'medium',
+        sunNeed: 'full', sowIndoors: -6, transplantAfterFrost: -2,
+        directSow: null, harvestWeeks: 4,
+        companions: ['onion', 'garlic', 'beet', 'lettuce', 'spinach', 'dill', 'nasturtium', 'marigold', 'thyme', 'rosemary'],
+        enemies: ['tomato', 'pepper', 'strawberry', 'green-beans'],
+        notes: 'Cool-season crop. Plant spring and fall. Harvest side shoots for extended production.',
+        seedStartInstructions: 'Start indoors 6-8 weeks before last frost (Mar 1-7). Plant 1/4" deep. Transplant 2 weeks before last frost (Apr 4). For fall crop, start indoors mid-June, transplant late July.',
+        careNotes: 'Consistent moisture. Floating row covers prevent cabbage worms. Harvest central head when tight, then side shoots produce for weeks.',
+        lowMaintenance: false
+    },
+    {
+        id: 'cabbage', name: 'Cabbage', emoji: '\u{1F96C}', type: 'vegetable',
+        spacing: 18, daysToHarvest: 80, waterNeed: 'medium',
+        sunNeed: 'full', sowIndoors: -6, transplantAfterFrost: -2,
+        directSow: null, harvestWeeks: 3,
+        companions: ['onion', 'garlic', 'beet', 'lettuce', 'dill', 'nasturtium', 'thyme', 'mint'],
+        enemies: ['tomato', 'pepper', 'strawberry', 'green-beans'],
+        notes: 'Stores very well. Great for donations. Cool-season crop.',
+        seedStartInstructions: 'Start indoors 6-8 weeks before last frost (Mar 1-7). Transplant 2 weeks before last frost (Apr 4). For fall crop, start mid-June, transplant late July.',
+        careNotes: 'Use row covers to prevent cabbage worms. Consistent watering prevents splitting. Harvest when heads are firm. Stores 3-4 months \u2014 ideal for food bank donation.',
+        lowMaintenance: false
+    },
+    {
+        id: 'beet', name: 'Beet', emoji: '\u{1F534}', type: 'vegetable',
+        spacing: 4, daysToHarvest: 55, waterNeed: 'low',
+        sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
+        directSow: -3, harvestWeeks: 6,
+        companions: ['onion', 'garlic', 'lettuce', 'kale', 'broccoli', 'cabbage', 'green-beans', 'mint'],
+        enemies: ['swiss-chard'],
+        notes: 'Both roots AND greens are edible. Cool-season. Succession plant.',
+        seedStartInstructions: 'Direct sow 3-4 weeks before last frost (Mar 21-28). Plant 1/2" deep, 1" apart, thin to 4". Each "seed" is actually a cluster \u2014 thin aggressively. Succession sow every 3 weeks.',
+        careNotes: 'Soak seeds overnight for faster germination. Thin when 2" tall \u2014 eat the thinnings as microgreens! Both roots and greens are nutritious.',
+        lowMaintenance: true
+    },
+    {
+        id: 'swiss-chard', name: 'Swiss Chard', emoji: '\u{1F33F}', type: 'vegetable',
+        spacing: 8, daysToHarvest: 55, waterNeed: 'medium',
+        sunNeed: 'full', sowIndoors: -3, transplantAfterFrost: 0,
+        directSow: -2, harvestWeeks: 16,
+        companions: ['green-beans', 'peas', 'onion', 'garlic', 'lettuce', 'carrot', 'cabbage', 'kale'],
+        enemies: ['beet', 'potato'],
+        notes: 'Cut-and-come-again all season. Cold-hardy. Beautiful rainbow varieties.',
+        seedStartInstructions: 'Start indoors 3-4 weeks before last frost (Mar 28) or direct sow 2 weeks before (Apr 4). Plant 1/2" deep. Very cold tolerant.',
+        careNotes: 'Harvest outer leaves at 8-10". Plant keeps producing all season. Tolerates both heat and frost. One of the most productive greens per square foot.',
+        lowMaintenance: true
+    },
+    {
+        id: 'peas', name: 'Garden Peas', emoji: '\u{1FAD1}', type: 'vegetable',
+        spacing: 3, daysToHarvest: 60, waterNeed: 'medium',
+        sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
+        directSow: -4, harvestWeeks: 4,
+        companions: ['carrot', 'radish', 'green-beans', 'corn', 'cucumber', 'lettuce', 'spinach', 'mint'],
+        enemies: ['onion', 'garlic', 'chive'],
+        notes: 'Cool-season nitrogen fixer. Plant early! Needs trellis for climbing types.',
+        seedStartInstructions: 'Direct sow 4-6 weeks before last frost (Mar 7-21). Plant 1" deep, 3" apart. Inoculate with rhizobium for best nitrogen fixation. Do NOT start indoors.',
+        careNotes: 'Provide trellis or netting for climbing types. Pick frequently to encourage production. Pull plants when done and plant fall crop in Aug.',
+        lowMaintenance: true
+    },
+    {
+        id: 'eggplant', name: 'Eggplant', emoji: '\u{1F346}', type: 'vegetable',
+        spacing: 24, daysToHarvest: 80, waterNeed: 'medium',
+        sunNeed: 'full', sowIndoors: -8, transplantAfterFrost: 3,
+        directSow: null, harvestWeeks: 10,
+        companions: ['green-beans', 'pepper', 'marigold', 'nasturtium', 'thyme', 'oregano'],
+        enemies: ['fennel'],
+        notes: 'Needs warm soil and long season. Very productive once established.',
+        seedStartInstructions: 'Start indoors 8-10 weeks before last frost (Feb 15-Mar 1). Needs warmth (75-85\u00B0F) for germination. Transplant 3 weeks after last frost (May 9) when nights stay above 60\u00B0F.',
+        careNotes: 'Mulch heavily. Stake or cage for support when heavy with fruit. Harvest when skin is glossy and firm.',
+        lowMaintenance: false
+    },
+    {
+        id: 'potato', name: 'Potato', emoji: '\u{1F954}', type: 'vegetable',
+        spacing: 12, daysToHarvest: 90, waterNeed: 'medium',
+        sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
+        directSow: -2, harvestWeeks: 3,
+        companions: ['green-beans', 'corn', 'cabbage', 'broccoli', 'marigold', 'nasturtium', 'thyme'],
+        enemies: ['tomato', 'pepper', 'eggplant', 'cucumber', 'zucchini', 'sunflower', 'cantaloupe'],
+        notes: 'Plant seed potatoes, not grocery store potatoes. Hill soil as they grow. Massive yield.',
+        seedStartInstructions: 'Plant seed potato pieces 2-3 weeks before last frost (Apr 1-4). Cut into pieces with 2-3 eyes each, cure cut sides 2 days. Plant 4" deep, 12" apart.',
+        careNotes: 'Hill soil 6" around stems twice during growing. Stop watering when foliage yellows. Harvest when tops die back. Cure in cool dark place for storage.',
+        lowMaintenance: true
+    },
+    // ---- FRUITS ----
+    {
+        id: 'strawberry', name: 'Strawberry', emoji: '\u{1F353}', type: 'fruit',
+        spacing: 12, daysToHarvest: 90, waterNeed: 'medium',
+        sunNeed: 'full', sowIndoors: null, transplantAfterFrost: 0,
+        directSow: null, harvestWeeks: 4,
+        companions: ['lettuce', 'spinach', 'green-beans', 'thyme', 'onion', 'garlic', 'chive', 'marigold', 'nasturtium', 'borage'],
+        enemies: ['cabbage', 'broccoli'],
+        notes: 'Perennial! Plant once, harvest for years. Use bare root transplants.',
+        seedStartInstructions: 'Purchase bare root crowns. Plant as soon as soil is workable (mid-April). Set crown at soil level. Pinch first-year flowers on June-bearers for bigger second-year crop.',
+        careNotes: 'Mulch with straw to keep fruit clean. Remove runners unless you want spreading. Very low maintenance once established.',
+        lowMaintenance: true
+    },
+    {
+        id: 'cantaloupe', name: 'Cantaloupe', emoji: '\u{1F348}', type: 'fruit',
+        spacing: 36, daysToHarvest: 85, waterNeed: 'medium',
+        sunNeed: 'full', sowIndoors: -3, transplantAfterFrost: 2,
+        directSow: 2, harvestWeeks: 4,
+        companions: ['corn', 'sunflower', 'marigold', 'nasturtium', 'radish', 'lettuce'],
+        enemies: ['potato', 'cucumber'],
+        notes: 'Space hog \u2014 needs room to sprawl. Warm soil essential.',
+        seedStartInstructions: 'Start indoors 3-4 weeks before last frost (Mar 28). Use peat pots to avoid root disturbance. Transplant after May 1 when soil is 65\u00B0F+.',
+        careNotes: 'Black plastic mulch warms soil. Reduce water as fruit ripens. Slip test: ripe when stem separates easily.',
+        lowMaintenance: false
+    },
+    // ---- HERBS ----
+    {
+        id: 'basil', name: 'Basil', emoji: '\u{1F33F}', type: 'herb',
+        spacing: 10, daysToHarvest: 60, waterNeed: 'medium',
+        sunNeed: 'full', sowIndoors: -6, transplantAfterFrost: 2,
+        directSow: 2, harvestWeeks: 14,
+        companions: ['tomato', 'pepper', 'marigold', 'lettuce', 'oregano', 'parsley'],
+        enemies: ['sage', 'rue'],
+        notes: 'Classic tomato companion. Pinch flowers for bushy growth.',
+        seedStartInstructions: 'Start indoors 6-8 weeks before last frost (Mar 1-7). Surface sow, press into soil. Needs light & warmth (70\u00B0F+). Transplant after all frost danger.',
+        careNotes: 'Pinch growing tips regularly for bushy plants. Harvest before flowering. Very frost-sensitive \u2014 cover or harvest at season end.',
         lowMaintenance: true
     },
     {
@@ -214,47 +289,47 @@ let PLANT_LIBRARY = [
         spacing: 8, daysToHarvest: 60, waterNeed: 'low',
         sunNeed: 'full', sowIndoors: -8, transplantAfterFrost: 0,
         directSow: 0, harvestWeeks: 20,
-        companions: ['carrot', 'tomato', 'strawberry'],
-        enemies: ['beans', 'peas'],
+        companions: ['carrot', 'tomato', 'strawberry', 'lettuce', 'onion', 'garlic'],
+        enemies: ['green-beans', 'peas'],
         notes: 'Perennial! Returns every year. Pest deterrent. Edible flowers.',
         seedStartInstructions: 'Start indoors 8-10 weeks before last frost (Feb 15) or buy transplants. Very slow from seed. Easier to divide existing clumps.',
         careNotes: 'Perennial \u2014 plant once, harvest for years. Cut back to 2" periodically for fresh growth. Divide clumps every 3 years.',
         lowMaintenance: true
     },
     {
-        id: 'nasturtium', name: 'Nasturtium', emoji: '\u{1F33A}', type: 'flower',
-        spacing: 10, daysToHarvest: 55, waterNeed: 'low',
-        sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
-        directSow: 0, harvestWeeks: 14,
-        companions: ['tomato', 'cucumber', 'squash', 'beans'],
-        enemies: [],
-        notes: 'Edible! Trap crop for aphids. Thrives in poor soil. Zero maintenance.',
-        seedStartInstructions: 'Direct sow after last frost (Apr 18). Plant 1/2" deep. Large seeds, easy to handle. Nick seed coat for faster germination.',
-        careNotes: 'Thrives on neglect. Poor soil = more flowers. Do NOT fertilize. Edible flowers and leaves (peppery). Trap crop attracts aphids away from veggies.',
+        id: 'parsley', name: 'Parsley', emoji: '\u{2618}', type: 'herb',
+        spacing: 8, daysToHarvest: 75, waterNeed: 'medium',
+        sunNeed: 'partial', sowIndoors: -8, transplantAfterFrost: -2,
+        directSow: -2, harvestWeeks: 20,
+        companions: ['tomato', 'pepper', 'carrot', 'chive', 'green-beans', 'lettuce'],
+        enemies: ['mint'],
+        notes: 'Biennial. Attracts swallowtail butterflies. Extremely versatile culinary herb.',
+        seedStartInstructions: 'Start indoors 8-10 weeks before last frost (Feb 15). SLOW germinator \u2014 soak seeds 24hrs first, takes 3-4 weeks to sprout. Or direct sow 2 weeks before last frost (Apr 4).',
+        careNotes: 'Slow to start but very productive. Cut outer stems to harvest. Biennial \u2014 let a few plants flower in year 2 for swallowtail butterfly host. Cold hardy into November.',
         lowMaintenance: true
     },
     {
-        id: 'sunflower', name: 'Sunflower', emoji: '\u{1F33B}', type: 'flower',
-        spacing: 18, daysToHarvest: 80, waterNeed: 'low',
-        sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
-        directSow: 1, harvestWeeks: 4,
-        companions: ['cucumber', 'corn', 'squash'],
-        enemies: ['potato'],
-        notes: 'Pollinators love them. Community engagement magnet. Seeds for birds.',
-        seedStartInstructions: 'Direct sow 1 week after last frost (Apr 25). Plant 1" deep. Fast growers. Succession plant every 2 weeks for continuous bloom.',
-        careNotes: 'Water regularly until established, then drought tolerant. Stake tall varieties. Leave seed heads for birds in fall \u2014 great community engagement.',
+        id: 'cilantro', name: 'Cilantro', emoji: '\u{1F33F}', type: 'herb',
+        spacing: 4, daysToHarvest: 45, waterNeed: 'medium',
+        sunNeed: 'partial', sowIndoors: null, transplantAfterFrost: null,
+        directSow: -2, harvestWeeks: 3,
+        companions: ['tomato', 'pepper', 'green-beans', 'peas', 'lettuce', 'spinach'],
+        enemies: ['fennel', 'dill'],
+        notes: 'Bolts fast in heat. Succession sow! Seeds = coriander. Culturally essential.',
+        seedStartInstructions: 'Direct sow 2 weeks before last frost (Apr 4). Plant 1/4" deep, scatter thickly. Succession sow every 2-3 weeks through May, resume in Sept.',
+        careNotes: 'Bolts to seed rapidly in warm weather. Plant in partial shade in summer. Let some bolt \u2014 coriander seeds are a valuable spice. Self-seeds readily.',
         lowMaintenance: true
     },
     {
-        id: 'thyme', name: 'Thyme', emoji: '\u{1F33F}', type: 'herb',
-        spacing: 8, daysToHarvest: 70, waterNeed: 'low',
-        sunNeed: 'full', sowIndoors: -8, transplantAfterFrost: 0,
-        directSow: null, harvestWeeks: 20,
-        companions: ['strawberry', 'tomato', 'cabbage'],
+        id: 'oregano', name: 'Oregano', emoji: '\u{1F33F}', type: 'herb',
+        spacing: 12, daysToHarvest: 60, waterNeed: 'low',
+        sunNeed: 'full', sowIndoors: -6, transplantAfterFrost: 0,
+        directSow: 0, harvestWeeks: 20,
+        companions: ['tomato', 'pepper', 'green-beans', 'broccoli', 'cabbage', 'kale', 'basil', 'thyme'],
         enemies: [],
-        notes: 'Perennial ground cover. Drought champion. Practically unkillable.',
-        seedStartInstructions: 'Start indoors 8-10 weeks before last frost (Feb 15) or buy transplants (much easier). Slow from seed. Perennial in Zone 6a.',
-        careNotes: 'Nearly indestructible. Drought tolerant. Cut back by 1/3 in spring. Never overwater. Spreading varieties make great ground cover between beds.',
+        notes: 'Perennial! Returns every year in Zone 6a. Good all-around companion plant.',
+        seedStartInstructions: 'Start indoors 6-8 weeks before last frost (Mar 1-7) or buy transplants (easier). Tiny seeds \u2014 surface sow, press gently. Perennial in Zone 6a.',
+        careNotes: 'Extremely low maintenance. Cut back by 1/3 before flowering for best flavor. Drought tolerant. Mulch in fall for winter protection.',
         lowMaintenance: true
     },
     {
@@ -262,7 +337,7 @@ let PLANT_LIBRARY = [
         spacing: 8, daysToHarvest: 55, waterNeed: 'low',
         sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
         directSow: 0, harvestWeeks: 8,
-        companions: ['cucumber', 'lettuce', 'onion'],
+        companions: ['cucumber', 'lettuce', 'onion', 'zucchini', 'kale', 'green-beans', 'broccoli', 'cabbage'],
         enemies: ['carrot', 'tomato'],
         notes: 'Self-seeds aggressively. Attracts beneficial insects. Easy pickles!',
         seedStartInstructions: 'Direct sow after last frost (Apr 18). Scatter seeds, press into soil. Barely cover. Self-seeds like crazy \u2014 you\'ll have it forever after one planting.',
@@ -274,11 +349,96 @@ let PLANT_LIBRARY = [
         spacing: 12, daysToHarvest: 60, waterNeed: 'medium',
         sunNeed: 'partial', sowIndoors: null, transplantAfterFrost: 0,
         directSow: null, harvestWeeks: 20,
-        companions: ['tomato', 'cabbage'],
-        enemies: [],
+        companions: ['tomato', 'cabbage', 'peas', 'kale', 'lettuce'],
+        enemies: ['parsley'],
         notes: 'WARNING: Invasive spreader! ALWAYS plant in containers, never directly in beds.',
         seedStartInstructions: 'Buy transplants \u2014 do NOT direct sow in beds. MUST be contained in a pot sunk into the bed or it will take over everything. Plant after last frost.',
         careNotes: 'Will aggressively spread if not contained. Grow in sunken pots within beds. Cut back hard periodically. Perennial and virtually unkillable.',
+        lowMaintenance: true
+    },
+    {
+        id: 'thyme', name: 'Thyme', emoji: '\u{1F33F}', type: 'herb',
+        spacing: 8, daysToHarvest: 70, waterNeed: 'low',
+        sunNeed: 'full', sowIndoors: -8, transplantAfterFrost: 0,
+        directSow: null, harvestWeeks: 20,
+        companions: ['strawberry', 'tomato', 'cabbage', 'oregano', 'marigold', 'eggplant', 'potato', 'broccoli'],
+        enemies: [],
+        notes: 'Perennial ground cover. Drought champion. Practically unkillable.',
+        seedStartInstructions: 'Start indoors 8-10 weeks before last frost (Feb 15) or buy transplants (much easier). Slow from seed. Perennial in Zone 6a.',
+        careNotes: 'Nearly indestructible. Drought tolerant. Cut back by 1/3 in spring. Never overwater. Spreading varieties make great ground cover between beds.',
+        lowMaintenance: true
+    },
+    {
+        id: 'rosemary', name: 'Rosemary', emoji: '\u{1F33F}', type: 'herb',
+        spacing: 18, daysToHarvest: 80, waterNeed: 'low',
+        sunNeed: 'full', sowIndoors: -10, transplantAfterFrost: 2,
+        directSow: null, harvestWeeks: 20,
+        companions: ['carrot', 'green-beans', 'broccoli', 'cabbage', 'kale', 'pepper'],
+        enemies: ['cucumber', 'zucchini'],
+        notes: 'Treat as annual in Zone 6a (may overwinter with heavy protection). Repels many pests.',
+        seedStartInstructions: 'Buy transplants \u2014 very slow and unreliable from seed. Plant after last frost (Apr 18). In Zone 6a, treat as annual or bring pots indoors for winter.',
+        careNotes: 'Excellent drought tolerance. Do not overwater. Repels cabbage moths, carrot rust flies, and bean beetles. Bring potted plants indoors before first frost.',
+        lowMaintenance: true
+    },
+    {
+        id: 'borage', name: 'Borage', emoji: '\u{1F33A}', type: 'herb',
+        spacing: 18, daysToHarvest: 55, waterNeed: 'low',
+        sunNeed: 'full', sowIndoors: -4, transplantAfterFrost: 0,
+        directSow: 0, harvestWeeks: 12,
+        companions: ['tomato', 'strawberry', 'zucchini', 'cucumber', 'green-beans'],
+        enemies: [],
+        notes: 'Top-tier companion plant. Massive pollinator attractor. Edible flowers.',
+        seedStartInstructions: 'Start indoors 4-6 weeks before last frost (Mar 14-28) or direct sow after last frost (Apr 18). Plant 1/4-1/2" deep. Self-seeds vigorously.',
+        careNotes: 'Grows large (2-3 feet). Stake to prevent flopping. Attracts bees and parasitic wasps that control hornworms. Edible star-shaped blue flowers.',
+        lowMaintenance: true
+    },
+    // ---- FLOWERS ----
+    {
+        id: 'sweet-peas', name: 'Sweet Peas', emoji: '\u{1F33C}', type: 'flower',
+        spacing: 6, daysToHarvest: 65, waterNeed: 'medium',
+        sunNeed: 'full', sowIndoors: -6, transplantAfterFrost: -2,
+        directSow: -4, harvestWeeks: 8,
+        companions: ['green-beans', 'carrot', 'radish'],
+        enemies: ['onion', 'garlic'],
+        notes: 'Beautiful cut flowers. Cool season \u2014 plant early. Needs trellis. NOT edible (ornamental only).',
+        seedStartInstructions: 'Soak seeds 24hrs. Start indoors 6 weeks before last frost (Mar 7) or direct sow 4 weeks before (Mar 21). Nick seed coat with file before soaking.',
+        careNotes: 'Provide trellis or netting. Keep soil cool with mulch. Deadhead regularly for continuous bloom.',
+        lowMaintenance: true
+    },
+    {
+        id: 'marigold', name: 'Marigold', emoji: '\u{1F33B}', type: 'flower',
+        spacing: 8, daysToHarvest: 50, waterNeed: 'low',
+        sunNeed: 'full', sowIndoors: -6, transplantAfterFrost: 0,
+        directSow: 0, harvestWeeks: 16,
+        companions: ['tomato', 'pepper', 'green-beans', 'zucchini', 'cucumber', 'strawberry', 'nasturtium', 'eggplant', 'potato', 'broccoli'],
+        enemies: [],
+        notes: 'Pest deterrent powerhouse. Plant everywhere as companion. Deer resistant.',
+        seedStartInstructions: 'Start indoors 6-8 weeks before last frost (Mar 1) or direct sow after last frost (Apr 18). Easy germinators. Cover lightly with soil.',
+        careNotes: 'Nearly indestructible. Deadhead for continuous bloom. Drought tolerant once established. French marigolds best for pest control.',
+        lowMaintenance: true
+    },
+    {
+        id: 'nasturtium', name: 'Nasturtium', emoji: '\u{1F33A}', type: 'flower',
+        spacing: 10, daysToHarvest: 55, waterNeed: 'low',
+        sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
+        directSow: 0, harvestWeeks: 14,
+        companions: ['tomato', 'cucumber', 'zucchini', 'green-beans', 'radish', 'kale', 'strawberry', 'marigold', 'broccoli', 'cabbage', 'potato'],
+        enemies: [],
+        notes: 'Edible! Trap crop for aphids. Thrives in poor soil. Zero maintenance.',
+        seedStartInstructions: 'Direct sow after last frost (Apr 18). Plant 1/2" deep. Large seeds, easy to handle. Nick seed coat for faster germination.',
+        careNotes: 'Thrives on neglect. Poor soil = more flowers. Do NOT fertilize. Edible flowers and leaves (peppery). Trap crop attracts aphids away from veggies.',
+        lowMaintenance: true
+    },
+    {
+        id: 'sunflower', name: 'Sunflower', emoji: '\u{1F33B}', type: 'flower',
+        spacing: 18, daysToHarvest: 80, waterNeed: 'low',
+        sunNeed: 'full', sowIndoors: null, transplantAfterFrost: null,
+        directSow: 1, harvestWeeks: 4,
+        companions: ['cucumber', 'corn', 'zucchini', 'lettuce', 'green-beans'],
+        enemies: ['potato'],
+        notes: 'Pollinators love them. Community engagement magnet. Seeds for birds.',
+        seedStartInstructions: 'Direct sow 1 week after last frost (Apr 25). Plant 1" deep. Fast growers. Succession plant every 2 weeks for continuous bloom.',
+        careNotes: 'Water regularly until established, then drought tolerant. Stake tall varieties. Leave seed heads for birds in fall \u2014 great community engagement.',
         lowMaintenance: true
     }
 ];
@@ -1862,9 +2022,16 @@ function initCustomSeeds() {
     // Merge stored custom plants into PLANT_LIBRARY
     mergeCustomPlantsIntoLibrary();
 
-    // Open modal button
+    // + CUSTOM button: first click filters to custom, second click (already active) opens add modal
     const addBtn = document.getElementById('btn-add-custom-seed');
-    if (addBtn) addBtn.addEventListener('click', () => openCustomSeedModal());
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            if (addBtn.classList.contains('active')) {
+                openCustomSeedModal();
+            }
+            // Filter toggling is handled by initPlantPalette's filter-btn listener
+        });
+    }
 
     // Modal close / cancel
     document.getElementById('custom-seed-close')?.addEventListener('click', closeCustomSeedModal);
@@ -1927,12 +2094,6 @@ function initCustomSeeds() {
         applyParsedToForm(parsed);
     });
 
-    // Custom filter support
-    document.querySelector('.filter-btn[data-filter="custom"]')?.addEventListener('click', () => {
-        // Already handled by existing filter logic, but 'custom' type doesn't exist.
-        // Custom plants have isCustom:true but type is vegetable/herb/etc.
-        // We need special handling for this filter.
-    });
 }
 
 function handleSeedPhoto(file) {
@@ -3939,9 +4100,10 @@ async function generateAllImages(prompts, apiKey) {
                     if (part.inlineData) {
                         const imgSrc = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
                         card.innerHTML = `
-                            <img src="${imgSrc}" alt="${promptData.label}" loading="lazy">
+                            <img src="${imgSrc}" alt="${promptData.label}" loading="lazy" class="viz-enlargeable" title="Click to enlarge">
                             <div class="viz-image-label">${promptData.label}</div>
                         `;
+                        card.querySelector('.viz-enlargeable').addEventListener('click', () => openImageLightbox(imgSrc, promptData.label));
                         imageFound = true;
                         successCount++;
                         break;
@@ -3979,6 +4141,28 @@ async function generateAllImages(prompts, apiKey) {
     } else {
         showVizStatus('Image generation failed. Check your API key and model selection. Ensure your API key has access to the selected model. Try gemini-2.5-flash-image if unsure.', 'error');
     }
+}
+
+function openImageLightbox(src, label) {
+    // Remove existing lightbox if any
+    document.getElementById('viz-lightbox')?.remove();
+    const lb = document.createElement('div');
+    lb.id = 'viz-lightbox';
+    lb.className = 'viz-lightbox';
+    lb.innerHTML = `
+        <div class="viz-lightbox-backdrop"></div>
+        <div class="viz-lightbox-content">
+            <button class="viz-lightbox-close" title="Close">\u2715</button>
+            <img src="${src}" alt="${label}">
+            <div class="viz-lightbox-label">${label}</div>
+        </div>
+    `;
+    document.body.appendChild(lb);
+    lb.querySelector('.viz-lightbox-backdrop').addEventListener('click', () => lb.remove());
+    lb.querySelector('.viz-lightbox-close').addEventListener('click', () => lb.remove());
+    document.addEventListener('keydown', function esc(e) {
+        if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', esc); }
+    });
 }
 
 function showVizStatus(msg, type) {
