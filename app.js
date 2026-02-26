@@ -4,7 +4,7 @@
    ============================================ */
 
 // ---- PLANT LIBRARY (Zone 6a compatible) ----
-const PLANT_LIBRARY = [
+let PLANT_LIBRARY = [
     {
         id: 'tomato', name: 'Tomato', emoji: '\u{1F345}', type: 'vegetable',
         spacing: 24, daysToHarvest: 75, waterNeed: 'medium',
@@ -429,6 +429,7 @@ function clearSelection() {
 document.addEventListener('DOMContentLoaded', () => {
     const inits = [
         ['Navigation', initNavigation],
+        ['CustomSeeds', initCustomSeeds],
         ['PlantPalette', initPlantPalette],
         ['GardenBeds', initGardenBeds],
         ['BedSelector', initBedSelector],
@@ -559,8 +560,9 @@ function getFilteredSortedPlants() {
 
     let plants = [...PLANT_LIBRARY];
 
-    // Filter by type
-    if (activeFilter !== 'all') plants = plants.filter(p => p.type === activeFilter);
+    // Filter by type (or by custom flag)
+    if (activeFilter === 'custom') plants = plants.filter(p => p.isCustom);
+    else if (activeFilter !== 'all') plants = plants.filter(p => p.type === activeFilter);
 
     // Filter by search (supports name, type, and trait keywords)
     if (searchQ) plants = plants.filter(p => matchPlantSearch(p, searchQ));
@@ -669,8 +671,10 @@ function renderPlantList(plants, searchQ) {
             <div class="plant-item" draggable="true" data-plant-id="${p.id}" data-type="${p.type}">
                 <span class="plant-emoji">${p.emoji}</span>
                 <span class="plant-name">${displayName}</span>
+                ${p.isCustom ? '<span class="custom-badge">CUSTOM</span>' : ''}
                 <span class="season-badge ${badge.cls}">${badge.text}</span>
                 <span class="plant-type-badge">${p.type.toUpperCase()}</span>
+                ${p.isCustom ? `<span class="custom-actions"><button class="custom-action-btn" data-custom-edit="${p.id}" title="Edit">&#x270E;</button><button class="custom-action-btn" data-custom-delete="${p.id}" title="Delete">&#x2715;</button></span>` : ''}
                 <span class="plant-expand-icon">&#x25BC;</span>
             </div>
             <div class="plant-expand-panel" hidden>
@@ -782,6 +786,20 @@ function renderPlantList(plants, searchQ) {
         item.addEventListener('mouseleave', () => {
             clearTimeout(hoverTimeout);
             if (hoverCard) hoverCard.classList.remove('visible');
+        });
+    });
+
+    // Custom seed edit/delete handlers (event delegation)
+    container.querySelectorAll('[data-custom-edit]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openCustomSeedModal(btn.dataset.customEdit);
+        });
+    });
+    container.querySelectorAll('[data-custom-delete]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteCustomSeed(btn.dataset.customDelete);
         });
     });
 }
@@ -1106,8 +1124,8 @@ function renderPlacedPlants(bedIndex) {
                     // Snap to grid on release
                     placement.x = snapToGrid(placement.x);
                     placement.y = snapToGrid(placement.y);
-                    el.style.left = placement.x + 'px';
-                    el.style.top = placement.y + 'px';
+                    renderPlacedPlants(bedIndex);
+                    updateBedDetails();
                     updateSpacingWarnings(bedIndex);
                 }
                 saveState();
@@ -1583,6 +1601,352 @@ function applyBedTemplate(bedIndex, template) {
     updateBedDetails();
     updateSpacingWarnings(bedIndex);
     saveState();
+}
+
+// ---- CUSTOM SEEDS ----
+function getCustomPlants() {
+    try { return JSON.parse(localStorage.getItem('gardenSyncCustomPlants') || '[]'); }
+    catch { return []; }
+}
+
+function saveCustomPlants(plants) {
+    localStorage.setItem('gardenSyncCustomPlants', JSON.stringify(plants));
+}
+
+function mergeCustomPlantsIntoLibrary() {
+    // Remove previously merged custom plants
+    PLANT_LIBRARY = PLANT_LIBRARY.filter(p => !p.isCustom);
+    const custom = getCustomPlants();
+    custom.forEach(cp => {
+        PLANT_LIBRARY.push({
+            id: cp.id,
+            name: cp.name,
+            emoji: cp.emoji || '\u{1F331}',
+            type: cp.type || 'vegetable',
+            spacing: cp.spacing || 12,
+            daysToHarvest: cp.daysToHarvest || 60,
+            waterNeed: cp.waterNeed || 'medium',
+            sunNeed: cp.sunNeed || 'full',
+            sowIndoors: null,
+            transplantAfterFrost: 2,
+            directSow: 0,
+            harvestWeeks: cp.harvestWeeks || 8,
+            companions: [],
+            enemies: [],
+            notes: cp.notes || '',
+            seedStartInstructions: cp.seedStartInstructions || '',
+            careNotes: cp.careNotes || '',
+            lowMaintenance: false,
+            isCustom: true,
+            plantingDepth: cp.plantingDepth || ''
+        });
+    });
+}
+
+function openCustomSeedModal(editId) {
+    const modal = document.getElementById('custom-seed-modal');
+    modal.classList.remove('hidden');
+    // Reset form
+    ['cs-name', 'cs-emoji', 'cs-spacing', 'cs-days', 'cs-depth',
+     'cs-harvest-weeks', 'cs-seed-instructions', 'cs-care-notes', 'cs-notes'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    document.getElementById('cs-type').value = 'vegetable';
+    document.getElementById('cs-sun').value = 'full';
+    document.getElementById('cs-water').value = 'medium';
+    document.getElementById('cs-emoji').value = '\u{1F331}';
+    document.getElementById('cs-edit-id').textContent = '';
+
+    // Reset photo state
+    const preview = document.getElementById('photo-preview');
+    preview.classList.add('hidden');
+    document.querySelector('.upload-prompt').classList.remove('hidden');
+    document.getElementById('btn-extract-ocr').disabled = true;
+    document.getElementById('ocr-status').classList.add('hidden');
+    document.getElementById('ocr-raw').classList.add('hidden');
+
+    // Switch to manual tab
+    document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.modal-tab[data-tab="manual"]').classList.add('active');
+    document.getElementById('tab-manual').hidden = false;
+    document.getElementById('tab-photo').hidden = true;
+
+    // If editing, populate fields
+    if (editId) {
+        const custom = getCustomPlants();
+        const plant = custom.find(p => p.id === editId);
+        if (plant) {
+            document.getElementById('cs-name').value = plant.name || '';
+            document.getElementById('cs-emoji').value = plant.emoji || '\u{1F331}';
+            document.getElementById('cs-type').value = plant.type || 'vegetable';
+            document.getElementById('cs-spacing').value = plant.spacing || '';
+            document.getElementById('cs-days').value = plant.daysToHarvest || '';
+            document.getElementById('cs-sun').value = plant.sunNeed || 'full';
+            document.getElementById('cs-water').value = plant.waterNeed || 'medium';
+            document.getElementById('cs-depth').value = plant.plantingDepth || '';
+            document.getElementById('cs-harvest-weeks').value = plant.harvestWeeks || '';
+            document.getElementById('cs-seed-instructions').value = plant.seedStartInstructions || '';
+            document.getElementById('cs-care-notes').value = plant.careNotes || '';
+            document.getElementById('cs-notes').value = plant.notes || '';
+            document.getElementById('cs-edit-id').textContent = editId;
+            document.querySelector('.modal-title').textContent = '\u{1F331} EDIT CUSTOM SEED';
+        }
+    } else {
+        document.querySelector('.modal-title').textContent = '\u{1F331} ADD CUSTOM SEED';
+    }
+}
+
+function closeCustomSeedModal() {
+    document.getElementById('custom-seed-modal').classList.add('hidden');
+}
+
+function saveCustomSeed() {
+    const name = document.getElementById('cs-name').value.trim();
+    const spacing = parseInt(document.getElementById('cs-spacing').value);
+    const days = parseInt(document.getElementById('cs-days').value);
+
+    if (!name) { showToast('Plant name is required'); return; }
+    if (!spacing || spacing < 1) { showToast('Valid spacing is required'); return; }
+    if (!days || days < 1) { showToast('Valid days to harvest is required'); return; }
+
+    const editId = document.getElementById('cs-edit-id').textContent;
+    const custom = getCustomPlants();
+
+    const plantData = {
+        id: editId || ('custom-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now()),
+        name,
+        emoji: document.getElementById('cs-emoji').value || '\u{1F331}',
+        type: document.getElementById('cs-type').value,
+        spacing,
+        daysToHarvest: days,
+        sunNeed: document.getElementById('cs-sun').value,
+        waterNeed: document.getElementById('cs-water').value,
+        plantingDepth: document.getElementById('cs-depth').value.trim(),
+        harvestWeeks: parseInt(document.getElementById('cs-harvest-weeks').value) || 8,
+        seedStartInstructions: document.getElementById('cs-seed-instructions').value.trim(),
+        careNotes: document.getElementById('cs-care-notes').value.trim(),
+        notes: document.getElementById('cs-notes').value.trim(),
+        isCustom: true
+    };
+
+    if (editId) {
+        const idx = custom.findIndex(p => p.id === editId);
+        if (idx !== -1) custom[idx] = plantData;
+        else custom.push(plantData);
+    } else {
+        custom.push(plantData);
+    }
+
+    saveCustomPlants(custom);
+    mergeCustomPlantsIntoLibrary();
+    refreshPlantList();
+    closeCustomSeedModal();
+    showToast(`${editId ? 'Updated' : 'Added'} custom seed: ${name}`);
+}
+
+function deleteCustomSeed(plantId) {
+    const custom = getCustomPlants();
+    const plant = custom.find(p => p.id === plantId);
+    if (!plant) return;
+    showConfirm('DELETE CUSTOM SEED', `Remove "${plant.name}" from your custom seeds? Plants already placed in beds will remain but show as unknown.`, () => {
+        const updated = custom.filter(p => p.id !== plantId);
+        saveCustomPlants(updated);
+        mergeCustomPlantsIntoLibrary();
+        refreshPlantList();
+        showToast(`Deleted custom seed: ${plant.name}`);
+    });
+}
+
+function parseSeedPacketText(text) {
+    const result = {};
+    // Plant name - try first line or prominent text
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length > 0) result.name = lines[0];
+
+    // Days to maturity / harvest
+    const daysMatch = text.match(/(?:days?\s*(?:to\s*)?(?:maturity|harvest|germination)?)\s*[:\-]?\s*(\d{2,3})/i)
+        || text.match(/(\d{2,3})\s*days?\s*(?:to\s*)?(?:maturity|harvest)/i)
+        || text.match(/maturity\s*[:\-]?\s*(\d{2,3})/i);
+    if (daysMatch) result.daysToHarvest = parseInt(daysMatch[1]);
+
+    // Spacing
+    const spacingMatch = text.match(/(?:spac(?:e|ing)|apart|thin\s*to)\s*[:\-]?\s*(\d{1,2})[\s\-]*(?:in|"|inches)/i)
+        || text.match(/(\d{1,2})[\s\-]*(?:in|"|inches)\s*apart/i);
+    if (spacingMatch) result.spacing = parseInt(spacingMatch[1]);
+
+    // Planting depth
+    const depthMatch = text.match(/(?:depth|deep|plant)\s*[:\-]?\s*([\d\/]+)\s*(?:in|"|inch)/i)
+        || text.match(/([\d\/]+)\s*(?:in|"|inch)\s*deep/i);
+    if (depthMatch) result.plantingDepth = depthMatch[1] + '"';
+
+    // Sun
+    if (/full\s*sun/i.test(text)) result.sunNeed = 'full';
+    else if (/partial\s*(?:sun|shade)/i.test(text) || /part\s*shade/i.test(text)) result.sunNeed = 'partial';
+    else if (/(?:full\s*)?shade/i.test(text)) result.sunNeed = 'shade';
+
+    // Water
+    if (/(?:keep|maintain)\s*(?:evenly\s*)?moist/i.test(text) || /water\s*(?:regularly|frequently|daily)/i.test(text) || /high\s*water/i.test(text))
+        result.waterNeed = 'high';
+    else if (/moderate\s*(?:water|moisture)/i.test(text) || /water\s*(?:moderately|weekly)/i.test(text))
+        result.waterNeed = 'medium';
+    else if (/drought\s*tolerant/i.test(text) || /low\s*water/i.test(text))
+        result.waterNeed = 'low';
+
+    return result;
+}
+
+function runOCR(imageData) {
+    const statusEl = document.getElementById('ocr-status');
+    const progressEl = document.getElementById('ocr-progress');
+    const statusText = document.getElementById('ocr-status-text');
+    const rawEl = document.getElementById('ocr-raw');
+    const rawText = document.getElementById('ocr-raw-text');
+    const extractBtn = document.getElementById('btn-extract-ocr');
+
+    statusEl.classList.remove('hidden');
+    extractBtn.disabled = true;
+    progressEl.style.width = '10%';
+    statusText.textContent = 'Loading OCR engine...';
+
+    if (typeof Tesseract === 'undefined') {
+        statusText.textContent = 'Tesseract.js not loaded. Enter details manually.';
+        extractBtn.disabled = false;
+        return;
+    }
+
+    Tesseract.recognize(imageData, 'eng', {
+        logger: (m) => {
+            if (m.status === 'recognizing text') {
+                const pct = Math.round((m.progress || 0) * 100);
+                progressEl.style.width = pct + '%';
+                statusText.textContent = `Scanning... ${pct}%`;
+            }
+        }
+    }).then(({ data: { text } }) => {
+        progressEl.style.width = '100%';
+        statusText.textContent = 'Extraction complete!';
+        rawText.value = text;
+        rawEl.classList.remove('hidden');
+        extractBtn.disabled = false;
+
+        // Auto-parse and fill form fields
+        const parsed = parseSeedPacketText(text);
+        applyParsedToForm(parsed);
+    }).catch(err => {
+        statusText.textContent = 'OCR failed: ' + err.message;
+        extractBtn.disabled = false;
+        console.error('[GardenSync] OCR error:', err);
+    });
+}
+
+function applyParsedToForm(parsed) {
+    if (parsed.name && !document.getElementById('cs-name').value) {
+        document.getElementById('cs-name').value = parsed.name;
+    }
+    if (parsed.daysToHarvest) document.getElementById('cs-days').value = parsed.daysToHarvest;
+    if (parsed.spacing) document.getElementById('cs-spacing').value = parsed.spacing;
+    if (parsed.plantingDepth) document.getElementById('cs-depth').value = parsed.plantingDepth;
+    if (parsed.sunNeed) document.getElementById('cs-sun').value = parsed.sunNeed;
+    if (parsed.waterNeed) document.getElementById('cs-water').value = parsed.waterNeed;
+
+    // Switch to manual tab to show filled fields
+    document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.modal-tab[data-tab="manual"]').classList.add('active');
+    document.getElementById('tab-manual').hidden = false;
+    document.getElementById('tab-photo').hidden = true;
+    showToast('Fields extracted — review and complete the form');
+}
+
+function initCustomSeeds() {
+    // Merge stored custom plants into PLANT_LIBRARY
+    mergeCustomPlantsIntoLibrary();
+
+    // Open modal button
+    const addBtn = document.getElementById('btn-add-custom-seed');
+    if (addBtn) addBtn.addEventListener('click', () => openCustomSeedModal());
+
+    // Modal close / cancel
+    document.getElementById('custom-seed-close')?.addEventListener('click', closeCustomSeedModal);
+    document.getElementById('btn-cs-cancel')?.addEventListener('click', closeCustomSeedModal);
+    document.getElementById('custom-seed-modal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'custom-seed-modal') closeCustomSeedModal();
+    });
+
+    // Save
+    document.getElementById('btn-cs-save')?.addEventListener('click', saveCustomSeed);
+
+    // Tab switching
+    document.querySelectorAll('.modal-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const target = tab.dataset.tab;
+            document.getElementById('tab-manual').hidden = target !== 'manual';
+            document.getElementById('tab-photo').hidden = target !== 'photo';
+        });
+    });
+
+    // Photo upload
+    const photoInput = document.getElementById('seed-photo-input');
+    const dropZone = document.getElementById('photo-drop-zone');
+    const chooseBtn = document.getElementById('btn-choose-photo');
+
+    chooseBtn?.addEventListener('click', () => photoInput.click());
+
+    photoInput?.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleSeedPhoto(e.target.files[0]);
+    });
+
+    dropZone?.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-active'); });
+    dropZone?.addEventListener('dragleave', () => dropZone.classList.remove('drag-active'));
+    dropZone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-active');
+        if (e.dataTransfer.files.length > 0) handleSeedPhoto(e.dataTransfer.files[0]);
+    });
+
+    document.getElementById('btn-clear-photo')?.addEventListener('click', () => {
+        document.getElementById('photo-preview').classList.add('hidden');
+        document.querySelector('.upload-prompt').classList.remove('hidden');
+        document.getElementById('btn-extract-ocr').disabled = true;
+        document.getElementById('ocr-status').classList.add('hidden');
+        document.getElementById('ocr-raw').classList.add('hidden');
+    });
+
+    // Extract OCR
+    document.getElementById('btn-extract-ocr')?.addEventListener('click', () => {
+        const img = document.getElementById('photo-preview-img');
+        if (img.src) runOCR(img.src);
+    });
+
+    // Use extracted text button
+    document.getElementById('btn-use-extracted')?.addEventListener('click', () => {
+        const text = document.getElementById('ocr-raw-text').value;
+        const parsed = parseSeedPacketText(text);
+        applyParsedToForm(parsed);
+    });
+
+    // Custom filter support
+    document.querySelector('.filter-btn[data-filter="custom"]')?.addEventListener('click', () => {
+        // Already handled by existing filter logic, but 'custom' type doesn't exist.
+        // Custom plants have isCustom:true but type is vegetable/herb/etc.
+        // We need special handling for this filter.
+    });
+}
+
+function handleSeedPhoto(file) {
+    if (!file.type.startsWith('image/')) { showToast('Please upload an image file'); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const preview = document.getElementById('photo-preview');
+        const img = document.getElementById('photo-preview-img');
+        img.src = e.target.result;
+        preview.classList.remove('hidden');
+        document.querySelector('.upload-prompt').classList.add('hidden');
+        document.getElementById('btn-extract-ocr').disabled = false;
+    };
+    reader.readAsDataURL(file);
 }
 
 function initBedTemplates() {

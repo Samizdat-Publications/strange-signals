@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=30">
+    <link rel="stylesheet" href="styles.css?v=32">
 </head>
 <body>
     <!-- HEADER -->
@@ -109,6 +109,8 @@
                     <button class="filter-btn" data-filter="fruit">FRUIT</button>
                     <button class="filter-btn" data-filter="herb">HERB</button>
                     <button class="filter-btn" data-filter="flower">FLOWER</button>
+                    <button class="filter-btn" data-filter="custom">CUSTOM</button>
+                    <button id="btn-add-custom-seed" class="tool-btn small accent" title="Add a custom seed variety">+ CUSTOM</button>
                 </div>
                 <div class="sort-row">
                     <label class="sort-label">SORT:</label>
@@ -603,6 +605,7 @@
             <button id="btn-export-data" class="footer-action-btn">EXPORT DATA</button>
             <button id="btn-import-data" class="footer-action-btn">IMPORT DATA</button>
             <button id="btn-load-demo" class="footer-action-btn demo-btn">&#x1F33F; LOAD DEMO GARDEN</button>
+            <a href="guide.html" class="footer-action-btn" target="_blank" style="text-decoration:none;">&#x1F4D6; USER GUIDE</a>
             <input type="file" id="import-file-input" accept=".json" style="display:none;">
         </div>
         <div class="footer-right">
@@ -610,6 +613,119 @@
         </div>
     </footer>
 
-    <script src="app.js?v=30"></script>
+    <!-- Custom Seed Modal -->
+    <div id="custom-seed-modal" class="modal-overlay hidden">
+        <div class="modal-content custom-seed-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">&#x1F331; ADD CUSTOM SEED</h3>
+                <button class="modal-close" id="custom-seed-close">&times;</button>
+            </div>
+            <div class="modal-tabs">
+                <button class="modal-tab active" data-tab="manual">MANUAL ENTRY</button>
+                <button class="modal-tab" data-tab="photo">PHOTO SCAN</button>
+            </div>
+            <div class="modal-body">
+                <!-- Photo tab -->
+                <div class="tab-panel" id="tab-photo" hidden>
+                    <div class="photo-upload-area" id="photo-drop-zone">
+                        <input type="file" id="seed-photo-input" accept="image/*" capture="environment" multiple hidden>
+                        <div class="upload-prompt">
+                            <span class="upload-icon">&#x1F4F7;</span>
+                            <p>Drop seed packet photo here or <button class="link-btn" id="btn-choose-photo">choose file</button></p>
+                            <p class="upload-hint">Snap the back of the seed packet for best results</p>
+                        </div>
+                        <div class="photo-preview hidden" id="photo-preview">
+                            <img id="photo-preview-img" alt="Seed packet">
+                            <button class="tool-btn small" id="btn-clear-photo">CLEAR</button>
+                        </div>
+                    </div>
+                    <button id="btn-extract-ocr" class="tool-btn accent" disabled>EXTRACT DETAILS</button>
+                    <div class="ocr-status hidden" id="ocr-status">
+                        <div class="ocr-progress-bar"><div class="ocr-progress-fill" id="ocr-progress"></div></div>
+                        <span class="ocr-status-text" id="ocr-status-text">Initializing OCR...</span>
+                    </div>
+                    <div class="ocr-raw hidden" id="ocr-raw">
+                        <label class="form-label">EXTRACTED TEXT</label>
+                        <textarea id="ocr-raw-text" rows="4" readonly></textarea>
+                        <button class="tool-btn small" id="btn-use-extracted">USE &amp; EDIT BELOW</button>
+                    </div>
+                </div>
+                <!-- Manual form (always visible below photo results) -->
+                <div class="tab-panel" id="tab-manual">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label class="form-label">PLANT NAME *</label>
+                            <input type="text" id="cs-name" class="form-input" placeholder="e.g. Cherry Belle Radish">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">EMOJI</label>
+                            <input type="text" id="cs-emoji" class="form-input" placeholder="&#x1F331;" maxlength="4">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">TYPE *</label>
+                            <select id="cs-type" class="form-input">
+                                <option value="vegetable">Vegetable</option>
+                                <option value="herb">Herb</option>
+                                <option value="fruit">Fruit</option>
+                                <option value="flower">Flower</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">SPACING (inches) *</label>
+                            <input type="number" id="cs-spacing" class="form-input" min="1" max="72" placeholder="12">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">DAYS TO HARVEST *</label>
+                            <input type="number" id="cs-days" class="form-input" min="1" max="365" placeholder="60">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">SUN NEED</label>
+                            <select id="cs-sun" class="form-input">
+                                <option value="full">Full Sun</option>
+                                <option value="partial">Partial Sun</option>
+                                <option value="shade">Shade</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">WATER NEED</label>
+                            <select id="cs-water" class="form-input">
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">PLANTING DEPTH</label>
+                            <input type="text" id="cs-depth" class="form-input" placeholder='1/4"'>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">HARVEST WEEKS</label>
+                            <input type="number" id="cs-harvest-weeks" class="form-input" min="1" max="52" placeholder="8">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">SEED START INSTRUCTIONS</label>
+                            <textarea id="cs-seed-instructions" class="form-input" rows="2" placeholder="Start indoors 6 weeks before last frost..."></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">CARE NOTES</label>
+                            <textarea id="cs-care-notes" class="form-input" rows="2" placeholder="Water deeply 1-2x per week..."></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">NOTES</label>
+                            <textarea id="cs-notes" class="form-input" rows="2" placeholder="Additional growing notes..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span class="custom-seed-edit-id hidden" id="cs-edit-id"></span>
+                <button class="tool-btn" id="btn-cs-cancel">CANCEL</button>
+                <button class="tool-btn accent" id="btn-cs-save">SAVE SEED</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="app.js?v=32"></script>
 </body>
 </html>
