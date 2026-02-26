@@ -496,6 +496,58 @@ function initNavigation() {
 }
 
 // ---- PLANT PALETTE ----
+function matchPlantSearch(plant, q) {
+    // Direct name/type match
+    if (plant.name.toLowerCase().includes(q) || plant.type.includes(q)) return true;
+
+    // Water need: "low water", "high water", "dry", "thirsty"
+    const waterAliases = { low: ['low water', 'dry', 'drought'], medium: ['medium water', 'moderate water'], high: ['high water', 'thirsty', 'wet'] };
+    if (waterAliases[plant.waterNeed]?.some(a => a.includes(q))) return true;
+
+    // Sun: "full sun", "full", "partial", "shade", "part sun"
+    if (plant.sunNeed.includes(q) || (q === 'shade' && plant.sunNeed === 'partial')
+        || (q === 'full sun' && plant.sunNeed === 'full')
+        || (q === 'part sun' && plant.sunNeed === 'partial')
+        || (q === 'partial sun' && plant.sunNeed === 'partial')) return true;
+
+    // Harvest speed: "fast", "quick", "slow"
+    if ((q === 'fast' || q === 'quick') && plant.daysToHarvest <= 50) return true;
+    if (q === 'slow' && plant.daysToHarvest > 80) return true;
+
+    // Maintenance: "easy", "easy care", "low maintenance"
+    if ((q === 'easy' || q === 'easy care' || q === 'low maintenance') && plant.lowMaintenance) return true;
+
+    // Companion search: "companion to X", "companion X", "friend of X", "goes with X"
+    const companionMatch = q.match(/(?:companion(?:\s+to)?|friend(?:\s+of)?|goes\s+with|pair(?:\s+with)?)\s+(\w+)/);
+    if (companionMatch) {
+        const target = companionMatch[1].toLowerCase();
+        return plant.companions.some(c => c.includes(target));
+    }
+
+    // Enemy search: "enemy of X", "foe of X", "avoid with X"
+    const enemyMatch = q.match(/(?:enemy(?:\s+of)?|foe(?:\s+of)?|avoid(?:\s+with)?|bad\s+with)\s+(\w+)/);
+    if (enemyMatch) {
+        const target = enemyMatch[1].toLowerCase();
+        return plant.enemies.some(c => c.includes(target));
+    }
+
+    // Search in notes and care notes
+    if (plant.notes?.toLowerCase().includes(q)) return true;
+    if (plant.careNotes?.toLowerCase().includes(q)) return true;
+
+    // Season badge: "in season", "soon", "off season"
+    if (q === 'in season' || q === 'ready') {
+        const badge = getPlantSeasonBadge(plant);
+        return badge.cls === 'in-season';
+    }
+    if (q === 'soon' || q === 'upcoming') {
+        const badge = getPlantSeasonBadge(plant);
+        return badge.cls === 'upcoming';
+    }
+
+    return false;
+}
+
 function getFilteredSortedPlants() {
     const searchQ = (document.getElementById('plant-search')?.value || '').toLowerCase();
     const activeFilter = document.querySelector('.filter-btn[data-filter].active')?.dataset.filter || 'all';
@@ -506,8 +558,8 @@ function getFilteredSortedPlants() {
     // Filter by type
     if (activeFilter !== 'all') plants = plants.filter(p => p.type === activeFilter);
 
-    // Filter by search
-    if (searchQ) plants = plants.filter(p => p.name.toLowerCase().includes(searchQ) || p.type.includes(searchQ));
+    // Filter by search (supports name, type, and trait keywords)
+    if (searchQ) plants = plants.filter(p => matchPlantSearch(p, searchQ));
 
     // Sort
     const sorters = {
