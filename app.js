@@ -370,6 +370,7 @@ function enterClickPlaceMode(plantId) {
     document.querySelectorAll('.garden-bed').forEach(bed => bed.classList.add('click-place-target'));
     const plant = PLANT_LIBRARY.find(p => p.id === plantId);
     showToast(`Click on a bed to place ${plant.emoji} ${plant.name} (ESC to cancel)`);
+    showCompanionIndicators(plantId);
 }
 
 function exitClickPlaceMode() {
@@ -377,6 +378,37 @@ function exitClickPlaceMode() {
     document.body.classList.remove('click-place-mode');
     document.querySelectorAll('.garden-bed').forEach(bed => bed.classList.remove('click-place-target'));
     document.querySelectorAll('.plant-item').forEach(item => item.classList.remove('click-place-active'));
+    hideCompanionIndicators();
+}
+
+function showCompanionIndicators(plantId) {
+    hideCompanionIndicators();
+    const plant = PLANT_LIBRARY.find(p => p.id === plantId);
+    if (!plant) return;
+    document.querySelectorAll('.garden-bed').forEach((bedEl, i) => {
+        const bedPlants = state.beds[i] || [];
+        const uniqueIds = [...new Set(bedPlants.map(p => p.plantId))];
+        let friends = 0, foes = 0;
+        uniqueIds.forEach(id => {
+            if (plant.companions.includes(id)) friends++;
+            if (plant.enemies.includes(id)) foes++;
+        });
+        if (friends === 0 && foes === 0 && uniqueIds.length === 0) return;
+        const badge = document.createElement('div');
+        badge.className = 'companion-badge' + (foes > 0 ? ' has-foes' : friends > 0 ? ' has-friends' : '');
+        if (foes > 0) {
+            badge.textContent = `${foes} foe${foes > 1 ? 's' : ''}`;
+        } else if (friends > 0) {
+            badge.textContent = `${friends} friend${friends > 1 ? 's' : ''}`;
+        } else {
+            badge.textContent = 'neutral';
+        }
+        bedEl.appendChild(badge);
+    });
+}
+
+function hideCompanionIndicators() {
+    document.querySelectorAll('.companion-badge').forEach(b => b.remove());
 }
 
 // ---- SELECTION ENGINE ----
@@ -626,11 +658,13 @@ function renderPlantList(plants, searchQ) {
                 e.dataTransfer.setDragImage(ghost, 18, 18);
                 setTimeout(() => ghost.remove(), 0);
             }
-            // Hide hover card on drag
+            // Hide hover card on drag, show companion indicators
             if (hoverCard) { hoverCard.classList.remove('visible'); clearTimeout(hoverTimeout); }
+            showCompanionIndicators(item.dataset.plantId);
         });
         item.addEventListener('dragend', () => {
             item.style.opacity = '1';
+            hideCompanionIndicators();
         });
         item.addEventListener('click', () => {
             const wrap = item.closest('.plant-item-wrap');

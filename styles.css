@@ -734,6 +734,34 @@ body {
     border-color: var(--emerald);
     box-shadow: inset 0 0 30px rgba(16, 185, 129, 0.15), 0 0 15px rgba(16, 185, 129, 0.2);
 }
+/* Companion placement indicators */
+.companion-badge {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    z-index: 5;
+    pointer-events: none;
+}
+.companion-badge.has-friends {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: var(--emerald-dark);
+    color: var(--emerald);
+}
+.companion-badge.has-foes {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: var(--red-accent);
+    color: var(--red-accent);
+}
 .bed-label {
     position: absolute;
     top: 4px;
