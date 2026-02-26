@@ -1789,6 +1789,38 @@ body {
     flex-direction: column;
     gap: 4px;
 }
+/* Harvest Season Insights */
+.harvest-insights { margin-bottom: 0.5rem; }
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+.insight-card {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    padding: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.insight-label {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+}
+.insight-value {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    color: var(--emerald);
+}
+@media (max-width: 900px) {
+    .insights-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 .harvest-entry {
     display: flex;
     align-items: center;

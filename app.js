@@ -3337,14 +3337,14 @@ function renderHarvestLog() {
 
     // Stats
     const totalCount = harvests.length;
-    const totalWeight = harvests.reduce((sum, h) => sum + (h.weight || 0), 0);
+    const totalWeight = harvests.reduce((sum, h) => sum + (parseFloat(h.weight) || 0), 0);
     const donatedWeight = harvests
         .filter(h => h.donated === 'yes')
-        .reduce((sum, h) => sum + (h.weight || 0), 0)
+        .reduce((sum, h) => sum + (parseFloat(h.weight) || 0), 0)
         + harvests
         .filter(h => h.donated === 'partial')
-        .reduce((sum, h) => sum + (h.weight || 0) * 0.5, 0);
-    const varieties = new Set(harvests.map(h => h.plantId)).size;
+        .reduce((sum, h) => sum + (parseFloat(h.weight) || 0) * 0.5, 0);
+    const varieties = new Set(harvests.map(h => h.plantId || h.plant)).size;
 
     document.getElementById('harvest-total-count').textContent = totalCount;
     document.getElementById('harvest-total-weight').textContent = totalWeight.toFixed(1) + ' lbs';
@@ -3359,18 +3359,18 @@ function renderHarvestLog() {
     }
 
     container.innerHTML = harvests.map(h => {
-        const plant = PLANT_LIBRARY.find(p => p.id === h.plantId);
+        const plant = PLANT_LIBRARY.find(p => p.id === (h.plantId || h.plant));
         const dateStr = new Date(h.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         const donatedLabels = { yes: 'DONATED', partial: 'PARTIAL', no: 'PERSONAL' };
         return `
             <div class="harvest-entry">
                 <span class="harvest-emoji">${plant?.emoji || '\u{1F33F}'}</span>
                 <div class="harvest-entry-info">
-                    <div class="harvest-entry-title">${plant?.name || h.plantId}</div>
+                    <div class="harvest-entry-title">${plant?.name || h.plantId || h.plant}</div>
                     <div class="harvest-entry-meta">${dateStr} &bull; Bed ${h.bed}</div>
                     ${h.notes ? `<div class="harvest-entry-notes">${h.notes}</div>` : ''}
                 </div>
-                <div class="harvest-entry-weight">${h.weight > 0 ? h.weight.toFixed(1) + ' lbs' : '--'}</div>
+                <div class="harvest-entry-weight">${parseFloat(h.weight) > 0 ? parseFloat(h.weight).toFixed(1) + ' lbs' : '--'}</div>
                 <span class="harvest-entry-donated ${h.donated}">${donatedLabels[h.donated] || 'N/A'}</span>
                 <button class="harvest-entry-delete" data-harvest-id="${h.id}" title="Delete entry">\u00D7</button>
             </div>
@@ -3384,6 +3384,61 @@ function renderHarvestLog() {
             renderHarvestLog();
         });
     });
+
+    updateHarvestInsights(harvests);
+}
+
+function updateHarvestInsights(harvests) {
+    const panel = document.getElementById('harvest-insights');
+    if (!panel) return;
+    if (!harvests || harvests.length < 2) {
+        panel.hidden = true;
+        return;
+    }
+    panel.hidden = false;
+
+    // Top producer by weight (handle both plantId and plant field names)
+    const byPlant = {};
+    harvests.forEach(h => {
+        const pid = h.plantId || h.plant;
+        byPlant[pid] = (byPlant[pid] || 0) + (parseFloat(h.weight) || 0);
+    });
+    const topPlantId = Object.keys(byPlant).sort((a, b) => byPlant[b] - byPlant[a])[0];
+    const topPlant = PLANT_LIBRARY.find(p => p.id === topPlantId);
+    document.getElementById('insight-top-plant').textContent = topPlant
+        ? `${topPlant.emoji} ${topPlant.name} (${byPlant[topPlantId].toFixed(1)} lbs)`
+        : '--';
+
+    // Best bed by total harvest weight
+    const byBed = {};
+    harvests.forEach(h => {
+        const key = h.bed !== undefined ? h.bed : 0;
+        byBed[key] = (byBed[key] || 0) + (parseFloat(h.weight) || 0);
+    });
+    const bestBedIdx = Object.keys(byBed).sort((a, b) => byBed[b] - byBed[a])[0];
+    const bedName = typeof bedNames !== 'undefined' && bedNames[bestBedIdx] ? bedNames[bestBedIdx] : `Bed ${parseInt(bestBedIdx) + 1}`;
+    document.getElementById('insight-best-bed').textContent = `${bedName} (${byBed[bestBedIdx].toFixed(1)} lbs)`;
+
+    // Average days between harvests
+    const dates = harvests.map(h => new Date(h.date + 'T12:00:00')).sort((a, b) => a - b);
+    if (dates.length >= 2) {
+        let totalGap = 0;
+        for (let i = 1; i < dates.length; i++) {
+            totalGap += (dates[i] - dates[i - 1]) / 86400000;
+        }
+        const avgGap = Math.round(totalGap / (dates.length - 1));
+        document.getElementById('insight-avg-gap').textContent = `${avgGap} days`;
+    } else {
+        document.getElementById('insight-avg-gap').textContent = '--';
+    }
+
+    // Donation rate
+    const totalWeight = harvests.reduce((s, h) => s + (parseFloat(h.weight) || 0), 0);
+    const donatedWeight = harvests
+        .filter(h => h.donated === 'yes').reduce((s, h) => s + (parseFloat(h.weight) || 0), 0)
+        + harvests.filter(h => h.donated === 'partial').reduce((s, h) => s + (parseFloat(h.weight) || 0) * 0.5, 0);
+    const rate = totalWeight > 0 ? Math.round((donatedWeight / totalWeight) * 100) : 0;
+    document.getElementById('insight-donation-rate').textContent = `${rate}%`;
 }
 
 // ---- PLANTING LOG ----
