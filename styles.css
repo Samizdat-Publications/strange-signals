@@ -2486,6 +2486,44 @@ body {
     font-size: 0.75rem;
 }
 
+/* Watering alert banner */
+.water-alert-banner {
+    position: relative;
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    border-left: 4px solid #3b82f6;
+    padding: 0.6rem 2rem 0.6rem 0.8rem;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+    border-radius: 3px;
+}
+.water-alert-title {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    color: #60a5fa;
+    margin-bottom: 0.2rem;
+}
+.water-alert-detail {
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+}
+.water-alert-dismiss {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 2px;
+}
+.water-alert-dismiss:hover { color: var(--text-primary); }
+
 /* Weather last updated */
 .weather-updated {
     font-family: var(--font-mono);

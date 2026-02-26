@@ -446,9 +446,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ['HarvestLog', initHarvestLog],
         ['HarvestGoals', initHarvestGoals],
         ['DataExportImport', initDataExportImport],
-        ['Weather', initWeather],
         ['KeyboardShortcuts', initKeyboardShortcuts],
         ['LoadSavedState', loadSavedState],
+        ['Weather', initWeather],
         ['TodayDashboard', updateTodayDashboard],
     ];
     for (const [name, fn] of inits) {
@@ -4220,6 +4220,7 @@ async function fetchWeather() {
         const data = await resp.json();
         renderWeatherDashboard(data);
         checkFrostAlerts(data);
+        checkWateringAlert(data);
         // Cache the data
         localStorage.setItem('gardensync_weather_cache', JSON.stringify({
             data,
@@ -4233,6 +4234,7 @@ async function fetchWeather() {
             const { data, timestamp } = JSON.parse(cached);
             renderWeatherDashboard(data, timestamp);
             checkFrostAlerts(data);
+            checkWateringAlert(data);
         } else {
             document.getElementById('weather-dashboard').innerHTML = `
                 <div class="weather-current-card" style="text-align:center;padding:2rem;">
@@ -4397,6 +4399,76 @@ function checkFrostAlerts(data) {
     `;
 }
 
+function checkWateringAlert(data) {
+    const banner = document.getElementById('water-alert-banner');
+    if (!banner) return;
+
+    const daily = data.daily;
+    const today = new Date();
+
+    // Check precipitation over recent days (today + past 2 days from forecast)
+    // Open-Meteo daily includes today as index 0
+    let recentRain = 0;
+    const daysToCheck = Math.min(3, daily.precipitation_sum.length);
+    for (let i = 0; i < daysToCheck; i++) {
+        recentRain += (daily.precipitation_sum[i] || 0);
+    }
+
+    // Check if rain is expected tomorrow
+    const rainTomorrow = daily.precipitation_sum.length > 1 ? daily.precipitation_sum[1] : 0;
+    const rainProbTomorrow = daily.precipitation_probability_max?.length > 1 ? daily.precipitation_probability_max[1] : 0;
+
+    // Check what high-water plants are in the garden
+    const allPlants = state.beds.flat();
+    const highWaterPlants = [];
+    const medWaterPlants = [];
+    allPlants.forEach(p => {
+        const lib = PLANT_LIBRARY.find(l => l.id === p.plantId);
+        if (!lib) return;
+        if (lib.waterNeed === 'high' && !highWaterPlants.includes(lib.name)) highWaterPlants.push(lib.name);
+        if (lib.waterNeed === 'medium' && !medWaterPlants.includes(lib.name)) medWaterPlants.push(lib.name);
+    });
+
+    if (allPlants.length === 0) { banner.classList.add('hidden'); return; }
+
+    // Current temp — hot weather increases water need
+    const currentTemp = data.current?.temperature_2m || 70;
+    const isHot = currentTemp >= 85;
+
+    // Determine if we should show alert
+    const drySpell = recentRain < 0.15; // less than 0.15" in recent days
+    const hasThirstyPlants = highWaterPlants.length > 0;
+    const needsWater = drySpell && (hasThirstyPlants || isHot);
+
+    if (!needsWater) {
+        banner.classList.add('hidden');
+        return;
+    }
+
+    // Build alert message
+    const urgency = (isHot && drySpell) ? 'HIGH' : 'MODERATE';
+    let detail = '';
+    if (recentRain < 0.05) {
+        detail += `No measurable rain in the past ${daysToCheck} days. `;
+    } else {
+        detail += `Only ${recentRain.toFixed(2)}" rain recently. `;
+    }
+    if (isHot) detail += `Current temp: ${Math.round(currentTemp)}\u00B0F. `;
+    if (highWaterPlants.length > 0) {
+        detail += `High-water plants: ${highWaterPlants.join(', ')}. `;
+    }
+    if (rainProbTomorrow >= 60 && rainTomorrow > 0.1) {
+        detail += `Rain expected tomorrow (${rainProbTomorrow}% chance).`;
+    }
+
+    banner.classList.remove('hidden');
+    banner.innerHTML = `
+        <div class="water-alert-title">\u{1F4A7} WATER YOUR BEDS \u2014 ${urgency} PRIORITY</div>
+        <div class="water-alert-detail">${detail}</div>
+        <button class="water-alert-dismiss" onclick="this.parentElement.classList.add('hidden')">\u2715</button>
+    `;
+}
+
 function initWeather() {
     // Check cache age - refresh if older than 30 minutes
     const cached = localStorage.getItem('gardensync_weather_cache');
@@ -4406,6 +4478,7 @@ function initWeather() {
         if (age < 30 * 60 * 1000) {
             renderWeatherDashboard(data, timestamp);
             checkFrostAlerts(data);
+            checkWateringAlert(data);
             return;
         }
     }
