@@ -22,7 +22,7 @@ class GardenSyncHandler(http.server.SimpleHTTPRequestHandler):
         # CORS headers for all responses
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, x-goog-api-key')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, x-goog-api-key, x-api-key, anthropic-version')
         # Disable caching for dev
         self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
         self.send_header('Pragma', 'no-cache')
@@ -35,9 +35,11 @@ class GardenSyncHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        """Proxy POST requests to Gemini API"""
+        """Proxy POST requests to Gemini or Claude API"""
         if self.path.startswith('/api/gemini/'):
             self.proxy_to_gemini()
+        elif self.path.startswith('/api/claude/'):
+            self.proxy_to_claude()
         else:
             self.send_response(404)
             self.send_header('Content-Type', 'application/json')
@@ -97,10 +99,61 @@ class GardenSyncHandler(http.server.SimpleHTTPRequestHandler):
             error_msg = json.dumps({"error": {"message": str(e)}})
             self.wfile.write(error_msg.encode())
 
+    def proxy_to_claude(self):
+        """Proxy POST requests to Anthropic Claude API"""
+        try:
+            # /api/claude/v1/messages -> https://api.anthropic.com/v1/messages
+            claude_path = self.path.replace('/api/claude/', '/')
+            target_url = "https://api.anthropic.com" + claude_path
+
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length)
+
+            api_key = self.headers.get('x-api-key', '')
+            anthropic_version = self.headers.get('anthropic-version', '2023-06-01')
+
+            req = urllib.request.Request(
+                target_url,
+                data=body,
+                headers={
+                    'Content-Type': 'application/json',
+                    'x-api-key': api_key,
+                    'anthropic-version': anthropic_version,
+                },
+                method='POST'
+            )
+
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+
+            with urllib.request.urlopen(req, context=ctx, timeout=120) as resp:
+                response_data = resp.read()
+                self.send_response(resp.status)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(response_data)
+
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode('utf-8', errors='replace')
+            self.send_response(e.code)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(error_body.encode())
+
+        except Exception as e:
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            error_msg = json.dumps({"error": {"message": str(e)}})
+            self.wfile.write(error_msg.encode())
+
     def log_message(self, format, *args):
         """Custom log with color"""
         if '/api/gemini/' in str(args[0]):
-            print(f"\033[32m[PROXY]\033[0m {args[0]}")
+            print(f"\033[32m[GEMINI]\033[0m {args[0]}")
+        elif '/api/claude/' in str(args[0]):
+            print(f"\033[35m[CLAUDE]\033[0m {args[0]}")
         elif '404' in str(args[1]) if len(args) > 1 else False:
             print(f"\033[31m[404]\033[0m {args[0]}")
         else:
@@ -152,6 +205,7 @@ if __name__ == '__main__':
   GARDENSYNC // FOOD NOT BOMBS CANTON
   Server running on http://localhost:{PORT}
   Gemini API proxy active at /api/gemini/*
+  Claude API proxy active at /api/claude/*
   Press Ctrl+C to stop
 """)
 

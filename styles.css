@@ -3863,3 +3863,177 @@ textarea.form-input { resize: vertical; }
     cursor: pointer; font-size: 0.7rem; padding: 0.1rem 0.2rem;
 }
 .custom-action-btn:hover { color: var(--text-primary); }
+
+/* ==================== GARDEN BUDDY AI CHAT ==================== */
+.gb-fab {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9000;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--emerald); border: 2px solid var(--emerald-dark);
+    color: white; font-size: 1.5rem; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex; align-items: center; justify-content: center;
+}
+.gb-fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 28px rgba(16,185,129,0.6);
+}
+.gb-fab.active {
+    background: var(--bg-tertiary); border-color: var(--border);
+    color: var(--text-secondary);
+}
+
+.gb-panel {
+    position: fixed; bottom: 90px; right: 24px; z-index: 9001;
+    width: 400px; height: 560px;
+    background: var(--bg-secondary); border: 1px solid var(--emerald-dark);
+    border-radius: 12px; overflow: hidden;
+    display: flex; flex-direction: column;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    animation: gbSlideUp 0.25s ease-out;
+}
+.gb-panel.hidden { display: none; }
+
+@keyframes gbSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.gb-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.6rem 0.8rem;
+    background: linear-gradient(135deg, var(--emerald-dark), var(--emerald));
+    flex-shrink: 0;
+}
+.gb-header-left { display: flex; align-items: center; gap: 0.5rem; }
+.gb-logo { font-size: 1.2rem; }
+.gb-title {
+    font-family: var(--font-display); font-size: 0.95rem;
+    color: white; letter-spacing: 1px;
+}
+.gb-header-right { display: flex; align-items: center; gap: 0.2rem; }
+.gb-token-display {
+    font-family: var(--font-mono); font-size: 0.55rem;
+    color: rgba(255,255,255,0.5); letter-spacing: 0.3px;
+    margin-left: 0.3rem;
+}
+.gb-clear-btn {
+    background: none; border: none; color: rgba(255,255,255,0.5);
+    font-size: 0.9rem; cursor: pointer; padding: 0 0.3rem;
+    transition: color 0.15s;
+}
+.gb-clear-btn:hover { color: rgba(255,200,200,0.9); }
+.gb-close-btn {
+    background: none; border: none; color: rgba(255,255,255,0.8);
+    font-size: 1.3rem; cursor: pointer; padding: 0 0.3rem;
+    transition: color 0.15s;
+}
+.gb-close-btn:hover { color: white; }
+
+.gb-key-row {
+    display: flex; gap: 0.3rem; padding: 0.5rem 0.6rem;
+    background: var(--bg-primary); border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.gb-key-row.saved { display: none; }
+.gb-key-input {
+    flex: 1; background: var(--bg-tertiary); border: 1px solid var(--border);
+    color: var(--text-primary); font-family: var(--font-mono); font-size: 0.7rem;
+    padding: 0.3rem 0.5rem; border-radius: 4px; outline: none;
+}
+.gb-key-input:focus { border-color: var(--emerald); }
+.gb-key-btn {
+    background: var(--emerald-dark); border: none; color: white;
+    font-family: var(--font-condensed); font-size: 0.7rem; font-weight: 600;
+    padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer;
+    letter-spacing: 0.5px;
+}
+.gb-key-btn:hover { background: var(--emerald); }
+
+.gb-messages {
+    flex: 1; overflow-y: auto; padding: 0.6rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+
+.gb-msg { max-width: 92%; animation: gbFadeIn 0.2s ease-out; }
+@keyframes gbFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.gb-msg-user {
+    align-self: flex-end;
+    background: var(--emerald-dark); color: white;
+    padding: 0.5rem 0.7rem; border-radius: 12px 12px 2px 12px;
+}
+.gb-msg-bot {
+    align-self: flex-start;
+    background: var(--bg-tertiary); color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.7rem; border-radius: 12px 12px 12px 2px;
+}
+.gb-msg-text {
+    font-family: var(--font-mono); font-size: 0.75rem;
+    line-height: 1.5; word-wrap: break-word;
+}
+.gb-msg-text strong { color: var(--emerald-light); }
+.gb-msg-text em { color: var(--text-secondary); font-style: italic; }
+
+.gb-msg-action {
+    align-self: center; text-align: center;
+    background: rgba(16,185,129,0.1); border: 1px dashed var(--emerald-dark);
+    color: var(--emerald-light); padding: 0.3rem 0.6rem;
+    border-radius: 6px; font-family: var(--font-mono); font-size: 0.65rem;
+    letter-spacing: 0.3px; max-width: 100%;
+}
+
+.gb-typing {
+    align-self: flex-start; padding: 0.5rem 0.7rem;
+    background: var(--bg-tertiary); border: 1px solid var(--border);
+    border-radius: 12px 12px 12px 2px;
+    display: flex; gap: 4px; align-items: center;
+}
+.gb-typing-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--emerald); animation: gbBounce 1.4s infinite;
+}
+.gb-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.gb-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes gbBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+}
+
+.gb-input-row {
+    display: flex; gap: 0.3rem; padding: 0.5rem 0.6rem;
+    background: var(--bg-primary); border-top: 1px solid var(--border);
+    flex-shrink: 0; align-items: flex-end;
+}
+.gb-input {
+    flex: 1; background: var(--bg-tertiary); border: 1px solid var(--border);
+    color: var(--text-primary); font-family: var(--font-mono); font-size: 0.75rem;
+    padding: 0.4rem 0.6rem; border-radius: 8px; outline: none;
+    resize: none; max-height: 80px; line-height: 1.4;
+}
+.gb-input:focus { border-color: var(--emerald); }
+.gb-input::placeholder { color: var(--text-muted); opacity: 0.5; }
+.gb-send-btn {
+    background: var(--emerald); border: none; color: white;
+    width: 34px; height: 34px; border-radius: 50%;
+    font-size: 1rem; cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+.gb-send-btn:hover { background: var(--emerald-light); }
+.gb-send-btn:disabled { background: var(--bg-tertiary); color: var(--text-muted); cursor: not-allowed; }
+
+/* Mobile responsive */
+@media (max-width: 500px) {
+    .gb-panel {
+        width: calc(100vw - 16px); height: calc(100vh - 120px);
+        bottom: 80px; right: 8px; left: 8px;
+        border-radius: 12px;
+    }
+    .gb-fab { bottom: 16px; right: 16px; }
+}

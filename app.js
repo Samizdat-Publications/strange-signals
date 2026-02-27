@@ -443,6 +443,131 @@ let PLANT_LIBRARY = [
     }
 ];
 
+// ---- DEMO DATA (inlined to avoid fetch() failure on file:// protocol) ----
+const DEMO_DATA = {
+    "version": 1, "exportDate": "2025-06-15T12:00:00.000Z", "app": "GardenSync // Food Not Bombs Canton", "isDemo": true,
+    "state": {
+        "beds": [
+            [
+                {"id":"tomato-demo-001","plantId":"tomato","x":20,"y":20},{"id":"tomato-demo-002","plantId":"tomato","x":80,"y":20},
+                {"id":"tomato-demo-003","plantId":"tomato","x":140,"y":20},{"id":"tomato-demo-004","plantId":"tomato","x":200,"y":20},
+                {"id":"basil-demo-001","plantId":"basil","x":40,"y":80},{"id":"basil-demo-002","plantId":"basil","x":100,"y":80},
+                {"id":"basil-demo-003","plantId":"basil","x":160,"y":80},{"id":"marigold-demo-001","plantId":"marigold","x":260,"y":20},
+                {"id":"marigold-demo-002","plantId":"marigold","x":260,"y":80},{"id":"pepper-demo-001","plantId":"pepper","x":300,"y":40},
+                {"id":"pepper-demo-002","plantId":"pepper","x":340,"y":40},{"id":"carrot-demo-001","plantId":"carrot","x":20,"y":140},
+                {"id":"carrot-demo-002","plantId":"carrot","x":40,"y":140},{"id":"carrot-demo-003","plantId":"carrot","x":60,"y":140},
+                {"id":"carrot-demo-004","plantId":"carrot","x":80,"y":140},{"id":"carrot-demo-005","plantId":"carrot","x":100,"y":140},
+                {"id":"carrot-demo-006","plantId":"carrot","x":120,"y":140},{"id":"onion-demo-001","plantId":"onion","x":20,"y":180},
+                {"id":"onion-demo-002","plantId":"onion","x":40,"y":180},{"id":"onion-demo-003","plantId":"onion","x":60,"y":180},
+                {"id":"onion-demo-004","plantId":"onion","x":80,"y":180},{"id":"onion-demo-005","plantId":"onion","x":100,"y":180}
+            ],
+            [
+                {"id":"lettuce-demo-001","plantId":"lettuce","x":20,"y":20},{"id":"lettuce-demo-002","plantId":"lettuce","x":60,"y":20},
+                {"id":"lettuce-demo-003","plantId":"lettuce","x":100,"y":20},{"id":"lettuce-demo-004","plantId":"lettuce","x":140,"y":20},
+                {"id":"spinach-demo-001","plantId":"spinach","x":20,"y":60},{"id":"spinach-demo-002","plantId":"spinach","x":40,"y":60},
+                {"id":"spinach-demo-003","plantId":"spinach","x":60,"y":60},{"id":"spinach-demo-004","plantId":"spinach","x":80,"y":60},
+                {"id":"spinach-demo-005","plantId":"spinach","x":100,"y":60},{"id":"spinach-demo-006","plantId":"spinach","x":120,"y":60},
+                {"id":"radish-demo-001","plantId":"radish","x":180,"y":20},{"id":"radish-demo-002","plantId":"radish","x":200,"y":20},
+                {"id":"radish-demo-003","plantId":"radish","x":220,"y":20},{"id":"radish-demo-004","plantId":"radish","x":180,"y":40},
+                {"id":"radish-demo-005","plantId":"radish","x":200,"y":40},{"id":"radish-demo-006","plantId":"radish","x":220,"y":40},
+                {"id":"kale-demo-001","plantId":"kale","x":280,"y":20},{"id":"kale-demo-002","plantId":"kale","x":340,"y":20},
+                {"id":"kale-demo-003","plantId":"kale","x":280,"y":80},{"id":"chive-demo-001","plantId":"chive","x":160,"y":120},
+                {"id":"chive-demo-002","plantId":"chive","x":200,"y":120},{"id":"strawberry-demo-001","plantId":"strawberry","x":20,"y":120},
+                {"id":"strawberry-demo-002","plantId":"strawberry","x":60,"y":120},{"id":"strawberry-demo-003","plantId":"strawberry","x":100,"y":120},
+                {"id":"strawberry-demo-004","plantId":"strawberry","x":20,"y":160},{"id":"strawberry-demo-005","plantId":"strawberry","x":60,"y":160},
+                {"id":"strawberry-demo-006","plantId":"strawberry","x":100,"y":160}
+            ],
+            [
+                {"id":"green-beans-demo-001","plantId":"green-beans","x":20,"y":20},{"id":"green-beans-demo-002","plantId":"green-beans","x":40,"y":20},
+                {"id":"green-beans-demo-003","plantId":"green-beans","x":60,"y":20},{"id":"green-beans-demo-004","plantId":"green-beans","x":80,"y":20},
+                {"id":"green-beans-demo-005","plantId":"green-beans","x":100,"y":20},{"id":"green-beans-demo-006","plantId":"green-beans","x":120,"y":20},
+                {"id":"green-beans-demo-007","plantId":"green-beans","x":140,"y":20},{"id":"green-beans-demo-008","plantId":"green-beans","x":160,"y":20},
+                {"id":"cucumber-demo-001","plantId":"cucumber","x":220,"y":20},{"id":"cucumber-demo-002","plantId":"cucumber","x":280,"y":20},
+                {"id":"cucumber-demo-003","plantId":"cucumber","x":340,"y":20},{"id":"zucchini-demo-001","plantId":"zucchini","x":20,"y":100},
+                {"id":"zucchini-demo-002","plantId":"zucchini","x":80,"y":100},{"id":"nasturtium-demo-001","plantId":"nasturtium","x":160,"y":100},
+                {"id":"nasturtium-demo-002","plantId":"nasturtium","x":200,"y":100},{"id":"nasturtium-demo-003","plantId":"nasturtium","x":240,"y":100},
+                {"id":"sunflower-demo-001","plantId":"sunflower","x":320,"y":100},{"id":"sunflower-demo-002","plantId":"sunflower","x":360,"y":100},
+                {"id":"dill-demo-001","plantId":"dill","x":160,"y":160},{"id":"dill-demo-002","plantId":"dill","x":200,"y":160},
+                {"id":"dill-demo-003","plantId":"dill","x":240,"y":160}
+            ],
+            [
+                {"id":"garlic-demo-001","plantId":"garlic","x":20,"y":20},{"id":"garlic-demo-002","plantId":"garlic","x":40,"y":20},
+                {"id":"garlic-demo-003","plantId":"garlic","x":60,"y":20},{"id":"garlic-demo-004","plantId":"garlic","x":80,"y":20},
+                {"id":"garlic-demo-005","plantId":"garlic","x":100,"y":20},{"id":"garlic-demo-006","plantId":"garlic","x":120,"y":20},
+                {"id":"garlic-demo-007","plantId":"garlic","x":140,"y":20},{"id":"garlic-demo-008","plantId":"garlic","x":160,"y":20},
+                {"id":"garlic-demo-009","plantId":"garlic","x":180,"y":20},{"id":"garlic-demo-010","plantId":"garlic","x":200,"y":20},
+                {"id":"thyme-demo-001","plantId":"thyme","x":20,"y":80},{"id":"thyme-demo-002","plantId":"thyme","x":60,"y":80},
+                {"id":"thyme-demo-003","plantId":"thyme","x":100,"y":80},{"id":"mint-demo-001","plantId":"mint","x":240,"y":20},
+                {"id":"mint-demo-002","plantId":"mint","x":280,"y":20},{"id":"sweet-peas-demo-001","plantId":"sweet-peas","x":20,"y":140},
+                {"id":"sweet-peas-demo-002","plantId":"sweet-peas","x":40,"y":140},{"id":"sweet-peas-demo-003","plantId":"sweet-peas","x":60,"y":140},
+                {"id":"sweet-peas-demo-004","plantId":"sweet-peas","x":80,"y":140},{"id":"sweet-peas-demo-005","plantId":"sweet-peas","x":100,"y":140},
+                {"id":"sweet-peas-demo-006","plantId":"sweet-peas","x":120,"y":140},{"id":"marigold-demo-d01","plantId":"marigold","x":280,"y":80},
+                {"id":"marigold-demo-d02","plantId":"marigold","x":320,"y":80},{"id":"marigold-demo-d03","plantId":"marigold","x":360,"y":80},
+                {"id":"cantaloupe-demo-001","plantId":"cantaloupe","x":200,"y":120}
+            ]
+        ],
+        "volunteers": [
+            {"id":"vol-1","name":"Stewart G.","phone":"330-555-0101","availability":"high"},
+            {"id":"vol-2","name":"Maria L.","phone":"330-555-0202","availability":"medium"},
+            {"id":"vol-3","name":"Jamal W.","phone":"330-555-0303","availability":"high"},
+            {"id":"vol-4","name":"Sage R.","phone":"330-555-0404","availability":"low"},
+            {"id":"vol-5","name":"Devon C.","phone":"330-555-0505","availability":"medium"}
+        ],
+        "bedAssignments": ["vol-1","vol-2","vol-3","vol-4"]
+    },
+    "plantingLog": {},
+    "harvests": [
+        {"id":"h-001","plant":"lettuce","bed":"2","weight":"2.5","date":"2025-05-15","notes":"First spring harvest! Beautiful heads.","donated":"yes"},
+        {"id":"h-002","plant":"radish","bed":"2","weight":"1.2","date":"2025-05-20","notes":"Cherry Belle variety, super crunchy.","donated":"yes"},
+        {"id":"h-003","plant":"spinach","bed":"2","weight":"3.1","date":"2025-05-25","notes":"Big haul before the heat hits.","donated":"yes"},
+        {"id":"h-004","plant":"strawberry","bed":"2","weight":"1.8","date":"2025-06-01","notes":"First berries of the year!","donated":"partial"},
+        {"id":"h-005","plant":"lettuce","bed":"2","weight":"2.0","date":"2025-06-05","notes":"Second succession planting.","donated":"yes"},
+        {"id":"h-006","plant":"green-beans","bed":"3","weight":"4.2","date":"2025-06-20","notes":"Bush beans going crazy.","donated":"yes"},
+        {"id":"h-007","plant":"zucchini","bed":"3","weight":"6.5","date":"2025-06-25","notes":"Two massive zukes. Should have picked smaller.","donated":"yes"},
+        {"id":"h-008","plant":"cucumber","bed":"3","weight":"3.0","date":"2025-07-01","notes":"Fresh cukes for FNB meal!","donated":"yes"},
+        {"id":"h-009","plant":"tomato","bed":"1","weight":"8.5","date":"2025-07-15","notes":"Tomato avalanche begins.","donated":"yes"},
+        {"id":"h-010","plant":"basil","bed":"1","weight":"0.5","date":"2025-07-15","notes":"Huge basil harvest, made pesto.","donated":"partial"},
+        {"id":"h-011","plant":"pepper","bed":"1","weight":"2.3","date":"2025-07-20","notes":"Green peppers, left some to ripen red.","donated":"yes"},
+        {"id":"h-012","plant":"kale","bed":"2","weight":"3.8","date":"2025-07-25","notes":"Kale just keeps giving.","donated":"yes"},
+        {"id":"h-013","plant":"tomato","bed":"1","weight":"12.0","date":"2025-08-01","notes":"Peak tomato season. So many romas.","donated":"yes"},
+        {"id":"h-014","plant":"zucchini","bed":"3","weight":"5.0","date":"2025-08-05","notes":"Leaving zukes on neighbors porches at this point.","donated":"yes"},
+        {"id":"h-015","plant":"green-beans","bed":"3","weight":"3.5","date":"2025-08-10","notes":"Second flush of beans.","donated":"yes"}
+    ],
+    "journal": {
+        "bed-0": [
+            {"id":1001,"text":"Transplanted tomato starts from Mahoning Valley greenhouse","date":"2025-05-05T14:00:00.000Z"},
+            {"id":1002,"text":"Added basil companions between tomato rows","date":"2025-05-10T10:00:00.000Z"},
+            {"id":1003,"text":"Staked all tomatoes, used Florida weave method","date":"2025-05-20T16:00:00.000Z"},
+            {"id":1004,"text":"First tomato flowers appearing!","date":"2025-06-08T09:00:00.000Z"},
+            {"id":1005,"text":"Side-dressed with compost. Plants looking strong.","date":"2025-06-25T11:00:00.000Z"}
+        ],
+        "bed-1": [
+            {"id":2001,"text":"Direct-sowed lettuce and spinach mix","date":"2025-04-01T08:00:00.000Z"},
+            {"id":2002,"text":"Radish seeds in between rows as markers","date":"2025-04-01T08:30:00.000Z"},
+            {"id":2003,"text":"Planted strawberry bare roots along south edge","date":"2025-04-15T10:00:00.000Z"},
+            {"id":2004,"text":"Transplanted kale starts from indoor seed trays","date":"2025-04-20T14:00:00.000Z"},
+            {"id":2005,"text":"Added shade cloth before heat wave","date":"2025-06-15T07:00:00.000Z"}
+        ],
+        "bed-2": [
+            {"id":3001,"text":"Direct-sowed bush beans after last frost","date":"2025-04-25T09:00:00.000Z"},
+            {"id":3002,"text":"Transplanted cucumber starts with trellis","date":"2025-05-05T11:00:00.000Z"},
+            {"id":3003,"text":"Zucchini going wild, hand-pollinating female flowers","date":"2025-06-10T08:00:00.000Z"},
+            {"id":3004,"text":"Nasturtiums attracting aphids away from cukes - working great!","date":"2025-06-20T15:00:00.000Z"}
+        ],
+        "bed-3": [
+            {"id":4001,"text":"Garlic planted last October, scapes appearing","date":"2025-06-01T10:00:00.000Z"},
+            {"id":4002,"text":"Removed garlic scapes - will use in FNB stir fry","date":"2025-06-10T09:00:00.000Z"},
+            {"id":4003,"text":"Sweet peas blooming beautifully on trellis","date":"2025-06-15T16:00:00.000Z"},
+            {"id":4004,"text":"Thyme spreading nicely as ground cover between beds","date":"2025-06-20T12:00:00.000Z"},
+            {"id":4005,"text":"Mint in sunken pots - NOT letting it escape this year","date":"2025-05-01T14:00:00.000Z"}
+        ]
+    },
+    "completedTasks": {},
+    "bedNames": ["SALSA GARDEN", "COOL GREENS", "THREE SISTERS+", "HERB SPIRAL"],
+    "harvestGoal": 150,
+    "geminiKey": ""
+};
+
 // ---- CANTON CLIMATE DATA ----
 const CANTON_CLIMATE = {
     zone: '6a',
@@ -612,6 +737,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ['ShareURL', initShareURL],
         ['Weather', initWeather],
         ['TodayDashboard', updateTodayDashboard],
+        ['GardenBuddy', initGardenBuddy],
     ];
     for (const [name, fn] of inits) {
         try { fn(); }
@@ -1214,7 +1340,7 @@ function renderPlacedPlants(bedIndex) {
         countBadge.style.display = cnt > 0 ? '' : 'none';
     }
 
-    // Bed coverage visualization — green tint that intensifies with fullness
+    // Bed coverage visualization  -  green tint that intensifies with fullness
     const bedArea = getBedArea(bedIndex);
     let usedArea = 0;
     state.beds[bedIndex].forEach(p => {
@@ -1403,7 +1529,7 @@ function updateSpacingWarnings(bedIndex) {
                 warn.style.left = midX + 'px';
                 warn.style.top = midY + 'px';
                 warn.title = `Too close! ${plant1.name} needs ${plant1.spacing}" / ${plant2.name} needs ${plant2.spacing}"`;
-                warn.textContent = '⚠';
+                warn.textContent = '\u26A0';
                 bedEl.appendChild(warn);
             }
         }
@@ -1423,12 +1549,12 @@ function showContextMenu(x, y, bedIndex, placement) {
     const otherBeds = [0,1,2,3].filter(i => i !== bedIndex);
     menu.innerHTML = `
         <div class="context-menu-header">${plant.emoji} ${plant.name}</div>
-        <button class="context-menu-item" data-action="info">ℹ️ Plant Info</button>
-        <button class="context-menu-item" data-action="duplicate">📋 Duplicate</button>
-        <button class="context-menu-item" data-action="remove">🗑️ Remove</button>
+        <button class="context-menu-item" data-action="info">\u2139\uFE0F Plant Info</button>
+        <button class="context-menu-item" data-action="duplicate">\uD83D\uDCCB Duplicate</button>
+        <button class="context-menu-item" data-action="remove">\uD83D\uDDD1\uFE0F Remove</button>
         <div class="context-menu-divider"></div>
         <div class="context-menu-sublabel">MOVE TO:</div>
-        ${otherBeds.map(i => `<button class="context-menu-item" data-action="move" data-target-bed="${i}">➡️ Bed ${i + 1}</button>`).join('')}
+        ${otherBeds.map(i => `<button class="context-menu-item" data-action="move" data-target-bed="${i}">\u27A1\uFE0F Bed ${i + 1}</button>`).join('')}
     `;
 
     menu.style.left = x + 'px';
@@ -1674,7 +1800,7 @@ function findNextOpenPosition(bedIndex, plantId) {
 const BED_TEMPLATES = [
     {
         name: 'Salsa Garden',
-        desc: 'Tomatoes, peppers, onion, basil & cilantro — everything for fresh salsa',
+        desc: 'Tomatoes, peppers, onion, basil & cilantro \u2014 everything for fresh salsa',
         plants: [
             { id: 'tomato', count: 4 },
             { id: 'pepper', count: 3 },
@@ -1684,7 +1810,7 @@ const BED_TEMPLATES = [
     },
     {
         name: 'Pizza Garden',
-        desc: 'Tomatoes, basil, pepper & oregano — grow your own pizza toppings',
+        desc: 'Tomatoes, basil, pepper & oregano \u2014 grow your own pizza toppings',
         plants: [
             { id: 'tomato', count: 4 },
             { id: 'basil', count: 4 },
@@ -1693,7 +1819,7 @@ const BED_TEMPLATES = [
     },
     {
         name: 'Three Sisters',
-        desc: 'Corn, beans & squash — classic Native American companion planting',
+        desc: 'Corn, beans & squash \u2014 classic Native American companion planting',
         plants: [
             { id: 'zucchini', count: 2 },
             { id: 'green-beans', count: 8 },
@@ -1701,7 +1827,7 @@ const BED_TEMPLATES = [
     },
     {
         name: 'Salad Bowl',
-        desc: 'Lettuce, spinach, radish & carrot — quick-harvest salad greens',
+        desc: 'Lettuce, spinach, radish & carrot \u2014 quick-harvest salad greens',
         plants: [
             { id: 'lettuce', count: 8 },
             { id: 'spinach', count: 6 },
@@ -1711,7 +1837,7 @@ const BED_TEMPLATES = [
     },
     {
         name: 'Pollinator Patch',
-        desc: 'Sunflowers, marigolds, nasturtium & sweet peas — attract bees & butterflies',
+        desc: 'Sunflowers, marigolds, nasturtium & sweet peas \u2014 attract bees & butterflies',
         plants: [
             { id: 'sunflower', count: 3 },
             { id: 'marigold', count: 5 },
@@ -1721,7 +1847,7 @@ const BED_TEMPLATES = [
     },
     {
         name: 'Herb Haven',
-        desc: 'Basil, thyme, chives, dill & mint — a complete kitchen herb garden',
+        desc: 'Basil, thyme, chives, dill & mint \u2014 a complete kitchen herb garden',
         plants: [
             { id: 'basil', count: 4 },
             { id: 'thyme', count: 3 },
@@ -1732,7 +1858,7 @@ const BED_TEMPLATES = [
     },
     {
         name: 'Kids Garden',
-        desc: 'Sunflowers, strawberries, radish & carrots — fun, fast & easy for kids',
+        desc: 'Sunflowers, strawberries, radish & carrots \u2014 fun, fast & easy for kids',
         plants: [
             { id: 'sunflower', count: 2 },
             { id: 'strawberry', count: 4 },
@@ -2015,7 +2141,7 @@ function applyParsedToForm(parsed) {
     document.querySelector('.modal-tab[data-tab="manual"]').classList.add('active');
     document.getElementById('tab-manual').hidden = false;
     document.getElementById('tab-photo').hidden = true;
-    showToast('Fields extracted — review and complete the form');
+    showToast('Fields extracted \u2014 review and complete the form');
 }
 
 function initCustomSeeds() {
@@ -2946,8 +3072,8 @@ function updateTodayDashboard() {
     // Season progress
     const lastFrostDate = new Date(today.getFullYear(), 3, 18);
     const firstFrostDate = new Date(today.getFullYear(), 9, 28);
-    const seasonStartDate = new Date(today.getFullYear(), 1, 15); // Feb 15 — indoor seeds start
-    const seasonEndDate = new Date(today.getFullYear(), 10, 15); // Nov 15 — cleanup
+    const seasonStartDate = new Date(today.getFullYear(), 1, 15); // Feb 15  -  indoor seeds start
+    const seasonEndDate = new Date(today.getFullYear(), 10, 15); // Nov 15  -  cleanup
     const seasonTotal = seasonEndDate - seasonStartDate;
     const seasonElapsed = Math.max(0, Math.min(today - seasonStartDate, seasonTotal));
     const seasonPct = Math.round((seasonElapsed / seasonTotal) * 100);
@@ -4788,7 +4914,7 @@ async function fetchWeather() {
             document.getElementById('weather-dashboard').innerHTML = `
                 <div class="weather-current-card" style="text-align:center;padding:2rem;">
                     <p style="color:var(--red-accent);font-family:var(--font-mono);font-size:0.8rem;">
-                        WEATHER DATA UNAVAILABLE — ${err.message}
+                        WEATHER DATA UNAVAILABLE \u2014 ${err.message}
                     </p>
                     <button onclick="fetchWeather()" class="tool-btn" style="margin-top:0.75rem;">RETRY</button>
                 </div>
@@ -4980,7 +5106,7 @@ function checkWateringAlert(data) {
 
     if (allPlants.length === 0) { banner.classList.add('hidden'); return; }
 
-    // Current temp — hot weather increases water need
+    // Current temp  -  hot weather increases water need
     const currentTemp = data.current?.temperature_2m || 70;
     const isHot = currentTemp >= 85;
 
@@ -5046,12 +5172,10 @@ function initDataExportImport() {
     document.getElementById('btn-load-demo').addEventListener('click', loadDemoData);
 }
 
-async function loadDemoData() {
-    showConfirm('LOAD DEMO GARDEN', 'Load a fully-planned demo garden with 4 themed beds, 5 volunteers, and harvest history? This replaces all current data.', async () => {
+function loadDemoData() {
+    showConfirm('LOAD DEMO GARDEN', 'Load a fully-planned demo garden with 4 themed beds, 5 volunteers, and harvest history? This replaces all current data.', () => {
         try {
-            const resp = await fetch('demo-data.json');
-            if (!resp.ok) throw new Error('Could not load demo data file');
-            const data = await resp.json();
+            const data = JSON.parse(JSON.stringify(DEMO_DATA));
 
             // Restore state
             if (data.state.beds) {
@@ -5123,7 +5247,7 @@ function exportAllData() {
 
 // ---- SHARE VIA URL ----
 function generateShareURL() {
-    // Compact encoding: beds → array of arrays of [plantIdIndex, x, y]
+    // Compact encoding: beds  ->  array of arrays of [plantIdIndex, x, y]
     // Build plant ID lookup table from what's actually used
     const usedIds = new Set();
     state.beds.forEach(bed => bed.forEach(p => usedIds.add(p.plantId)));
@@ -5199,7 +5323,7 @@ function initShareURL() {
     if (btn) {
         btn.addEventListener('click', () => {
             const totalPlants = state.beds.reduce((s, b) => s + b.length, 0);
-            if (totalPlants === 0) { showToast('Nothing to share — plant some seeds first!'); return; }
+            if (totalPlants === 0) { showToast('Nothing to share \u2014 plant some seeds first!'); return; }
             const url = generateShareURL();
             navigator.clipboard.writeText(url).then(() => {
                 showToast('Share link copied to clipboard!');
@@ -5273,3 +5397,551 @@ window.addEventListener('resize', () => {
         drawTempChart();
     }, 250);
 });
+
+// ==================== GARDEN BUDDY AI CHAT ====================
+
+// Strip lone surrogates that break JSON serialization (emoji from Claude responses, OCR, etc.)
+function safeStringify(obj) {
+    return JSON.stringify(obj, (key, value) => {
+        if (typeof value === 'string') {
+            return value.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/g, '')
+                        .replace(/(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '');
+        }
+        return value;
+    });
+}
+
+let gbConversation = [];   // [{role, content}] for Claude Messages API
+let gbDisplayLog = [];     // [{role, text, isAction}] for UI replay on reload
+let gbClaudeKey = localStorage.getItem('gardensync_claude_key') || '';
+let gbProcessing = false;
+let gbTotalTokensIn = 0;
+let gbTotalTokensOut = 0;
+
+function gbSaveState() {
+    try {
+        localStorage.setItem('gardensync_gb_conversation', safeStringify(gbConversation));
+        localStorage.setItem('gardensync_gb_display', safeStringify(gbDisplayLog));
+    } catch (e) { /* storage full \u2014 silently fail */ }
+}
+
+function gbClearConversation() {
+    gbConversation = [];
+    gbDisplayLog = [];
+    gbTotalTokensIn = 0;
+    gbTotalTokensOut = 0;
+    localStorage.removeItem('gardensync_gb_conversation');
+    localStorage.removeItem('gardensync_gb_display');
+    const container = document.getElementById('gb-messages');
+    if (container) {
+        container.innerHTML = '';
+        gbShowWelcome();
+    }
+    gbUpdateTokenDisplay();
+}
+
+const GB_TOOLS = [
+    {
+        name: 'place_plant',
+        description: 'Place a plant in a garden bed. If x/y are omitted, auto-finds the next open spot.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                bedIndex: { type: 'integer', description: 'Bed index 0-3 (Bed 1 = 0, Bed 2 = 1, etc.)' },
+                plantId: { type: 'string', description: 'Plant ID from the library (e.g. "tomato", "basil", "green-beans")' },
+                count: { type: 'integer', description: 'Number of plants to place (default 1)' },
+            },
+            required: ['bedIndex', 'plantId']
+        }
+    },
+    {
+        name: 'clear_bed',
+        description: 'Remove all plants from a garden bed.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                bedIndex: { type: 'integer', description: 'Bed index 0-3' }
+            },
+            required: ['bedIndex']
+        }
+    },
+    {
+        name: 'apply_template',
+        description: 'Apply a pre-made garden template to a bed. Available templates: Salsa Garden, Pizza Garden, Three Sisters, Salad Bowl, Pollinator Patch, Herb Haven, Root Cellar.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                bedIndex: { type: 'integer', description: 'Bed index 0-3' },
+                templateName: { type: 'string', description: 'Template name (e.g. "Three Sisters", "Salsa Garden")' }
+            },
+            required: ['bedIndex', 'templateName']
+        }
+    },
+    {
+        name: 'get_garden_state',
+        description: 'Get the current state of all garden beds including what plants are placed where.',
+        input_schema: { type: 'object', properties: {} }
+    },
+    {
+        name: 'get_plant_info',
+        description: 'Look up detailed information about a plant from the library.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                plantId: { type: 'string', description: 'Plant ID (e.g. "tomato", "green-beans")' }
+            },
+            required: ['plantId']
+        }
+    },
+    {
+        name: 'list_plants',
+        description: 'List all available plants in the library with their IDs, names, and types.',
+        input_schema: { type: 'object', properties: {} }
+    },
+    {
+        name: 'rename_bed',
+        description: 'Rename a garden bed.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                bedIndex: { type: 'integer', description: 'Bed index 0-3' },
+                name: { type: 'string', description: 'New name for the bed' }
+            },
+            required: ['bedIndex', 'name']
+        }
+    },
+    {
+        name: 'get_schedule_advice',
+        description: 'Get planting schedule advice for the current date based on Canton OH Zone 6a frost dates.',
+        input_schema: { type: 'object', properties: {} }
+    }
+];
+
+function gbExecuteTool(toolName, toolInput) {
+    switch (toolName) {
+        case 'place_plant': {
+            const { bedIndex, plantId, count = 1 } = toolInput;
+            if (bedIndex < 0 || bedIndex > 3) return { error: 'Bed index must be 0-3' };
+            const plant = PLANT_LIBRARY.find(p => p.id === plantId);
+            if (!plant) return { error: `Plant "${plantId}" not found. Use list_plants to see available plants.` };
+            let placed = 0;
+            for (let i = 0; i < count; i++) {
+                const pos = findNextOpenPosition(bedIndex, plantId);
+                if (pos.x < 0 || pos.y < 0) break;
+                placePlant(bedIndex, plantId, pos.x, pos.y);
+                placed++;
+            }
+            return { success: true, placed, plantName: plant.name, bedName: bedNames[bedIndex] };
+        }
+        case 'clear_bed': {
+            const { bedIndex } = toolInput;
+            if (bedIndex < 0 || bedIndex > 3) return { error: 'Bed index must be 0-3' };
+            const count = state.beds[bedIndex].length;
+            pushUndo();
+            state.beds[bedIndex] = [];
+            renderPlacedPlants(bedIndex);
+            updateBedDetails();
+            saveState();
+            return { success: true, cleared: count, bedName: bedNames[bedIndex] };
+        }
+        case 'apply_template': {
+            const { bedIndex, templateName } = toolInput;
+            if (bedIndex < 0 || bedIndex > 3) return { error: 'Bed index must be 0-3' };
+            const template = BED_TEMPLATES.find(t => t.name.toLowerCase() === templateName.toLowerCase());
+            if (!template) return { error: `Template "${templateName}" not found. Available: ${BED_TEMPLATES.map(t => t.name).join(', ')}` };
+            applyBedTemplate(bedIndex, template);
+            return { success: true, templateName: template.name, bedName: bedNames[bedIndex], description: template.desc };
+        }
+        case 'get_garden_state': {
+            const beds = state.beds.map((plants, i) => {
+                const counts = {};
+                plants.forEach(p => {
+                    const plant = PLANT_LIBRARY.find(pl => pl.id === p.plantId);
+                    const name = plant ? plant.name : p.plantId;
+                    counts[name] = (counts[name] || 0) + 1;
+                });
+                return { bed: i + 1, name: bedNames[i], totalPlants: plants.length, plants: counts };
+            });
+            return { beds, totalPlants: state.beds.reduce((s, b) => s + b.length, 0) };
+        }
+        case 'get_plant_info': {
+            const plant = PLANT_LIBRARY.find(p => p.id === toolInput.plantId);
+            if (!plant) return { error: `Plant "${toolInput.plantId}" not found.` };
+            return {
+                id: plant.id, name: plant.name, emoji: plant.emoji, type: plant.type,
+                spacing: plant.spacing + ' inches', daysToHarvest: plant.daysToHarvest,
+                waterNeed: plant.waterNeed, sunNeed: plant.sunNeed,
+                companions: plant.companions, enemies: plant.enemies,
+                notes: plant.notes
+            };
+        }
+        case 'list_plants': {
+            return { plants: PLANT_LIBRARY.map(p => ({ id: p.id, name: p.name, emoji: p.emoji, type: p.type })) };
+        }
+        case 'rename_bed': {
+            const { bedIndex, name } = toolInput;
+            if (bedIndex < 0 || bedIndex > 3) return { error: 'Bed index must be 0-3' };
+            bedNames[bedIndex] = name;
+            saveBedNames();
+            document.querySelectorAll('.bed-label').forEach((lbl, i) => { lbl.textContent = bedNames[i]; });
+            document.querySelectorAll('.bed-tab').forEach((tab, i) => { tab.textContent = bedNames[i]; });
+            return { success: true, bedIndex, newName: name };
+        }
+        case 'get_schedule_advice': {
+            const now = new Date();
+            const month = now.getMonth();
+            const day = now.getDate();
+            const lastFrost = new Date(now.getFullYear(), 3, 18); // April 18
+            const firstFrost = new Date(now.getFullYear(), 9, 28); // October 28
+            const daysToLastFrost = Math.ceil((lastFrost - now) / 86400000);
+            const daysToFirstFrost = Math.ceil((firstFrost - now) / 86400000);
+            const plantable = PLANT_LIBRARY.filter(p => {
+                if (!p.sowIndoors && !p.directSow && p.transplantAfterFrost === undefined) return false;
+                const sowDate = new Date(lastFrost);
+                if (p.sowIndoors) sowDate.setDate(sowDate.getDate() + (p.sowIndoors * 7));
+                const endDate = new Date(firstFrost);
+                endDate.setDate(endDate.getDate() - p.daysToHarvest);
+                return now >= new Date(sowDate.getTime() - 14 * 86400000) && now <= endDate;
+            }).map(p => p.name);
+            return {
+                currentDate: now.toLocaleDateString(),
+                daysToLastFrost: daysToLastFrost > 0 ? daysToLastFrost : 'already passed',
+                daysToFirstFrost: daysToFirstFrost > 0 ? daysToFirstFrost : 'already passed',
+                zone: '6a', location: 'Canton, OH',
+                plantableNow: plantable.length > 0 ? plantable : ['Check specific plants - timing may vary']
+            };
+        }
+        default:
+            return { error: `Unknown tool: ${toolName}` };
+    }
+}
+
+function gbBuildSystemPrompt() {
+    const bedSummary = state.beds.map((plants, i) => {
+        if (plants.length === 0) return `  Bed ${i + 1} (${bedNames[i]}): empty`;
+        const counts = {};
+        plants.forEach(p => { counts[p.plantId] = (counts[p.plantId] || 0) + 1; });
+        const items = Object.entries(counts).map(([id, n]) => {
+            const pl = PLANT_LIBRARY.find(p => p.id === id);
+            return `${pl ? pl.name : id} x${n}`;
+        }).join(', ');
+        return `  Bed ${i + 1} (${bedNames[i]}): ${plants.length} plants \u2014 ${items}`;
+    }).join('\n');
+
+    return `You are Garden Buddy, the AI assistant for GardenSync \u2014 a community garden planner for Food Not Bombs Canton, OH (USDA Zone 6a).
+
+You help users plan and manage their garden beds through conversation. You can place plants, apply templates, check garden state, and give gardening advice.
+
+CURRENT GARDEN STATE:
+${bedSummary}
+
+LOCATION: Canton, OH \u2014 Zone 6a
+FROST DATES: Last frost April 18, First frost October 28, Growing season 193 days
+TODAY: ${new Date().toLocaleDateString()}
+
+AVAILABLE TEMPLATES: ${BED_TEMPLATES.map(t => t.name).join(', ')}
+
+GUIDELINES:
+- Be friendly, helpful, and concise. Use a casual, encouraging tone.
+- When the user asks to plant something, use the place_plant tool. Map natural language to plant IDs (e.g. "tomatoes" -> "tomato", "beans" -> "green-beans").
+- When asked to set up a template, use apply_template. Match template names loosely (e.g. "three sisters" -> "Three Sisters").
+- Bed numbers are 1-indexed for users but 0-indexed in tools (Bed 1 = bedIndex 0).
+- If unsure what the user wants, ask a clarifying question.
+- For gardening advice, draw on Zone 6a best practices.
+- Keep responses short \u2014 2-3 sentences max for simple actions. Be more detailed for advice questions.`;
+}
+
+function gbShowWelcome() {
+    const totalPlants = state.beds.reduce((sum, bed) => sum + bed.filter(c => c).length, 0);
+    let greeting = `Hey! I'm <strong>Garden Buddy</strong>, your AI garden assistant. `;
+    if (totalPlants > 0) {
+        greeting += `You've got <strong>${totalPlants} plant${totalPlants !== 1 ? 's' : ''}</strong> across your beds right now. `;
+        greeting += `I can help you rearrange, fill gaps, or plan what to add next.<br><br>`;
+    } else {
+        greeting += `I can help you plan beds, place plants, apply templates, and answer gardening questions.<br><br>`;
+    }
+    greeting += `Try saying:<br>`;
+    greeting += `<em>"Plant tomatoes in Bed 1"</em><br>`;
+    greeting += `<em>"Set up a Three Sisters garden in Bed 3"</em><br>`;
+    greeting += `<em>"What should I plant this time of year?"</em>`;
+    if (!gbClaudeKey) greeting += `<br><br>Enter your Claude API key above to get started!`;
+    gbAddMessage('bot', greeting);
+}
+
+function gbUpdateTokenDisplay() {
+    const el = document.getElementById('gb-token-display');
+    if (!el) return;
+    if (gbTotalTokensIn === 0 && gbTotalTokensOut === 0) {
+        el.textContent = '';
+        return;
+    }
+    const total = gbTotalTokensIn + gbTotalTokensOut;
+    el.textContent = `${total.toLocaleString()} tokens`;
+    el.title = `In: ${gbTotalTokensIn.toLocaleString()} / Out: ${gbTotalTokensOut.toLocaleString()}`;
+}
+
+function gbAddMessage(role, text, isAction = false, skipLog = false) {
+    const container = document.getElementById('gb-messages');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = `gb-msg ${isAction ? 'gb-msg-action' : role === 'user' ? 'gb-msg-user' : 'gb-msg-bot'}`;
+    div.innerHTML = `<div class="gb-msg-text">${text}</div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    if (!skipLog) {
+        gbDisplayLog.push({ role, text, isAction });
+    }
+}
+
+function gbShowTyping() {
+    const container = document.getElementById('gb-messages');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = 'gb-typing';
+    div.id = 'gb-typing-indicator';
+    div.innerHTML = '<div class="gb-typing-dot"></div><div class="gb-typing-dot"></div><div class="gb-typing-dot"></div>';
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function gbHideTyping() {
+    document.getElementById('gb-typing-indicator')?.remove();
+}
+
+async function gbSendMessage() {
+    if (gbProcessing) return;
+    const input = document.getElementById('gb-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    if (!gbClaudeKey) {
+        gbAddMessage('bot', 'Please enter your Claude API key above to get started!');
+        return;
+    }
+
+    input.value = '';
+    input.style.height = 'auto';
+    gbAddMessage('user', text.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+
+    gbConversation.push({ role: 'user', content: text });
+    gbProcessing = true;
+    document.getElementById('gb-send').disabled = true;
+    gbShowTyping();
+
+    try {
+        await gbCallClaude();
+    } catch (err) {
+        gbHideTyping();
+        gbAddMessage('bot', `Sorry, something went wrong: ${err.message}`);
+        console.error('[GardenBuddy] Error:', err);
+    }
+
+    gbProcessing = false;
+    document.getElementById('gb-send').disabled = false;
+    gbSaveState();
+}
+
+async function gbCallClaude() {
+    const maxLoops = 5;
+    for (let loop = 0; loop < maxLoops; loop++) {
+        const body = {
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1024,
+            system: gbBuildSystemPrompt(),
+            messages: gbConversation,
+            tools: GB_TOOLS
+        };
+
+        const resp = await fetch('/api/claude/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': gbClaudeKey,
+                'anthropic-version': '2023-06-01'
+            },
+            body: safeStringify(body)
+        });
+
+        if (!resp.ok) {
+            const errData = await resp.json().catch(() => ({}));
+            const errMsg = errData?.error?.message || `API error ${resp.status}`;
+            throw new Error(errMsg);
+        }
+
+        const data = await resp.json();
+        gbHideTyping();
+
+        // Track token usage
+        if (data.usage) {
+            gbTotalTokensIn += data.usage.input_tokens || 0;
+            gbTotalTokensOut += data.usage.output_tokens || 0;
+            gbUpdateTokenDisplay();
+        }
+
+        // Process response content blocks
+        const assistantContent = data.content || [];
+        gbConversation.push({ role: 'assistant', content: assistantContent });
+
+        if (data.stop_reason === 'tool_use') {
+            // Execute tool calls and build tool results
+            const toolResults = [];
+            for (const block of assistantContent) {
+                if (block.type === 'tool_use') {
+                    const result = gbExecuteTool(block.name, block.input);
+                    // Show action message in chat
+                    const actionMsg = gbFormatAction(block.name, block.input, result);
+                    if (actionMsg) gbAddMessage('bot', actionMsg, true);
+
+                    toolResults.push({
+                        type: 'tool_result',
+                        tool_use_id: block.id,
+                        content: safeStringify(result)
+                    });
+                }
+            }
+            // Add tool results to conversation and loop
+            gbConversation.push({ role: 'user', content: toolResults });
+            gbShowTyping();
+            continue;
+        }
+
+        // Extract text blocks and display
+        const textParts = assistantContent
+            .filter(b => b.type === 'text')
+            .map(b => b.text)
+            .join('\n');
+
+        if (textParts) {
+            // Simple markdown-like formatting
+            const formatted = textParts
+                .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+            gbAddMessage('bot', formatted);
+        }
+        break;
+    }
+}
+
+function gbFormatAction(toolName, input, result) {
+    if (result.error) return `\u26A0 ${result.error}`;
+    switch (toolName) {
+        case 'place_plant':
+            return `\u2705 Placed ${result.placed}x ${result.plantName} in ${result.bedName}`;
+        case 'clear_bed':
+            return `\u{1F9F9} Cleared ${result.cleared} plants from ${result.bedName}`;
+        case 'apply_template':
+            return `\u2728 Applied "${result.templateName}" template to ${result.bedName}`;
+        case 'rename_bed':
+            return `\u270F\uFE0F Renamed Bed ${input.bedIndex + 1} to "${result.newName}"`;
+        default:
+            return null;
+    }
+}
+
+function initGardenBuddy() {
+    const fab = document.getElementById('garden-buddy-fab');
+    const panel = document.getElementById('garden-buddy-panel');
+    const closeBtn = document.getElementById('gb-close');
+    const clearBtn = document.getElementById('gb-clear');
+    const saveKeyBtn = document.getElementById('gb-save-key');
+    const keyInput = document.getElementById('gb-claude-key');
+    const sendBtn = document.getElementById('gb-send');
+    const inputEl = document.getElementById('gb-input');
+
+    if (!fab || !panel) return;
+
+    // Load saved key
+    if (gbClaudeKey) {
+        keyInput.value = gbClaudeKey;
+        document.getElementById('gb-key-row').classList.add('saved');
+    }
+
+    // Restore chat history or show welcome
+    const savedConvo = localStorage.getItem('gardensync_gb_conversation');
+    const savedDisplay = localStorage.getItem('gardensync_gb_display');
+    const container = document.getElementById('gb-messages');
+    container.innerHTML = ''; // Clear static welcome HTML
+
+    if (savedConvo && savedDisplay) {
+        try {
+            gbConversation = JSON.parse(savedConvo);
+            gbDisplayLog = JSON.parse(savedDisplay);
+            // Replay display log into UI
+            for (const entry of gbDisplayLog) {
+                gbAddMessage(entry.role, entry.text, entry.isAction, true);
+            }
+        } catch (e) {
+            gbConversation = [];
+            gbDisplayLog = [];
+            gbShowWelcome();
+        }
+    } else {
+        gbShowWelcome();
+    }
+
+    // FAB toggle
+    fab.addEventListener('click', () => {
+        const isHidden = panel.classList.contains('hidden');
+        panel.classList.toggle('hidden');
+        fab.classList.toggle('active', !isHidden);
+        if (isHidden) {
+            inputEl.focus();
+        }
+    });
+
+    // Close
+    closeBtn.addEventListener('click', () => {
+        panel.classList.add('hidden');
+        fab.classList.remove('active');
+    });
+
+    // Clear conversation
+    if (clearBtn) {
+        clearBtn.addEventListener('click', gbClearConversation);
+    }
+
+    // Escape to close
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !panel.classList.contains('hidden')) {
+            panel.classList.add('hidden');
+            fab.classList.remove('active');
+        }
+    });
+
+    // Save API key
+    saveKeyBtn.addEventListener('click', () => {
+        const key = keyInput.value.trim();
+        if (key) {
+            gbClaudeKey = key;
+            localStorage.setItem('gardensync_claude_key', key);
+            document.getElementById('gb-key-row').classList.add('saved');
+            gbAddMessage('bot', 'API key saved! How can I help with your garden today?');
+            gbSaveState();
+        }
+    });
+
+    // Show key row on double-click header
+    const headerLeft = panel.querySelector('.gb-header-left');
+    headerLeft.addEventListener('dblclick', () => {
+        document.getElementById('gb-key-row').classList.remove('saved');
+    });
+
+    // Send message
+    sendBtn.addEventListener('click', gbSendMessage);
+
+    // Enter to send (Shift+Enter for newline)
+    inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            gbSendMessage();
+        }
+    });
+
+    // Auto-resize textarea
+    inputEl.addEventListener('input', () => {
+        inputEl.style.height = 'auto';
+        inputEl.style.height = Math.min(inputEl.scrollHeight, 80) + 'px';
+    });
+}
