@@ -5514,6 +5514,17 @@ const GB_TOOLS = [
         name: 'get_schedule_advice',
         description: 'Get planting schedule advice for the current date based on Canton OH Zone 6a frost dates.',
         input_schema: { type: 'object', properties: {} }
+    },
+    {
+        name: 'organize_bed',
+        description: 'Auto-organize a single garden bed using Square Foot Gardening grid spacing. Only affects the specified bed, not other beds.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                bedIndex: { type: 'integer', description: 'Bed index 0-3' }
+            },
+            required: ['bedIndex']
+        }
     }
 ];
 
@@ -5524,13 +5535,20 @@ function gbExecuteTool(toolName, toolInput) {
             if (bedIndex < 0 || bedIndex > 3) return { error: 'Bed index must be 0-3' };
             const plant = PLANT_LIBRARY.find(p => p.id === plantId);
             if (!plant) return { error: `Plant "${plantId}" not found. Use list_plants to see available plants.` };
+            pushUndo();
             let placed = 0;
+            const bedEl = document.querySelectorAll('.garden-bed')[bedIndex];
+            const bedW = bedEl ? bedEl.offsetWidth : 400;
+            const bedH = bedEl ? bedEl.offsetHeight : 220;
             for (let i = 0; i < count; i++) {
-                const pos = findNextOpenPosition(bedIndex, plantId);
-                if (pos.x < 0 || pos.y < 0) break;
-                placePlant(bedIndex, plantId, pos.x, pos.y);
+                // Place at random position initially; autoOrganizeBed will fix spacing
+                const x = Math.random() * (bedW - 40) + 2;
+                const y = Math.random() * (bedH - 40) + 2;
+                placePlant(bedIndex, plantId, x, y);
                 placed++;
             }
+            // Auto-organize to get proper SFG grid spacing
+            autoOrganizeBed(bedIndex);
             return { success: true, placed, plantName: plant.name, bedName: bedNames[bedIndex] };
         }
         case 'clear_bed': {
@@ -5586,6 +5604,15 @@ function gbExecuteTool(toolName, toolInput) {
             document.querySelectorAll('.bed-label').forEach((lbl, i) => { lbl.textContent = bedNames[i]; });
             document.querySelectorAll('.bed-tab').forEach((tab, i) => { tab.textContent = bedNames[i]; });
             return { success: true, bedIndex, newName: name };
+        }
+        case 'organize_bed': {
+            const { bedIndex } = toolInput;
+            if (bedIndex < 0 || bedIndex > 3) return { error: 'Bed index must be 0-3' };
+            const plantCount = state.beds[bedIndex].length;
+            if (plantCount === 0) return { error: 'No plants in this bed to organize.' };
+            pushUndo();
+            autoOrganizeBed(bedIndex);
+            return { success: true, organized: plantCount, bedName: bedNames[bedIndex] };
         }
         case 'get_schedule_advice': {
             const now = new Date();
@@ -5643,8 +5670,9 @@ AVAILABLE TEMPLATES: ${BED_TEMPLATES.map(t => t.name).join(', ')}
 
 GUIDELINES:
 - Be friendly, helpful, and concise. Use a casual, encouraging tone.
-- When the user asks to plant something, use the place_plant tool. Map natural language to plant IDs (e.g. "tomatoes" -> "tomato", "beans" -> "green-beans").
+- When the user asks to plant something, use the place_plant tool. Map natural language to plant IDs (e.g. "tomatoes" -> "tomato", "beans" -> "green-beans"). Plants are automatically spaced using SFG grid when placed.
 - When asked to set up a template, use apply_template. Match template names loosely (e.g. "three sisters" -> "Three Sisters").
+- When the user asks to organize, arrange, or space out plants in a bed, use organize_bed. This only affects the specified bed, NOT all beds.
 - Bed numbers are 1-indexed for users but 0-indexed in tools (Bed 1 = bedIndex 0).
 - If unsure what the user wants, ask a clarifying question.
 - For gardening advice, draw on Zone 6a best practices.
@@ -5828,13 +5856,15 @@ function gbFormatAction(toolName, input, result) {
     if (result.error) return `\u26A0 ${result.error}`;
     switch (toolName) {
         case 'place_plant':
-            return `\u2705 Placed ${result.placed}x ${result.plantName} in ${result.bedName}`;
+            return `\u2705 Placed ${result.placed}x ${result.plantName} in ${result.bedName} (auto-spaced)`;
         case 'clear_bed':
             return `\u{1F9F9} Cleared ${result.cleared} plants from ${result.bedName}`;
         case 'apply_template':
             return `\u2728 Applied "${result.templateName}" template to ${result.bedName}`;
         case 'rename_bed':
             return `\u270F\uFE0F Renamed Bed ${input.bedIndex + 1} to "${result.newName}"`;
+        case 'organize_bed':
+            return `\u2705 Auto-organized ${result.organized} plants in ${result.bedName} using SFG spacing`;
         default:
             return null;
     }
