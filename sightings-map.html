@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paranormal Sightings Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; }
+        #map { width: 100%; height: 100vh; }
+
+        /* Control panel */
+        .control-panel {
+            position: absolute; top: 10px; right: 10px; z-index: 1000;
+            background: rgba(10, 10, 10, 0.92); border: 1px solid #333;
+            border-radius: 8px; padding: 16px; min-width: 260px;
+            backdrop-filter: blur(8px); box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+        }
+        .control-panel h2 { font-size: 16px; margin-bottom: 12px; color: #fff; letter-spacing: 1px; }
+        .layer-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
+        .layer-toggle input[type="checkbox"] { display: none; }
+        .layer-toggle .toggle-track {
+            width: 40px; height: 22px; border-radius: 11px; background: #333;
+            position: relative; transition: background 0.2s;
+        }
+        .layer-toggle input:checked + .toggle-track { background: var(--layer-color); }
+        .layer-toggle .toggle-track::after {
+            content: ''; position: absolute; top: 2px; left: 2px;
+            width: 18px; height: 18px; border-radius: 50%; background: #fff;
+            transition: transform 0.2s;
+        }
+        .layer-toggle input:checked + .toggle-track::after { transform: translateX(18px); }
+        .layer-label { font-size: 13px; }
+        .layer-count { font-size: 11px; color: #888; margin-left: auto; }
+
+        .stats-bar {
+            margin-top: 12px; padding-top: 12px; border-top: 1px solid #333;
+            font-size: 11px; color: #888;
+        }
+        .stats-bar div { margin-bottom: 4px; }
+
+        /* Legend dots */
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+        .dot-ufo { background: #00ff88; }
+        .dot-bigfoot { background: #ff6633; }
+        .dot-haunted { background: #aa44ff; }
+
+        /* Loading overlay */
+        #loading {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0a0a0a; z-index: 2000; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        #loading h1 { font-size: 24px; margin-bottom: 16px; letter-spacing: 2px; }
+        #loading .progress-bar { width: 300px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
+        #loading .progress-fill { height: 100%; background: #00ff88; width: 0%; transition: width 0.3s; }
+        #loading .status { margin-top: 12px; font-size: 13px; color: #888; }
+
+        /* Popup styling */
+        .leaflet-popup-content-wrapper { background: #1a1a1a; color: #e0e0e0; border-radius: 6px; }
+        .leaflet-popup-tip { background: #1a1a1a; }
+        .leaflet-popup-content { font-size: 13px; line-height: 1.5; }
+        .leaflet-popup-content strong { color: #fff; }
+        .popup-type { font-size: 11px; font-weight: 600; letter-spacing: 1px; margin-bottom: 4px; }
+        .popup-type.ufo { color: #00ff88; }
+        .popup-type.bigfoot { color: #ff6633; }
+        .popup-type.haunted { color: #aa44ff; }
+
+        /* Filter controls */
+        .filter-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; }
+        .filter-section label { font-size: 12px; color: #aaa; display: block; margin-bottom: 4px; }
+        .filter-section select, .filter-section input {
+            width: 100%; padding: 6px 8px; background: #1a1a1a; border: 1px solid #444;
+            color: #e0e0e0; border-radius: 4px; font-size: 12px; margin-bottom: 8px;
+        }
+        .filter-btn {
+            width: 100%; padding: 8px; background: #00ff88; color: #000;
+            border: none; border-radius: 4px; font-weight: 600; cursor: pointer;
+            font-size: 12px; letter-spacing: 1px;
+        }
+        .filter-btn:hover { background: #00cc6e; }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+            .control-panel { top: auto; bottom: 10px; right: 10px; left: 10px; min-width: auto; }
+        }
+
+        /* Cluster styling overrides */
+        .marker-cluster-ufo { background: rgba(0, 255, 136, 0.3); }
+        .marker-cluster-ufo div { background: rgba(0, 255, 136, 0.7); color: #000; }
+        .marker-cluster-bigfoot { background: rgba(255, 102, 51, 0.3); }
+        .marker-cluster-bigfoot div { background: rgba(255, 102, 51, 0.7); color: #000; }
+        .marker-cluster-haunted { background: rgba(170, 68, 255, 0.3); }
+        .marker-cluster-haunted div { background: rgba(170, 68, 255, 0.7); color: #fff; }
+
+        .collapse-btn {
+            background: none; border: none; color: #888; cursor: pointer;
+            font-size: 18px; float: right; line-height: 1;
+        }
+        .collapse-btn:hover { color: #fff; }
+        .control-panel.collapsed { min-width: 44px; padding: 8px; }
+        .control-panel.collapsed .panel-body { display: none; }
+        .control-panel.collapsed h2 { display: none; }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <h1>PARANORMAL SIGHTINGS MAP</h1>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="status" id="loading-status">Initializing...</div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="control-panel" id="control-panel">
+        <button class="collapse-btn" id="collapse-btn" title="Toggle panel">&#9776;</button>
+        <h2>OVERLAYS</h2>
+        <div class="panel-body">
+            <label class="layer-toggle" style="--layer-color: #00ff88;">
+                <span class="dot dot-ufo"></span>
+                <input type="checkbox" id="toggle-ufo" checked>
+                <span class="toggle-track"></span>
+                <span class="layer-label">UFO / UAP</span>
+                <span class="layer-count" id="count-ufo">-</span>
+            </label>
+            <label class="layer-toggle" style="--layer-color: #ff6633;">
+                <span class="dot dot-bigfoot"></span>
+                <input type="checkbox" id="toggle-bigfoot" checked>
+                <span class="toggle-track"></span>
+                <span class="layer-label">Bigfoot</span>
+                <span class="layer-count" id="count-bigfoot">-</span>
+            </label>
+            <label class="layer-toggle" style="--layer-color: #aa44ff;">
+                <span class="dot dot-haunted"></span>
+                <input type="checkbox" id="toggle-haunted" checked>
+                <span class="toggle-track"></span>
+                <span class="layer-label">Haunted Places</span>
+                <span class="layer-count" id="count-haunted">-</span>
+            </label>
+
+            <div class="filter-section">
+                <label>Date Range</label>
+                <input type="number" id="year-start" placeholder="Start year (e.g. 1950)" min="1900" max="2025">
+                <input type="number" id="year-end" placeholder="End year (e.g. 2023)" min="1900" max="2025">
+                <label>State Filter</label>
+                <input type="text" id="state-filter" placeholder="e.g. OH, CA, TX">
+                <button class="filter-btn" id="apply-filters">APPLY FILTERS</button>
+            </div>
+
+            <div class="stats-bar">
+                <div id="stat-visible">Visible: -</div>
+                <div id="stat-total">Total loaded: -</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script>
+        const map = L.map('map', {
+            center: [39.5, -98.35],
+            zoom: 4,
+            preferCanvas: true,
+            maxZoom: 18,
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Data stores
+        let rawData = { ufo: [], bigfoot: [], haunted: [] };
+        let clusterGroups = {};
+        let totalLoaded = 0;
+
+        function setProgress(pct, msg) {
+            document.getElementById('progress-fill').style.width = pct + '%';
+            document.getElementById('loading-status').textContent = msg;
+        }
+
+        function createIcon(color, size) {
+            return L.divIcon({
+                className: '',
+                html: `<div style="width:${size}px;height:${size}px;background:${color};border-radius:50%;border:1px solid rgba(255,255,255,0.3);opacity:0.85;"></div>`,
+                iconSize: [size, size],
+                iconAnchor: [size / 2, size / 2],
+            });
+        }
+
+        const icons = {
+            ufo: createIcon('#00ff88', 8),
+            bigfoot: createIcon('#ff6633', 10),
+            haunted: createIcon('#aa44ff', 8),
+        };
+
+        function escapeHtml(s) {
+            if (!s) return '';
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function makePopup(type, d) {
+            const cls = type;
+            const label = type === 'ufo' ? 'UFO / UAP SIGHTING' : type === 'bigfoot' ? 'BIGFOOT SIGHTING' : 'HAUNTED PLACE';
+            let html = `<div class="popup-type ${cls}">${label}</div>`;
+
+            if (type === 'ufo') {
+                html += `<strong>${escapeHtml(d.city)}, ${escapeHtml(d.state)}</strong><br>`;
+                if (d.date) html += `Date: ${d.date}<br>`;
+                if (d.shape) html += `Shape: ${escapeHtml(d.shape)}<br>`;
+                if (d.summary) html += `<br>${escapeHtml(d.summary)}`;
+            } else if (type === 'bigfoot') {
+                html += `<strong>${escapeHtml(d.county)}, ${escapeHtml(d.state)}</strong><br>`;
+                if (d.date) html += `Date: ${d.date}<br>`;
+                if (d.class) html += `Classification: ${escapeHtml(d.class)}<br>`;
+                if (d.title) html += `<em>${escapeHtml(d.title)}</em><br>`;
+                if (d.summary) html += `<br>${escapeHtml(d.summary)}`;
+            } else {
+                html += `<strong>${escapeHtml(d.city)}, ${escapeHtml(d.state)}</strong><br>`;
+                if (d.location) html += `Location: ${escapeHtml(d.location)}<br>`;
+                if (d.summary) html += `<br>${escapeHtml(d.summary)}`;
+            }
+
+            html += `<br><small style="color:#666">${d.lat.toFixed(4)}, ${d.lng.toFixed(4)}</small>`;
+            return html;
+        }
+
+        function createClusterGroup(type) {
+            const colors = { ufo: '0, 255, 136', bigfoot: '255, 102, 51', haunted: '170, 68, 255' };
+            const c = colors[type];
+            return L.markerClusterGroup({
+                chunkedLoading: true,
+                chunkInterval: 100,
+                chunkDelay: 10,
+                maxClusterRadius: 50,
+                disableClusteringAtZoom: 12,
+                iconCreateFunction: function (cluster) {
+                    const count = cluster.getChildCount();
+                    let size = count < 100 ? 30 : count < 1000 ? 40 : 50;
+                    return L.divIcon({
+                        html: `<div style="background:rgba(${c},0.7);color:#fff;font-weight:700;font-size:11px;
+                            width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;
+                            justify-content:center;border:2px solid rgba(${c},0.4);box-shadow:0 0 8px rgba(${c},0.3);">
+                            ${count >= 1000 ? Math.round(count / 1000) + 'k' : count}</div>`,
+                        className: '',
+                        iconSize: [size, size],
+                    });
+                },
+            });
+        }
+
+        function applyFilters() {
+            const yearStart = parseInt(document.getElementById('year-start').value) || 0;
+            const yearEnd = parseInt(document.getElementById('year-end').value) || 9999;
+            const stateFilter = document.getElementById('state-filter').value.trim().toUpperCase();
+            const states = stateFilter ? stateFilter.split(',').map(s => s.trim()) : [];
+
+            let visibleCount = 0;
+
+            ['ufo', 'bigfoot', 'haunted'].forEach(type => {
+                const toggle = document.getElementById('toggle-' + type);
+                if (clusterGroups[type]) {
+                    map.removeLayer(clusterGroups[type]);
+                }
+                if (!toggle.checked) return;
+
+                const group = createClusterGroup(type);
+                let filtered = rawData[type];
+
+                if (yearStart > 0 || yearEnd < 9999) {
+                    filtered = filtered.filter(d => {
+                        if (!d.date) return false;
+                        const y = parseInt(d.date.substring(0, 4));
+                        return y >= yearStart && y <= yearEnd;
+                    });
+                }
+
+                if (states.length > 0) {
+                    filtered = filtered.filter(d => {
+                        const s = (d.state || '').toUpperCase();
+                        return states.some(st => s === st || s.includes(st));
+                    });
+                }
+
+                const markers = filtered.map(d =>
+                    L.marker([d.lat, d.lng], { icon: icons[type] })
+                        .bindPopup(() => makePopup(type, d), { maxWidth: 320 })
+                );
+                group.addLayers(markers);
+                group.addTo(map);
+                clusterGroups[type] = group;
+
+                document.getElementById('count-' + type).textContent = filtered.length.toLocaleString();
+                visibleCount += filtered.length;
+            });
+
+            document.getElementById('stat-visible').textContent = 'Visible: ' + visibleCount.toLocaleString();
+        }
+
+        async function loadJSON(url, label) {
+            setProgress(0, `Loading ${label}...`);
+            const resp = await fetch(url);
+            const data = await resp.json();
+            return data;
+        }
+
+        async function init() {
+            try {
+                setProgress(10, 'Loading UFO sightings (~96K records)...');
+                rawData.ufo = await loadJSON('data/ufo_map.json', 'UFO sightings');
+                setProgress(40, 'Loading Bigfoot sightings...');
+                rawData.bigfoot = await loadJSON('data/bigfoot_map.json', 'Bigfoot sightings');
+                setProgress(60, 'Loading Haunted Places...');
+                rawData.haunted = await loadJSON('data/haunted_map.json', 'Haunted places');
+                setProgress(80, 'Rendering markers...');
+
+                totalLoaded = rawData.ufo.length + rawData.bigfoot.length + rawData.haunted.length;
+                document.getElementById('stat-total').textContent = 'Total loaded: ' + totalLoaded.toLocaleString();
+
+                applyFilters();
+
+                setProgress(100, 'Done!');
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                }, 400);
+            } catch (err) {
+                setProgress(0, 'Error loading data: ' + err.message);
+                console.error(err);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('toggle-ufo').addEventListener('change', applyFilters);
+        document.getElementById('toggle-bigfoot').addEventListener('change', applyFilters);
+        document.getElementById('toggle-haunted').addEventListener('change', applyFilters);
+        document.getElementById('apply-filters').addEventListener('click', applyFilters);
+
+        document.getElementById('collapse-btn').addEventListener('click', () => {
+            document.getElementById('control-panel').classList.toggle('collapsed');
+        });
+
+        // Handle enter key on filter inputs
+        ['year-start', 'year-end', 'state-filter'].forEach(id => {
+            document.getElementById(id).addEventListener('keydown', e => {
+                if (e.key === 'Enter') applyFilters();
+            });
+        });
+
+        init();
+    </script>
+</body>
+</html>
