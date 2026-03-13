@@ -5,7 +5,7 @@ Export consolidated sighting data as compact JSON for the interactive map.
 Reads the Combined_All sheet from the Excel workbook and outputs a minimal
 JSON file optimized for Leaflet marker clustering.
 
-Format: { categories: [...], fields: [...], data: [[lat,lon,cat,date,loc,sub], ...] }
+Format: { categories: [...], fields: [...], data: [[lat,lon,cat,date,loc,sub,desc], ...] }
 """
 
 import pandas as pd
@@ -44,6 +44,8 @@ def main():
         date = str(r.get("date", ""))[:10] if pd.notna(r.get("date")) else ""
         sub = str(r.get("subcategory", "")) if pd.notna(r.get("subcategory")) else ""
 
+        desc = str(r.get("description", ""))[:60] if pd.notna(r.get("description")) else ""
+
         records.append([
             round(float(r["latitude"]), 4),
             round(float(r["longitude"]), 4),
@@ -51,11 +53,12 @@ def main():
             date,
             loc,
             sub,
+            desc,
         ])
 
     output = {
         "categories": ["UFO/UAP", "Bigfoot/Sasquatch", "Haunted Place"],
-        "fields": ["lat", "lon", "cat", "date", "location", "subcategory"],
+        "fields": ["lat", "lon", "cat", "date", "location", "subcategory", "description"],
         "data": records,
     }
 

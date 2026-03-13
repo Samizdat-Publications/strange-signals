@@ -1,352 +1,1074 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paranormal Sightings Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; }
-        #map { width: 100%; height: 100vh; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STRANGE SIGNALS // Paranormal Sightings Correlation Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<style>
+/* ========== RESET & BASE ========== */
+*,:before,:after{margin:0;padding:0;box-sizing:border-box}
+:root {
+  --bg: #05060f;
+  --surface: rgba(10, 15, 30, 0.88);
+  --surface-solid: #0b1022;
+  --border: rgba(0, 255, 136, 0.15);
+  --border-bright: rgba(0, 255, 136, 0.4);
+  --green: #00ff88;
+  --cyan: #00d4ff;
+  --pink: #ff3366;
+  --orange: #ff6622;
+  --purple: #aa44ff;
+  --text: #c8d4e0;
+  --text-dim: #5a6a7a;
+  --text-bright: #e8f0f8;
+  --font-display: 'Orbitron', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  --sidebar-w: 320px;
+  --header-h: 52px;
+  --timeline-h: 180px;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-mono);font-size:12px}
+input,select,button,textarea{font-family:inherit;font-size:inherit}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px}
 
-        /* Control panel */
-        .control-panel {
-            position: absolute; top: 10px; right: 10px; z-index: 1000;
-            background: rgba(10, 10, 10, 0.92); border: 1px solid #333;
-            border-radius: 8px; padding: 16px; min-width: 260px;
-            backdrop-filter: blur(8px); box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-        }
-        .control-panel h2 { font-size: 16px; margin-bottom: 12px; color: #fff; letter-spacing: 1px; }
-        .layer-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
-        .layer-toggle input[type="checkbox"] { display: none; }
-        .layer-toggle .toggle-track {
-            width: 40px; height: 22px; border-radius: 11px; background: #333;
-            position: relative; transition: background 0.2s;
-        }
-        .layer-toggle input:checked + .toggle-track { background: var(--layer-color); }
-        .layer-toggle .toggle-track::after {
-            content: ''; position: absolute; top: 2px; left: 2px;
-            width: 18px; height: 18px; border-radius: 50%; background: #fff;
-            transition: transform 0.2s;
-        }
-        .layer-toggle input:checked + .toggle-track::after { transform: translateX(18px); }
-        .layer-label { font-size: 13px; }
-        .layer-count { font-size: 11px; color: #888; margin-left: auto; }
+/* ========== HEADER ========== */
+#header {
+  position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:1100;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;gap:16px;
+  backdrop-filter:blur(12px);
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:32px;height:32px;position:relative}
+.logo-icon .ring{stroke:var(--green);fill:none;stroke-width:1.5;animation:radar-spin 4s linear infinite}
+.logo-icon .dot{fill:var(--green);animation:pulse-dot 2s ease-in-out infinite}
+@keyframes radar-spin{to{transform:rotate(360deg);transform-origin:50% 50%}}
+@keyframes pulse-dot{0%,100%{opacity:1;r:2}50%{opacity:.4;r:3.5}}
+.logo h1{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:3px;color:var(--green)}
+.logo h1 span{color:var(--cyan)}
+.header-nav{display:flex;gap:2px;margin-left:24px}
+.nav-btn{background:none;border:1px solid transparent;color:var(--text-dim);padding:6px 14px;
+  border-radius:4px;cursor:pointer;font-family:var(--font-display);font-size:10px;letter-spacing:1.5px;
+  font-weight:500;transition:all .2s}
+.nav-btn:hover{color:var(--text);border-color:var(--border)}
+.nav-btn.active{color:var(--green);border-color:var(--border-bright);background:rgba(0,255,136,0.06)}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+#search-box{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;
+  padding:5px 10px;color:var(--text);width:200px;outline:none;transition:border-color .2s}
+#search-box:focus{border-color:var(--green)}
+#search-box::placeholder{color:var(--text-dim)}
+.kbd-hint{font-size:9px;color:var(--text-dim);letter-spacing:1px}
 
-        .stats-bar {
-            margin-top: 12px; padding-top: 12px; border-top: 1px solid #333;
-            font-size: 11px; color: #888;
-        }
-        .stats-bar div { margin-bottom: 4px; }
+/* ========== LAYOUT ========== */
+#app{position:fixed;top:var(--header-h);left:0;right:0;bottom:0;display:flex}
+#sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--surface-solid);
+  border-right:1px solid var(--border);overflow-y:auto;overflow-x:hidden;
+  display:flex;flex-direction:column;z-index:1000;transition:margin-left .3s}
+#sidebar.collapsed{margin-left:calc(-1 * var(--sidebar-w))}
+#main{flex:1;display:flex;flex-direction:column;position:relative}
+#map-container{flex:1;position:relative}
+#map{width:100%;height:100%}
+#timeline-panel{height:var(--timeline-h);background:var(--surface-solid);
+  border-top:1px solid var(--border);padding:8px 16px 4px;flex-shrink:0;position:relative}
+#timeline-panel.collapsed{height:28px;overflow:hidden;cursor:pointer}
 
-        /* Legend dots */
-        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-        .dot-ufo { background: #00ff88; }
-        .dot-bigfoot { background: #ff6633; }
-        .dot-haunted { background: #aa44ff; }
+/* ========== SIDEBAR SECTIONS ========== */
+.sb-section{padding:12px 14px;border-bottom:1px solid var(--border)}
+.sb-section:last-child{border-bottom:none}
+.sb-title{font-family:var(--font-display);font-size:9px;font-weight:600;letter-spacing:2px;
+  color:var(--text-dim);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sb-title .icon{font-size:12px}
 
-        /* Loading overlay */
-        #loading {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #0a0a0a; z-index: 2000; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-        }
-        #loading h1 { font-size: 24px; margin-bottom: 16px; letter-spacing: 2px; }
-        #loading .progress-bar { width: 300px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
-        #loading .progress-fill { height: 100%; background: #00ff88; width: 0%; transition: width 0.3s; }
-        #loading .status { margin-top: 12px; font-size: 13px; color: #888; }
+/* Layer toggles */
+.layer-row{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;user-select:none}
+.layer-row input{display:none}
+.layer-dot{width:12px;height:12px;border-radius:50%;border:2px solid #333;transition:all .2s;flex-shrink:0}
+.layer-row input:checked+.layer-dot{border-color:#fff;box-shadow:0 0 6px}
+.layer-name{font-size:11px;flex:1}
+.layer-count{font-size:10px;color:var(--text-dim);font-variant-numeric:tabular-nums}
 
-        /* Popup styling */
-        .leaflet-popup-content-wrapper { background: #1a1a1a !important; color: #e0e0e0 !important; border-radius: 6px !important; }
-        .leaflet-popup-tip { background: #1a1a1a !important; }
-        .leaflet-popup-content { font-size: 13px; line-height: 1.5; }
-        .leaflet-popup-content strong { color: #fff; }
-        .popup-type { font-size: 11px; font-weight: 600; letter-spacing: 1px; margin-bottom: 4px; }
-        .popup-type.cat-0 { color: #00ff88; }
-        .popup-type.cat-1 { color: #ff6633; }
-        .popup-type.cat-2 { color: #aa44ff; }
+/* View mode */
+.view-modes{display:flex;gap:4px;flex-wrap:wrap}
+.view-btn{padding:5px 10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:4px;color:var(--text-dim);cursor:pointer;font-size:10px;letter-spacing:1px;
+  font-family:var(--font-display);transition:all .2s}
+.view-btn:hover{color:var(--text);border-color:var(--border-bright)}
+.view-btn.active{color:var(--green);border-color:var(--green);background:rgba(0,255,136,0.08)}
 
-        /* Filter controls */
-        .filter-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; }
-        .filter-section label { font-size: 12px; color: #aaa; display: block; margin-bottom: 4px; }
-        .filter-section select, .filter-section input {
-            width: 100%; padding: 6px 8px; background: #1a1a1a; border: 1px solid #444;
-            color: #e0e0e0; border-radius: 4px; font-size: 12px; margin-bottom: 8px;
-        }
-        .filter-btn {
-            width: 100%; padding: 8px; background: #00ff88; color: #000;
-            border: none; border-radius: 4px; font-weight: 600; cursor: pointer;
-            font-size: 12px; letter-spacing: 1px;
-        }
-        .filter-btn:hover { background: #00cc6e; }
+/* Correlation controls */
+.corr-controls{display:flex;flex-direction:column;gap:8px}
+.corr-row{display:flex;gap:8px;align-items:center}
+.corr-row label{font-size:10px;color:var(--text-dim);width:20px;flex-shrink:0}
+.corr-row select,.corr-row input[type=range]{flex:1;background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);border-radius:3px;color:var(--text);padding:4px 6px}
+select option{background:var(--surface-solid);color:var(--text)}
+.corr-btn{padding:8px;background:linear-gradient(135deg,rgba(0,255,136,0.15),rgba(0,212,255,0.15));
+  border:1px solid var(--green);border-radius:4px;color:var(--green);cursor:pointer;
+  font-family:var(--font-display);font-size:10px;letter-spacing:2px;font-weight:600;transition:all .2s}
+.corr-btn:hover{background:linear-gradient(135deg,rgba(0,255,136,0.25),rgba(0,212,255,0.25));box-shadow:0 0 12px rgba(0,255,136,0.2)}
+.corr-result{background:rgba(0,255,136,0.05);border:1px solid var(--border);border-radius:4px;padding:10px;display:none}
+.corr-result.visible{display:block}
+.corr-r{font-family:var(--font-display);font-size:22px;font-weight:700;text-align:center}
+.corr-label{font-size:10px;color:var(--text-dim);text-align:center;margin-top:2px}
+.corr-detail{font-size:10px;color:var(--text-dim);margin-top:6px;line-height:1.6}
 
-        .collapse-btn {
-            background: none; border: none; color: #888; cursor: pointer;
-            font-size: 18px; float: right; line-height: 1;
-        }
-        .collapse-btn:hover { color: #fff; }
-        .control-panel.collapsed { min-width: 44px; padding: 8px; }
-        .control-panel.collapsed .panel-body { display: none; }
-        .control-panel.collapsed h2 { display: none; }
+/* Filters */
+.filter-row{display:flex;gap:6px;margin-bottom:6px}
+.filter-row input,.filter-row select{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:3px;color:var(--text);padding:5px 8px;outline:none}
+.filter-row input:focus{border-color:var(--green)}
+.filter-row input::placeholder{color:var(--text-dim)}
+.filter-actions{display:flex;gap:6px}
+.btn-sm{padding:5px 10px;border:1px solid var(--border);border-radius:3px;background:rgba(255,255,255,0.04);
+  color:var(--text-dim);cursor:pointer;font-size:10px;transition:all .15s}
+.btn-sm:hover{color:var(--text);border-color:var(--border-bright)}
+.btn-sm.primary{border-color:var(--green);color:var(--green)}
+.btn-sm.primary:hover{background:rgba(0,255,136,0.1)}
 
-        @media (max-width: 600px) {
-            .control-panel { top: auto; bottom: 10px; right: 10px; left: 10px; min-width: auto; }
-        }
-    </style>
+/* Stats */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stat-box{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:4px;padding:8px;text-align:center}
+.stat-val{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--text-bright)}
+.stat-label{font-size:9px;color:var(--text-dim);letter-spacing:1px;margin-top:2px}
+
+/* ========== SIDEBAR TOGGLE ========== */
+#sidebar-toggle{position:absolute;top:8px;left:8px;z-index:1050;width:32px;height:32px;
+  background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--green);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
+#sidebar-toggle:hover{border-color:var(--green);box-shadow:0 0 8px rgba(0,255,136,0.2)}
+
+/* ========== TIMELINE ========== */
+#timeline-toggle{position:absolute;top:4px;right:12px;background:none;border:none;color:var(--text-dim);
+  cursor:pointer;font-size:14px;z-index:10}
+#timeline-label{font-family:var(--font-display);font-size:9px;letter-spacing:2px;color:var(--text-dim)}
+#timeline-svg{width:100%;height:calc(100% - 20px)}
+.timeline-bar{cursor:pointer;transition:opacity .15s}
+.timeline-bar:hover{opacity:1!important}
+.brush-overlay{fill:rgba(0,255,136,0.08);stroke:var(--green);stroke-width:1}
+.timeline-axis text{fill:var(--text-dim);font-family:var(--font-mono);font-size:9px}
+.timeline-axis line,.timeline-axis path{stroke:var(--border)}
+.timeline-tooltip{position:absolute;background:var(--surface);border:1px solid var(--border);
+  border-radius:4px;padding:6px 10px;font-size:10px;pointer-events:none;display:none;z-index:10}
+
+/* ========== POPUPS ========== */
+.leaflet-popup-content-wrapper{background:var(--surface-solid)!important;color:var(--text)!important;
+  border-radius:6px!important;border:1px solid var(--border)!important;box-shadow:0 4px 20px rgba(0,0,0,.6)!important}
+.leaflet-popup-tip{background:var(--surface-solid)!important}
+.popup-cat{font-family:var(--font-display);font-size:9px;font-weight:600;letter-spacing:2px;margin-bottom:4px}
+.popup-loc{font-size:12px;font-weight:700;color:var(--text-bright)}
+.popup-date{font-size:10px;color:var(--text-dim);margin-top:2px}
+.popup-sub{font-size:10px;color:var(--text-dim)}
+.popup-desc{font-size:10px;color:var(--text);margin-top:4px;line-height:1.4;font-style:italic}
+.popup-coords{font-size:9px;color:var(--text-dim);margin-top:4px}
+.popup-prox{margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:10px}
+.popup-prox-title{font-family:var(--font-display);font-size:8px;letter-spacing:1.5px;color:var(--cyan);margin-bottom:3px}
+
+/* ========== LOADING ========== */
+#loading{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.radar-container{width:120px;height:120px;position:relative}
+.radar-ring{position:absolute;border-radius:50%;border:1px solid var(--green);
+  animation:radar-pulse 2.5s ease-out infinite}
+.radar-ring:nth-child(1){inset:0;animation-delay:0s}
+.radar-ring:nth-child(2){inset:15px;animation-delay:0.5s}
+.radar-ring:nth-child(3){inset:30px;animation-delay:1s}
+.radar-ring:nth-child(4){inset:42px;animation-delay:1.5s}
+.radar-sweep{position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0deg,rgba(0,255,136,0.15) 30deg,transparent 60deg);
+  animation:radar-spin 2s linear infinite}
+@keyframes radar-pulse{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.3)}}
+#loading h1{font-family:var(--font-display);font-size:20px;letter-spacing:4px;color:var(--green)}
+#loading-status{font-size:11px;color:var(--text-dim);letter-spacing:1px}
+.progress-track{width:240px;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--cyan));width:0%;transition:width .3s}
+
+/* ========== PROXIMITY CIRCLE ========== */
+.prox-circle{fill:rgba(0,212,255,0.06);stroke:var(--cyan);stroke-width:1.5;stroke-dasharray:6 4}
+
+/* ========== SCANLINE OVERLAY (subtle) ========== */
+#sidebar::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  pointer-events:none;z-index:1}
+#sidebar{position:relative}
+
+/* ========== MOBILE ========== */
+@media(max-width:768px){
+  :root{--sidebar-w:100vw;--header-h:44px}
+  #sidebar{position:fixed;top:var(--header-h);left:0;right:0;bottom:0;z-index:1050;
+    transform:translateX(-100%);transition:transform .3s}
+  #sidebar.open{transform:translateX(0)}
+  #sidebar.collapsed{margin-left:0;transform:translateX(-100%)}
+  .header-nav{display:none}
+  #search-box{width:120px}
+}
+</style>
 </head>
 <body>
-    <div id="loading">
-        <h1>PARANORMAL SIGHTINGS MAP</h1>
-        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-        <div class="status" id="loading-status">Initializing...</div>
+
+<!-- LOADING SCREEN -->
+<div id="loading">
+  <div class="radar-container">
+    <div class="radar-ring"></div><div class="radar-ring"></div>
+    <div class="radar-ring"></div><div class="radar-ring"></div>
+    <div class="radar-sweep"></div>
+  </div>
+  <h1>STRANGE SIGNALS</h1>
+  <div id="loading-status">Initializing systems...</div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="logo">
+    <svg class="logo-icon" viewBox="0 0 32 32">
+      <circle class="ring" cx="16" cy="16" r="14"/>
+      <circle class="ring" cx="16" cy="16" r="9" stroke-dasharray="3 3"/>
+      <circle class="dot" cx="16" cy="16" r="2"/>
+    </svg>
+    <h1>STRANGE <span>SIGNALS</span></h1>
+  </div>
+  <nav class="header-nav">
+    <button class="nav-btn active" data-view="markers">MARKERS</button>
+    <button class="nav-btn" data-view="heatmap">HEATMAP</button>
+    <button class="nav-btn" data-view="hexbin">HEX DENSITY</button>
+    <button class="nav-btn" data-view="correlation">CORRELATION</button>
+  </nav>
+  <div class="header-right">
+    <input type="text" id="search-box" placeholder="Search location..." aria-label="Search location">
+    <span class="kbd-hint">/ to search</span>
+  </div>
+</header>
+
+<!-- APP LAYOUT -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <!-- LAYERS -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9678;</span> LAYERS</div>
+      <label class="layer-row" id="layer-ufo">
+        <input type="checkbox" checked data-cat="0">
+        <span class="layer-dot" style="background:var(--green)"></span>
+        <span class="layer-name">UFO / UAP</span>
+        <span class="layer-count" id="count-0">-</span>
+      </label>
+      <label class="layer-row" id="layer-bigfoot">
+        <input type="checkbox" checked data-cat="1">
+        <span class="layer-dot" style="background:var(--orange)"></span>
+        <span class="layer-name">Bigfoot / Sasquatch</span>
+        <span class="layer-count" id="count-1">-</span>
+      </label>
+      <label class="layer-row" id="layer-haunted">
+        <input type="checkbox" checked data-cat="2">
+        <span class="layer-dot" style="background:var(--purple)"></span>
+        <span class="layer-name">Haunted Places</span>
+        <span class="layer-count" id="count-2">-</span>
+      </label>
     </div>
 
-    <div id="map"></div>
+    <!-- VIEW MODE (duplicate of header for sidebar usability) -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9681;</span> VIEW MODE</div>
+      <div class="view-modes">
+        <button class="view-btn active" data-view="markers">MARKERS</button>
+        <button class="view-btn" data-view="heatmap">HEAT</button>
+        <button class="view-btn" data-view="hexbin">HEX</button>
+        <button class="view-btn" data-view="correlation">CORR</button>
+      </div>
+    </div>
 
-    <div class="control-panel" id="control-panel">
-        <button class="collapse-btn" id="collapse-btn" title="Toggle panel">&#9776;</button>
-        <h2>OVERLAYS</h2>
-        <div class="panel-body">
-            <label class="layer-toggle" style="--layer-color: #00ff88;">
-                <span class="dot dot-ufo"></span>
-                <input type="checkbox" id="toggle-0" checked>
-                <span class="toggle-track"></span>
-                <span class="layer-label">UFO / UAP</span>
-                <span class="layer-count" id="count-0">-</span>
-            </label>
-            <label class="layer-toggle" style="--layer-color: #ff6633;">
-                <span class="dot dot-bigfoot"></span>
-                <input type="checkbox" id="toggle-1" checked>
-                <span class="toggle-track"></span>
-                <span class="layer-label">Bigfoot / Sasquatch</span>
-                <span class="layer-count" id="count-1">-</span>
-            </label>
-            <label class="layer-toggle" style="--layer-color: #aa44ff;">
-                <span class="dot dot-haunted"></span>
-                <input type="checkbox" id="toggle-2" checked>
-                <span class="toggle-track"></span>
-                <span class="layer-label">Haunted Places</span>
-                <span class="layer-count" id="count-2">-</span>
-            </label>
-
-            <div class="filter-section">
-                <label>Date Range</label>
-                <input type="number" id="year-start" placeholder="Start year (e.g. 1950)" min="1800" max="2030">
-                <input type="number" id="year-end" placeholder="End year (e.g. 2023)" min="1800" max="2030">
-                <label>State Filter</label>
-                <input type="text" id="state-filter" placeholder="e.g. OH, CA, TX">
-                <button class="filter-btn" id="apply-filters">APPLY FILTERS</button>
-            </div>
-
-            <div class="stats-bar">
-                <div id="stat-visible">Visible: -</div>
-                <div id="stat-total">Total loaded: -</div>
-            </div>
+    <!-- CORRELATION CONTROLS -->
+    <div class="sb-section" id="corr-section" style="display:none">
+      <div class="sb-title"><span class="icon">&#9733;</span> CORRELATION ANALYSIS</div>
+      <div class="corr-controls">
+        <div class="corr-row">
+          <label>A</label>
+          <select id="corr-a"><option value="0">UFO / UAP</option><option value="1">Bigfoot</option><option value="2">Haunted</option></select>
         </div>
+        <div class="corr-row">
+          <label>B</label>
+          <select id="corr-b"><option value="0">UFO / UAP</option><option value="1" selected>Bigfoot</option><option value="2">Haunted</option></select>
+        </div>
+        <div class="corr-row">
+          <label style="width:auto;font-size:9px">HEX</label>
+          <input type="range" id="corr-hex-size" min="10" max="100" value="25" step="5">
+          <span id="corr-hex-label" style="font-size:10px;width:36px;text-align:right">25km</span>
+        </div>
+        <button class="corr-btn" id="corr-run">&#9672; RUN ANALYSIS</button>
+        <div class="corr-result" id="corr-result">
+          <div class="corr-r" id="corr-r-value">-</div>
+          <div class="corr-label">Pearson correlation (r)</div>
+          <div class="corr-detail" id="corr-detail"></div>
+        </div>
+      </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-    <script>
-    (function() {
-        const CATS = [
-            { name: 'UFO / UAP SIGHTING',  color: '#00ff88', rgb: '0, 255, 136' },
-            { name: 'BIGFOOT SIGHTING',     color: '#ff6633', rgb: '255, 102, 51' },
-            { name: 'HAUNTED PLACE',        color: '#aa44ff', rgb: '170, 68, 255' },
-        ];
+    <!-- FILTERS -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9698;</span> FILTERS</div>
+      <div class="filter-row">
+        <input type="number" id="year-from" placeholder="From year" min="1800" max="2030">
+        <input type="number" id="year-to" placeholder="To year" min="1800" max="2030">
+      </div>
+      <div class="filter-row">
+        <input type="text" id="state-filter" placeholder="State (OH, CA, TX...)">
+      </div>
+      <div class="filter-row">
+        <input type="text" id="sub-filter" placeholder="Shape / class...">
+      </div>
+      <div class="filter-actions">
+        <button class="btn-sm primary" id="apply-filters">APPLY</button>
+        <button class="btn-sm" id="reset-filters">RESET</button>
+        <button class="btn-sm" id="export-csv" title="Export visible data as CSV">EXPORT CSV</button>
+      </div>
+    </div>
 
-        const map = L.map('map', {
-            center: [39.5, -98.35],
-            zoom: 4,
-            preferCanvas: true,
-            maxZoom: 18,
-        });
+    <!-- STATS -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9632;</span> STATISTICS</div>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-val" id="stat-visible">-</div><div class="stat-label">VISIBLE</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-total">-</div><div class="stat-label">TOTAL</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-hotspots">-</div><div class="stat-label">HOTSPOTS</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-zoom">-</div><div class="stat-label">ZOOM</div></div>
+      </div>
+    </div>
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap &copy; CARTO',
-            maxZoom: 19,
-        }).addTo(map);
+    <!-- PROXIMITY -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9737;</span> PROXIMITY RADIUS</div>
+      <div class="corr-row">
+        <input type="range" id="prox-radius" min="10" max="200" value="50" step="10" style="flex:1">
+        <span id="prox-label" style="font-size:10px;width:40px;text-align:right">50km</span>
+      </div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:4px">Click a sighting to see nearby points of other types</div>
+    </div>
 
-        // Data: array of [lat, lon, cat, date, location, subcategory]
-        let allData = [];
-        // Per-category marker arrays
-        let catMarkers = [[], [], []];
-        let clusterGroups = [null, null, null];
+    <!-- KEYBOARD SHORTCUTS -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9000;</span> SHORTCUTS</div>
+      <div style="font-size:10px;color:var(--text-dim);line-height:2">
+        <b style="color:var(--text)">1</b> UFO &nbsp;
+        <b style="color:var(--text)">2</b> Bigfoot &nbsp;
+        <b style="color:var(--text)">3</b> Haunted<br>
+        <b style="color:var(--text)">M</b> Markers &nbsp;
+        <b style="color:var(--text)">H</b> Heat &nbsp;
+        <b style="color:var(--text)">X</b> Hex &nbsp;
+        <b style="color:var(--text)">C</b> Corr<br>
+        <b style="color:var(--text)">/</b> Search &nbsp;
+        <b style="color:var(--text)">Esc</b> Reset &nbsp;
+        <b style="color:var(--text)">S</b> Sidebar
+      </div>
+    </div>
+  </aside>
 
-        function setProgress(pct, msg) {
-            document.getElementById('progress-fill').style.width = pct + '%';
-            document.getElementById('loading-status').textContent = msg;
+  <!-- MAIN CONTENT -->
+  <div id="main">
+    <button id="sidebar-toggle" title="Toggle sidebar (S)">&#9776;</button>
+    <div id="map-container"><div id="map"></div></div>
+    <div id="timeline-panel">
+      <span id="timeline-label">TIMELINE</span>
+      <button id="timeline-toggle" title="Toggle timeline">&#9660;</button>
+      <svg id="timeline-svg"></svg>
+      <div class="timeline-tooltip" id="timeline-tooltip"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet-heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="https://unpkg.com/@turf/turf@7/turf.min.js"></script>
+<script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ========== CONSTANTS ========== */
+const CAT_COLORS = ['#00ff88','#ff6622','#aa44ff'];
+const CAT_NAMES = ['UFO/UAP','Bigfoot/Sasquatch','Haunted Place'];
+const CAT_RGB = ['0,255,136','255,102,34','170,68,255'];
+const F={LAT:0,LON:1,CAT:2,DATE:3,LOC:4,SUB:5,DESC:6};
+
+/* ========== STATE ========== */
+let allData=[], catArrays=[[],[],[]];
+let filteredCat=[[],[],[]];
+let currentView='markers';
+let clusterGroups=[null,null,null];
+let heatLayers=[null,null,null];
+let hexLayer=null, corrLayer=null, proxCircle=null, proxMarkers=null;
+let brushRange=null; // [yearStart, yearEnd] from timeline brush
+let timelineBuilt=false;
+
+/* ========== MAP INIT ========== */
+const map=L.map('map',{center:[39.5,-98.35],zoom:4,preferCanvas:true,maxZoom:18,zoomControl:false});
+L.control.zoom({position:'topright'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19
+}).addTo(map);
+
+map.on('zoomend',()=>{document.getElementById('stat-zoom').textContent=map.getZoom()});
+
+/* ========== PROGRESS ========== */
+function setProgress(pct,msg){
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('loading-status').textContent=msg;
+}
+
+/* ========== ESCAPE HTML ========== */
+function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
+
+/* ========== CREATE MARKER ========== */
+function makeIcon(catIdx){
+  const c=CAT_COLORS[catIdx];
+  return L.divIcon({className:'',iconSize:[8,8],iconAnchor:[4,4],
+    html:`<div style="width:8px;height:8px;background:${c};border-radius:50%;border:1px solid rgba(255,255,255,0.3);opacity:0.85"></div>`});
+}
+const icons=[makeIcon(0),makeIcon(1),makeIcon(2)];
+
+function makePopup(rec){
+  const cat=rec[F.CAT];
+  let h=`<div class="popup-cat" style="color:${CAT_COLORS[cat]}">${CAT_NAMES[cat]}</div>`;
+  h+=`<div class="popup-loc">${esc(rec[F.LOC])||'Unknown location'}</div>`;
+  if(rec[F.DATE])h+=`<div class="popup-date">${rec[F.DATE]}</div>`;
+  if(rec[F.SUB])h+=`<div class="popup-sub">${esc(rec[F.SUB])}</div>`;
+  if(rec[F.DESC])h+=`<div class="popup-desc">${esc(rec[F.DESC])}</div>`;
+  h+=`<div class="popup-coords">${rec[F.LAT].toFixed(4)}, ${rec[F.LON].toFixed(4)}</div>`;
+  // proximity analysis
+  const radius=parseInt(document.getElementById('prox-radius').value);
+  const pt=turf.point([rec[F.LON],rec[F.LAT]]);
+  let proxHtml='';
+  for(let i=0;i<3;i++){
+    if(i===cat)continue;
+    if(!document.querySelector(`[data-cat="${i}"]`).checked)continue;
+    let count=0;
+    filteredCat[i].forEach(r=>{
+      const d=turf.distance(pt,turf.point([r[F.LON],r[F.LAT]]),{units:'kilometers'});
+      if(d<=radius)count++;
+    });
+    proxHtml+=`<div><span style="color:${CAT_COLORS[i]}">${CAT_NAMES[i]}</span>: ${count} within ${radius}km</div>`;
+  }
+  if(proxHtml){
+    h+=`<div class="popup-prox"><div class="popup-prox-title">PROXIMITY ANALYSIS</div>${proxHtml}</div>`;
+  }
+  return h;
+}
+
+function createMarker(rec){
+  const m=L.marker([rec[F.LAT],rec[F.LON]],{icon:icons[rec[F.CAT]]});
+  m._rec=rec;
+  m.bindPopup(()=>makePopup(rec),{maxWidth:300});
+  m.on('click',function(){showProxCircle(rec)});
+  return m;
+}
+
+/* ========== PROXIMITY CIRCLE ========== */
+function showProxCircle(rec){
+  clearProxCircle();
+  const radius=parseInt(document.getElementById('prox-radius').value)*1000;
+  proxCircle=L.circle([rec[F.LAT],rec[F.LON]],{radius,className:'prox-circle',
+    fillColor:'rgba(0,212,255,0.06)',color:'#00d4ff',weight:1.5,dashArray:'6 4'}).addTo(map);
+}
+function clearProxCircle(){
+  if(proxCircle){map.removeLayer(proxCircle);proxCircle=null}
+}
+
+/* ========== CLUSTER GROUP ========== */
+function createCluster(catIdx){
+  const c=CAT_RGB[catIdx];
+  return L.markerClusterGroup({
+    chunkedLoading:true,chunkInterval:100,chunkDelay:10,
+    maxClusterRadius:50,disableClusteringAtZoom:12,
+    iconCreateFunction(cluster){
+      const n=cluster.getChildCount();
+      const sz=n<100?28:n<1000?36:44;
+      return L.divIcon({className:'',iconSize:[sz,sz],
+        html:`<div style="background:rgba(${c},0.65);color:#fff;font-weight:700;font-size:${sz>36?12:10}px;
+          width:${sz}px;height:${sz}px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+          border:2px solid rgba(${c},0.4);box-shadow:0 0 8px rgba(${c},0.3);font-family:var(--font-mono)">
+          ${n>=1000?Math.round(n/1000)+'k':n}</div>`});
+    }
+  });
+}
+
+/* ========== APPLY FILTERS ========== */
+function getFilters(){
+  const yFrom=parseInt(document.getElementById('year-from').value)||0;
+  const yTo=parseInt(document.getElementById('year-to').value)||9999;
+  const stateRaw=document.getElementById('state-filter').value.trim().toUpperCase();
+  const states=stateRaw?stateRaw.split(',').map(s=>s.trim()):[];
+  const subRaw=document.getElementById('sub-filter').value.trim().toLowerCase();
+  return{yFrom,yTo,states,subRaw};
+}
+
+function passesFilter(rec,f){
+  if(rec[F.DATE]){
+    const y=parseInt(rec[F.DATE].substring(0,4));
+    if(!isNaN(y)&&(y<f.yFrom||y>f.yTo))return false;
+  } else if(f.yFrom>0)return false;
+  if(brushRange){
+    if(rec[F.DATE]){
+      const y=parseInt(rec[F.DATE].substring(0,4));
+      if(!isNaN(y)&&(y<brushRange[0]||y>brushRange[1]))return false;
+    }
+  }
+  if(f.states.length>0){
+    const loc=(rec[F.LOC]||'').toUpperCase();
+    if(!f.states.some(st=>loc.includes(st)))return false;
+  }
+  if(f.subRaw){
+    const sub=(rec[F.SUB]||'').toLowerCase();
+    if(!sub.includes(f.subRaw))return false;
+  }
+  return true;
+}
+
+function applyFilters(){
+  const f=getFilters();
+  let totalVis=0;
+  for(let i=0;i<3;i++){
+    const checked=document.querySelector(`[data-cat="${i}"]`).checked;
+    if(!checked){
+      filteredCat[i]=[];
+      document.getElementById('count-'+i).textContent='off';
+      continue;
+    }
+    filteredCat[i]=catArrays[i].filter(r=>passesFilter(r,f));
+    document.getElementById('count-'+i).textContent=filteredCat[i].length.toLocaleString();
+    totalVis+=filteredCat[i].length;
+  }
+  document.getElementById('stat-visible').textContent=totalVis.toLocaleString();
+  renderCurrentView();
+}
+
+/* ========== RENDER VIEWS ========== */
+function clearAllLayers(){
+  for(let i=0;i<3;i++){
+    if(clusterGroups[i]){map.removeLayer(clusterGroups[i]);clusterGroups[i]=null}
+    if(heatLayers[i]){map.removeLayer(heatLayers[i]);heatLayers[i]=null}
+  }
+  if(hexLayer){map.removeLayer(hexLayer);hexLayer=null}
+  if(corrLayer){map.removeLayer(corrLayer);corrLayer=null}
+  clearProxCircle();
+}
+
+function renderCurrentView(){
+  clearAllLayers();
+  if(currentView==='markers')renderMarkers();
+  else if(currentView==='heatmap')renderHeatmap();
+  else if(currentView==='hexbin')renderHexbin();
+  else if(currentView==='correlation')renderCorrelation();
+}
+
+function renderMarkers(){
+  for(let i=0;i<3;i++){
+    if(!filteredCat[i].length)continue;
+    const group=createCluster(i);
+    const markers=filteredCat[i].map(r=>createMarker(r));
+    group.addLayers(markers);
+    group.addTo(map);
+    clusterGroups[i]=group;
+  }
+}
+
+function renderHeatmap(){
+  for(let i=0;i<3;i++){
+    if(!filteredCat[i].length)continue;
+    const pts=filteredCat[i].map(r=>[r[F.LAT],r[F.LON],0.5]);
+    // parse color for gradient
+    const col=CAT_COLORS[i];
+    const gradient={0.2:'rgba(0,0,0,0)',0.4:col+'44',0.6:col+'88',0.8:col+'cc',1.0:col};
+    heatLayers[i]=L.heatLayer(pts,{radius:18,blur:22,maxZoom:10,gradient}).addTo(map);
+  }
+}
+
+function renderHexbin(){
+  const bounds=map.getBounds();
+  const bbox=[bounds.getWest(),bounds.getSouth(),bounds.getEast(),bounds.getNorth()];
+  const cellSide=parseFloat(document.getElementById('corr-hex-size').value);
+  const grid=turf.hexGrid(bbox,cellSide,{units:'kilometers'});
+
+  // count all active categories per hex
+  const allPts=[];
+  for(let i=0;i<3;i++){
+    filteredCat[i].forEach(r=>allPts.push(turf.point([r[F.LON],r[F.LAT]],{cat:i})));
+  }
+  const collected=turf.collect(grid,turf.featureCollection(allPts),'cat','cats');
+
+  let maxCount=0;
+  collected.features.forEach(f=>{
+    f.properties.count=f.properties.cats.length;
+    if(f.properties.count>maxCount)maxCount=f.properties.count;
+  });
+
+  // color scale
+  const scale=d3.scaleSequential(d3.interpolateViridis).domain([0,Math.max(maxCount,1)]);
+
+  hexLayer=L.geoJSON(collected,{
+    style(feature){
+      const c=feature.properties.count;
+      if(c===0)return{fillOpacity:0,weight:0};
+      return{fillColor:scale(c),fillOpacity:0.6,weight:1,color:'rgba(255,255,255,0.15)'};
+    },
+    onEachFeature(feature,layer){
+      if(feature.properties.count>0){
+        const cats=feature.properties.cats;
+        const breakdown=[0,0,0];cats.forEach(c=>breakdown[c]++);
+        let tip=`<b>${feature.properties.count} sightings</b><br>`;
+        for(let i=0;i<3;i++){
+          if(breakdown[i])tip+=`<span style="color:${CAT_COLORS[i]}">${CAT_NAMES[i]}: ${breakdown[i]}</span><br>`;
         }
+        layer.bindTooltip(tip);
+      }
+    }
+  }).addTo(map);
+}
 
-        function escapeHtml(s) {
-            if (!s) return '';
-            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        }
+function renderCorrelation(){
+  const catA=parseInt(document.getElementById('corr-a').value);
+  const catB=parseInt(document.getElementById('corr-b').value);
+  runCorrelation(catA,catB);
+}
 
-        function createClusterGroup(catIdx) {
-            const cat = CATS[catIdx];
-            return L.markerClusterGroup({
-                chunkedLoading: true,
-                chunkInterval: 100,
-                chunkDelay: 10,
-                maxClusterRadius: 50,
-                disableClusteringAtZoom: 12,
-                iconCreateFunction: function(cluster) {
-                    const count = cluster.getChildCount();
-                    let size = count < 100 ? 30 : count < 1000 ? 40 : 50;
-                    return L.divIcon({
-                        html: `<div style="background:rgba(${cat.rgb},0.7);color:#fff;font-weight:700;font-size:11px;
-                            width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;
-                            justify-content:center;border:2px solid rgba(${cat.rgb},0.4);box-shadow:0 0 8px rgba(${cat.rgb},0.3);">
-                            ${count >= 1000 ? Math.round(count/1000)+'k' : count}</div>`,
-                        className: '',
-                        iconSize: [size, size],
-                    });
-                },
-            });
-        }
+/* ========== CORRELATION ENGINE ========== */
+function runCorrelation(catA,catB){
+  if(corrLayer){map.removeLayer(corrLayer);corrLayer=null}
 
-        function makePopup(rec) {
-            const [lat, lon, catIdx, date, loc, sub] = rec;
-            const cat = CATS[catIdx];
-            let html = `<div class="popup-type cat-${catIdx}">${cat.name}</div>`;
-            html += `<strong>${escapeHtml(loc) || 'Unknown location'}</strong><br>`;
-            if (date) html += `Date: ${date}<br>`;
-            if (sub) html += `${escapeHtml(sub)}<br>`;
-            html += `<br><small style="color:#666">${lat.toFixed(4)}, ${lon.toFixed(4)}</small>`;
-            return html;
-        }
+  const bounds=map.getBounds();
+  const bbox=[bounds.getWest(),bounds.getSouth(),bounds.getEast(),bounds.getNorth()];
+  const cellSide=parseFloat(document.getElementById('corr-hex-size').value);
+  const grid=turf.hexGrid(bbox,cellSide,{units:'kilometers'});
 
-        function applyFilters() {
-            const yearStart = parseInt(document.getElementById('year-start').value) || 0;
-            const yearEnd = parseInt(document.getElementById('year-end').value) || 9999;
-            const stateFilter = document.getElementById('state-filter').value.trim().toUpperCase();
-            const states = stateFilter ? stateFilter.split(',').map(s => s.trim()) : [];
-            let visibleCount = 0;
+  // Build point collections per category
+  const ptsA=filteredCat[catA].map(r=>turf.point([r[F.LON],r[F.LAT]]));
+  const ptsB=filteredCat[catB].map(r=>turf.point([r[F.LON],r[F.LAT]]));
+  const fcA=turf.featureCollection(ptsA);
+  const fcB=turf.featureCollection(ptsB);
 
-            for (let i = 0; i < 3; i++) {
-                const toggled = document.getElementById('toggle-' + i).checked;
-                if (clusterGroups[i]) {
-                    map.removeLayer(clusterGroups[i]);
-                    clusterGroups[i] = null;
-                }
+  // Count per hex
+  const collA=turf.collect(grid,fcA,'__dummy','ptsA');
+  // We need a property on the points for collect to work
+  // Actually collect counts by collecting values. Let's use within manually
+  const hexFeatures=grid.features;
+  const countsA=new Float64Array(hexFeatures.length);
+  const countsB=new Float64Array(hexFeatures.length);
 
-                if (!toggled) {
-                    document.getElementById('count-' + i).textContent = 'off';
-                    continue;
-                }
+  // Spatial index: assign points to hex cells
+  // For performance, use point-in-polygon checks
+  // Build a simple grid lookup
+  ptsA.forEach(pt=>{
+    for(let i=0;i<hexFeatures.length;i++){
+      if(turf.booleanPointInPolygon(pt,hexFeatures[i])){countsA[i]++;break}
+    }
+  });
+  ptsB.forEach(pt=>{
+    for(let i=0;i<hexFeatures.length;i++){
+      if(turf.booleanPointInPolygon(pt,hexFeatures[i])){countsB[i]++;break}
+    }
+  });
 
-                const group = createClusterGroup(i);
-                let markers = [];
+  // Pearson correlation on cells with at least one sighting
+  const pairs=[];
+  let hotspotCount=0;
+  const medA=d3.median(countsA.filter(v=>v>0))||1;
+  const medB=d3.median(countsB.filter(v=>v>0))||1;
 
-                catMarkers[i].forEach(function(obj) {
-                    const rec = obj.rec;
-                    const dateStr = rec[3];
-                    if (dateStr && (yearStart > 0 || yearEnd < 9999)) {
-                        const y = parseInt(dateStr.substring(0, 4));
-                        if (y < yearStart || y > yearEnd) return;
-                    }
-                    if (states.length > 0) {
-                        const loc = (rec[4] || '').toUpperCase();
-                        if (!states.some(st => loc.includes(st))) return;
-                    }
-                    markers.push(obj.marker);
-                });
+  for(let i=0;i<hexFeatures.length;i++){
+    if(countsA[i]>0||countsB[i]>0){
+      pairs.push([countsA[i],countsB[i]]);
+      hexFeatures[i].properties.cA=countsA[i];
+      hexFeatures[i].properties.cB=countsB[i];
+      hexFeatures[i].properties.hotspot=countsA[i]>=medA&&countsB[i]>=medB;
+      if(hexFeatures[i].properties.hotspot)hotspotCount++;
+    } else {
+      hexFeatures[i].properties.cA=0;
+      hexFeatures[i].properties.cB=0;
+      hexFeatures[i].properties.hotspot=false;
+    }
+  }
 
-                group.addLayers(markers);
-                group.addTo(map);
-                clusterGroups[i] = group;
+  // Compute Pearson r
+  let r=0;
+  if(pairs.length>2){
+    const meanA=d3.mean(pairs,p=>p[0]);
+    const meanB=d3.mean(pairs,p=>p[1]);
+    let num=0,denA=0,denB=0;
+    pairs.forEach(p=>{
+      const da=p[0]-meanA,db=p[1]-meanB;
+      num+=da*db;denA+=da*da;denB+=db*db;
+    });
+    const den=Math.sqrt(denA*denB);
+    r=den>0?num/den:0;
+  }
 
-                document.getElementById('count-' + i).textContent = markers.length.toLocaleString();
-                visibleCount += markers.length;
-            }
+  // Display result
+  const resultEl=document.getElementById('corr-result');
+  resultEl.classList.add('visible');
+  const rEl=document.getElementById('corr-r-value');
+  rEl.textContent=r.toFixed(3);
+  rEl.style.color=r>0.3?'var(--green)':r<-0.1?'var(--pink)':'var(--cyan)';
 
-            document.getElementById('stat-visible').textContent = 'Visible: ' + visibleCount.toLocaleString();
-        }
+  let interp='No significant correlation';
+  if(r>0.7)interp='Strong positive correlation — these phenomena cluster together';
+  else if(r>0.4)interp='Moderate positive correlation — notable co-occurrence';
+  else if(r>0.2)interp='Weak positive correlation — some spatial overlap';
+  else if(r<-0.3)interp='Negative correlation — these phenomena tend to avoid each other';
+  document.getElementById('corr-detail').innerHTML=
+    `<div>${interp}</div><div style="margin-top:4px">${pairs.length} hex cells analyzed &middot; ${hotspotCount} hotspots</div>`;
+  document.getElementById('stat-hotspots').textContent=hotspotCount;
 
-        async function init() {
-            try {
-                setProgress(10, 'Loading sighting data (~184K records)...');
-                const resp = await fetch('data/sightings_map_data.json');
-                const json = await resp.json();
-                allData = json.data;
+  // Color scale: diverging red-blue through neutral
+  const maxVal=d3.max(pairs,p=>p[0]+p[1])||1;
+  const coOccScale=d3.scaleSequential(d3.interpolateRdYlGn).domain([0,maxVal]);
 
-                setProgress(50, 'Building markers...');
+  corrLayer=L.geoJSON(turf.featureCollection(hexFeatures),{
+    style(feature){
+      const a=feature.properties.cA,b=feature.properties.cB;
+      if(a===0&&b===0)return{fillOpacity:0,weight:0};
+      const score=a+b;
+      const isHotspot=feature.properties.hotspot;
+      return{
+        fillColor:coOccScale(score),
+        fillOpacity:isHotspot?0.7:0.4,
+        weight:isHotspot?2:0.5,
+        color:isHotspot?'#fff':'rgba(255,255,255,0.1)'
+      };
+    },
+    onEachFeature(feature,layer){
+      const a=feature.properties.cA,b=feature.properties.cB;
+      if(a>0||b>0){
+        let tip=`<b>Co-occurrence cell</b><br>`;
+        tip+=`<span style="color:${CAT_COLORS[catA]}">${CAT_NAMES[catA]}: ${a}</span><br>`;
+        tip+=`<span style="color:${CAT_COLORS[catB]}">${CAT_NAMES[catB]}: ${b}</span>`;
+        if(feature.properties.hotspot)tip+=`<br><b style="color:var(--green)">HOTSPOT</b>`;
+        layer.bindTooltip(tip);
+      }
+    }
+  }).addTo(map);
+}
 
-                // Create markers in batches
-                const icons = CATS.map(cat =>
-                    L.divIcon({
-                        className: '',
-                        html: `<div style="width:8px;height:8px;background:${cat.color};border-radius:50%;border:1px solid rgba(255,255,255,0.3);opacity:0.85;"></div>`,
-                        iconSize: [8, 8],
-                        iconAnchor: [4, 4],
-                    })
-                );
+/* ========== TIMELINE (D3) ========== */
+function buildTimeline(){
+  if(timelineBuilt)return;
+  timelineBuilt=true;
 
-                let idx = 0;
-                const batch = 20000;
+  const svg=d3.select('#timeline-svg');
+  const container=document.getElementById('timeline-panel');
+  const w=container.clientWidth-32;
+  const h=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--timeline-h'))-36;
+  const margin={top:4,right:16,bottom:22,left:40};
+  const iw=w-margin.left-margin.right;
+  const ih=h-margin.top-margin.bottom;
 
-                function processBatch() {
-                    const end = Math.min(idx + batch, allData.length);
-                    for (; idx < end; idx++) {
-                        const rec = allData[idx];
-                        const catIdx = rec[2];
-                        if (catIdx < 0 || catIdx >= 3) continue;
+  svg.attr('width',w).attr('height',h);
+  const g=svg.append('g').attr('transform',`translate(${margin.left},${margin.top})`);
 
-                        const marker = L.marker([rec[0], rec[1]], { icon: icons[catIdx] })
-                            .bindPopup(function() { return makePopup(rec); }, { maxWidth: 320 });
+  // Aggregate by year per category
+  const yearData={};
+  allData.forEach(r=>{
+    if(!r[F.DATE])return;
+    const y=parseInt(r[F.DATE].substring(0,4));
+    if(isNaN(y)||y<1900||y>2030)return;
+    if(!yearData[y])yearData[y]=[0,0,0];
+    yearData[y][r[F.CAT]]++;
+  });
 
-                        catMarkers[catIdx].push({ marker: marker, rec: rec });
-                    }
+  const years=Object.keys(yearData).map(Number).sort((a,b)=>a-b);
+  if(!years.length)return;
+  const stackData=years.map(y=>({year:y,0:yearData[y][0],1:yearData[y][1],2:yearData[y][2]}));
 
-                    const pct = 50 + Math.round((idx / allData.length) * 40);
-                    setProgress(pct, `Processing ${idx.toLocaleString()} of ${allData.length.toLocaleString()}...`);
+  const x=d3.scaleBand().domain(years).range([0,iw]).padding(0.15);
+  const stack=d3.stack().keys(['0','1','2']);
+  const series=stack(stackData);
+  const yMax=d3.max(series,s=>d3.max(s,d=>d[1]));
+  const y=d3.scaleLinear().domain([0,yMax]).range([ih,0]);
 
-                    if (idx < allData.length) {
-                        requestAnimationFrame(processBatch);
-                    } else {
-                        finalize();
-                    }
-                }
+  // Bars
+  series.forEach((s,i)=>{
+    g.selectAll(`.bar-${i}`).data(s).join('rect')
+      .attr('class',`timeline-bar bar-${i}`)
+      .attr('x',d=>x(d.data.year))
+      .attr('y',d=>y(d[1]))
+      .attr('width',x.bandwidth())
+      .attr('height',d=>y(d[0])-y(d[1]))
+      .attr('fill',CAT_COLORS[i])
+      .attr('opacity',0.8)
+      .on('mouseover',function(event,d){
+        const tt=document.getElementById('timeline-tooltip');
+        tt.style.display='block';
+        tt.style.left=(event.offsetX+10)+'px';
+        tt.style.top=(event.offsetY-30)+'px';
+        tt.innerHTML=`<b>${d.data.year}</b><br>
+          <span style="color:${CAT_COLORS[0]}">UFO: ${d.data[0]}</span><br>
+          <span style="color:${CAT_COLORS[1]}">Bigfoot: ${d.data[1]}</span><br>
+          <span style="color:${CAT_COLORS[2]}">Haunted: ${d.data[2]}</span>`;
+      })
+      .on('mouseout',()=>{document.getElementById('timeline-tooltip').style.display='none'});
+  });
 
-                function finalize() {
-                    document.getElementById('stat-total').textContent =
-                        'Total loaded: ' + allData.length.toLocaleString();
-                    setProgress(95, 'Rendering map...');
-                    applyFilters();
-                    setProgress(100, 'Done!');
-                    setTimeout(function() {
-                        document.getElementById('loading').style.display = 'none';
-                    }, 400);
-                }
+  // Axes
+  const xAxis=d3.axisBottom(x).tickValues(years.filter(y=>y%10===0)).tickFormat(d3.format('d'));
+  g.append('g').attr('class','timeline-axis').attr('transform',`translate(0,${ih})`).call(xAxis);
+  const yAxis=d3.axisLeft(y).ticks(4).tickFormat(d3.format('~s'));
+  g.append('g').attr('class','timeline-axis').call(yAxis);
 
-                requestAnimationFrame(processBatch);
+  // Brush
+  const brush=d3.brushX().extent([[0,0],[iw,ih]])
+    .on('end',function(event){
+      if(!event.selection){
+        brushRange=null;
+        applyFilters();
+        return;
+      }
+      const [x0,x1]=event.selection;
+      const selectedYears=years.filter(y=>{
+        const bx=x(y)+x.bandwidth()/2;
+        return bx>=x0&&bx<=x1;
+      });
+      if(selectedYears.length){
+        brushRange=[selectedYears[0],selectedYears[selectedYears.length-1]];
+      } else {
+        brushRange=null;
+      }
+      applyFilters();
+    });
+  g.append('g').attr('class','brush-group').call(brush);
+}
 
-            } catch (err) {
-                setProgress(0, 'Error loading data: ' + err.message);
-                console.error(err);
-            }
-        }
+/* ========== VIEW SWITCHING ========== */
+function setView(view){
+  currentView=view;
+  // Update nav buttons
+  document.querySelectorAll('.nav-btn,.view-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.view===view);
+  });
+  // Show/hide correlation controls
+  document.getElementById('corr-section').style.display=view==='correlation'?'block':'none';
+  applyFilters();
+}
 
-        // Event listeners
-        for (let i = 0; i < 3; i++) {
-            document.getElementById('toggle-' + i).addEventListener('change', applyFilters);
-        }
-        document.getElementById('apply-filters').addEventListener('click', applyFilters);
-        document.getElementById('collapse-btn').addEventListener('click', function() {
-            document.getElementById('control-panel').classList.toggle('collapsed');
-        });
-        ['year-start', 'year-end', 'state-filter'].forEach(function(id) {
-            document.getElementById(id).addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') applyFilters();
-            });
-        });
+/* ========== URL STATE ========== */
+function saveState(){
+  const center=map.getCenter();
+  const params=new URLSearchParams();
+  params.set('lat',center.lat.toFixed(4));
+  params.set('lng',center.lng.toFixed(4));
+  params.set('z',map.getZoom());
+  params.set('v',currentView);
+  const layers=[0,1,2].map(i=>document.querySelector(`[data-cat="${i}"]`).checked?1:0).join('');
+  params.set('l',layers);
+  const yf=document.getElementById('year-from').value;
+  const yt=document.getElementById('year-to').value;
+  if(yf)params.set('yf',yf);
+  if(yt)params.set('yt',yt);
+  const sf=document.getElementById('state-filter').value;
+  if(sf)params.set('sf',sf);
+  history.replaceState(null,'','#'+params.toString());
+}
 
-        init();
-    })();
-    </script>
+function loadState(){
+  if(!location.hash)return;
+  try{
+    const params=new URLSearchParams(location.hash.substring(1));
+    if(params.has('lat')&&params.has('lng')&&params.has('z')){
+      map.setView([parseFloat(params.get('lat')),parseFloat(params.get('lng'))],parseInt(params.get('z')));
+    }
+    if(params.has('v'))currentView=params.get('v');
+    if(params.has('l')){
+      const l=params.get('l');
+      [0,1,2].forEach(i=>{document.querySelector(`[data-cat="${i}"]`).checked=l[i]==='1'});
+    }
+    if(params.has('yf'))document.getElementById('year-from').value=params.get('yf');
+    if(params.has('yt'))document.getElementById('year-to').value=params.get('yt');
+    if(params.has('sf'))document.getElementById('state-filter').value=params.get('sf');
+  }catch(e){console.warn('Failed to load state from URL',e)}
+}
+
+/* ========== EXPORT CSV ========== */
+function exportCSV(){
+  const headers=['category','subcategory','date','latitude','longitude','location','description'];
+  const rows=[headers.join(',')];
+  for(let i=0;i<3;i++){
+    filteredCat[i].forEach(r=>{
+      const vals=[
+        CAT_NAMES[r[F.CAT]],
+        `"${(r[F.SUB]||'').replace(/"/g,'""')}"`,
+        r[F.DATE]||'',
+        r[F.LAT],r[F.LON],
+        `"${(r[F.LOC]||'').replace(/"/g,'""')}"`,
+        `"${(r[F.DESC]||'').replace(/"/g,'""')}"`
+      ];
+      rows.push(vals.join(','));
+    });
+  }
+  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='sightings_export.csv';a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ========== GEOCODE SEARCH ========== */
+async function geocodeSearch(query){
+  if(!query.trim())return;
+  try{
+    const resp=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+    const data=await resp.json();
+    if(data.length){
+      map.flyTo([parseFloat(data[0].lat),parseFloat(data[0].lon)],10,{duration:1.5});
+    }
+  }catch(e){console.warn('Geocode failed',e)}
+}
+
+/* ========== EVENT LISTENERS ========== */
+// Layer toggles
+document.querySelectorAll('[data-cat]').forEach(cb=>{
+  cb.addEventListener('change',applyFilters);
+});
+
+// View mode buttons
+document.querySelectorAll('[data-view]').forEach(btn=>{
+  btn.addEventListener('click',()=>setView(btn.dataset.view));
+});
+
+// Correlation controls
+document.getElementById('corr-run').addEventListener('click',()=>{
+  if(currentView!=='correlation')setView('correlation');
+  else renderCorrelation();
+});
+document.getElementById('corr-hex-size').addEventListener('input',e=>{
+  document.getElementById('corr-hex-label').textContent=e.target.value+'km';
+});
+
+// Proximity radius
+document.getElementById('prox-radius').addEventListener('input',e=>{
+  document.getElementById('prox-label').textContent=e.target.value+'km';
+});
+
+// Filters
+document.getElementById('apply-filters').addEventListener('click',applyFilters);
+document.getElementById('reset-filters').addEventListener('click',()=>{
+  document.getElementById('year-from').value='';
+  document.getElementById('year-to').value='';
+  document.getElementById('state-filter').value='';
+  document.getElementById('sub-filter').value='';
+  brushRange=null;
+  applyFilters();
+});
+['year-from','year-to','state-filter','sub-filter'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')applyFilters()});
+});
+
+// Export
+document.getElementById('export-csv').addEventListener('click',exportCSV);
+
+// Search
+document.getElementById('search-box').addEventListener('keydown',e=>{
+  if(e.key==='Enter')geocodeSearch(e.target.value);
+});
+
+// Sidebar toggle
+document.getElementById('sidebar-toggle').addEventListener('click',()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
+
+// Timeline toggle
+document.getElementById('timeline-toggle').addEventListener('click',()=>{
+  const panel=document.getElementById('timeline-panel');
+  panel.classList.toggle('collapsed');
+  document.getElementById('timeline-toggle').textContent=panel.classList.contains('collapsed')?'\u25B2':'\u25BC';
+  setTimeout(()=>map.invalidateSize(),350);
+});
+
+// URL state save on map move
+map.on('moveend',saveState);
+
+// Keyboard shortcuts
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA')return;
+  const key=e.key.toLowerCase();
+  if(key==='1'||key==='2'||key==='3'){
+    const i=parseInt(key)-1;
+    const cb=document.querySelector(`[data-cat="${i}"]`);
+    cb.checked=!cb.checked;applyFilters();
+  }
+  else if(key==='m')setView('markers');
+  else if(key==='h')setView('heatmap');
+  else if(key==='x')setView('hexbin');
+  else if(key==='c')setView('correlation');
+  else if(key==='/'){e.preventDefault();document.getElementById('search-box').focus()}
+  else if(key==='s'){document.getElementById('sidebar').classList.toggle('collapsed')}
+  else if(key==='escape'){
+    document.getElementById('search-box').blur();
+    brushRange=null;applyFilters();
+  }
+});
+
+/* ========== DATA LOADING ========== */
+async function init(){
+  loadState();
+  setProgress(10,'Fetching sighting data...');
+
+  let json;
+  try{
+    const resp=await fetch('data/sightings_map_data.json');
+    json=await resp.json();
+  }catch(err){
+    setProgress(0,'Error loading data: '+err.message);
+    return;
+  }
+
+  allData=json.data;
+  setProgress(40,`Processing ${allData.length.toLocaleString()} records...`);
+
+  // Sort into categories
+  await new Promise(resolve=>{
+    let idx=0;
+    const batch=30000;
+    function process(){
+      const end=Math.min(idx+batch,allData.length);
+      for(;idx<end;idx++){
+        const r=allData[idx];
+        const cat=r[F.CAT];
+        if(cat>=0&&cat<3)catArrays[cat].push(r);
+      }
+      if(idx<allData.length){
+        setProgress(40+Math.round(idx/allData.length*30),
+          `Indexing ${idx.toLocaleString()} of ${allData.length.toLocaleString()}...`);
+        requestAnimationFrame(process);
+      } else resolve();
+    }
+    requestAnimationFrame(process);
+  });
+
+  document.getElementById('stat-total').textContent=allData.length.toLocaleString();
+  document.getElementById('stat-zoom').textContent=map.getZoom();
+
+  setProgress(80,'Building map layers...');
+  // Set initial view from URL state
+  setView(currentView);
+  // applyFilters() is called inside setView
+
+  setProgress(90,'Building timeline...');
+  buildTimeline();
+
+  setProgress(100,'Systems online');
+  setTimeout(()=>{document.getElementById('loading').style.display='none'},500);
+
+  // Save state after full load
+  saveState();
+}
+
+init();
+
+})();
+</script>
 </body>
 </html>
