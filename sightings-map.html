@@ -60,14 +60,14 @@
         #loading .status { margin-top: 12px; font-size: 13px; color: #888; }
 
         /* Popup styling */
-        .leaflet-popup-content-wrapper { background: #1a1a1a; color: #e0e0e0; border-radius: 6px; }
-        .leaflet-popup-tip { background: #1a1a1a; }
+        .leaflet-popup-content-wrapper { background: #1a1a1a !important; color: #e0e0e0 !important; border-radius: 6px !important; }
+        .leaflet-popup-tip { background: #1a1a1a !important; }
         .leaflet-popup-content { font-size: 13px; line-height: 1.5; }
         .leaflet-popup-content strong { color: #fff; }
         .popup-type { font-size: 11px; font-weight: 600; letter-spacing: 1px; margin-bottom: 4px; }
-        .popup-type.ufo { color: #00ff88; }
-        .popup-type.bigfoot { color: #ff6633; }
-        .popup-type.haunted { color: #aa44ff; }
+        .popup-type.cat-0 { color: #00ff88; }
+        .popup-type.cat-1 { color: #ff6633; }
+        .popup-type.cat-2 { color: #aa44ff; }
 
         /* Filter controls */
         .filter-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; }
@@ -83,19 +83,6 @@
         }
         .filter-btn:hover { background: #00cc6e; }
 
-        /* Mobile */
-        @media (max-width: 600px) {
-            .control-panel { top: auto; bottom: 10px; right: 10px; left: 10px; min-width: auto; }
-        }
-
-        /* Cluster styling overrides */
-        .marker-cluster-ufo { background: rgba(0, 255, 136, 0.3); }
-        .marker-cluster-ufo div { background: rgba(0, 255, 136, 0.7); color: #000; }
-        .marker-cluster-bigfoot { background: rgba(255, 102, 51, 0.3); }
-        .marker-cluster-bigfoot div { background: rgba(255, 102, 51, 0.7); color: #000; }
-        .marker-cluster-haunted { background: rgba(170, 68, 255, 0.3); }
-        .marker-cluster-haunted div { background: rgba(170, 68, 255, 0.7); color: #fff; }
-
         .collapse-btn {
             background: none; border: none; color: #888; cursor: pointer;
             font-size: 18px; float: right; line-height: 1;
@@ -104,6 +91,10 @@
         .control-panel.collapsed { min-width: 44px; padding: 8px; }
         .control-panel.collapsed .panel-body { display: none; }
         .control-panel.collapsed h2 { display: none; }
+
+        @media (max-width: 600px) {
+            .control-panel { top: auto; bottom: 10px; right: 10px; left: 10px; min-width: auto; }
+        }
     </style>
 </head>
 <body>
@@ -121,30 +112,30 @@
         <div class="panel-body">
             <label class="layer-toggle" style="--layer-color: #00ff88;">
                 <span class="dot dot-ufo"></span>
-                <input type="checkbox" id="toggle-ufo" checked>
+                <input type="checkbox" id="toggle-0" checked>
                 <span class="toggle-track"></span>
                 <span class="layer-label">UFO / UAP</span>
-                <span class="layer-count" id="count-ufo">-</span>
+                <span class="layer-count" id="count-0">-</span>
             </label>
             <label class="layer-toggle" style="--layer-color: #ff6633;">
                 <span class="dot dot-bigfoot"></span>
-                <input type="checkbox" id="toggle-bigfoot" checked>
+                <input type="checkbox" id="toggle-1" checked>
                 <span class="toggle-track"></span>
-                <span class="layer-label">Bigfoot</span>
-                <span class="layer-count" id="count-bigfoot">-</span>
+                <span class="layer-label">Bigfoot / Sasquatch</span>
+                <span class="layer-count" id="count-1">-</span>
             </label>
             <label class="layer-toggle" style="--layer-color: #aa44ff;">
                 <span class="dot dot-haunted"></span>
-                <input type="checkbox" id="toggle-haunted" checked>
+                <input type="checkbox" id="toggle-2" checked>
                 <span class="toggle-track"></span>
                 <span class="layer-label">Haunted Places</span>
-                <span class="layer-count" id="count-haunted">-</span>
+                <span class="layer-count" id="count-2">-</span>
             </label>
 
             <div class="filter-section">
                 <label>Date Range</label>
-                <input type="number" id="year-start" placeholder="Start year (e.g. 1950)" min="1900" max="2025">
-                <input type="number" id="year-end" placeholder="End year (e.g. 2023)" min="1900" max="2025">
+                <input type="number" id="year-start" placeholder="Start year (e.g. 1950)" min="1800" max="2030">
+                <input type="number" id="year-end" placeholder="End year (e.g. 2023)" min="1800" max="2030">
                 <label>State Filter</label>
                 <input type="text" id="state-filter" placeholder="e.g. OH, CA, TX">
                 <button class="filter-btn" id="apply-filters">APPLY FILTERS</button>
@@ -160,6 +151,13 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script>
+    (function() {
+        const CATS = [
+            { name: 'UFO / UAP SIGHTING',  color: '#00ff88', rgb: '0, 255, 136' },
+            { name: 'BIGFOOT SIGHTING',     color: '#ff6633', rgb: '255, 102, 51' },
+            { name: 'HAUNTED PLACE',        color: '#aa44ff', rgb: '170, 68, 255' },
+        ];
+
         const map = L.map('map', {
             center: [39.5, -98.35],
             zoom: 4,
@@ -172,79 +170,38 @@
             maxZoom: 19,
         }).addTo(map);
 
-        // Data stores
-        let rawData = { ufo: [], bigfoot: [], haunted: [] };
-        let clusterGroups = {};
-        let totalLoaded = 0;
+        // Data: array of [lat, lon, cat, date, location, subcategory]
+        let allData = [];
+        // Per-category marker arrays
+        let catMarkers = [[], [], []];
+        let clusterGroups = [null, null, null];
 
         function setProgress(pct, msg) {
             document.getElementById('progress-fill').style.width = pct + '%';
             document.getElementById('loading-status').textContent = msg;
         }
 
-        function createIcon(color, size) {
-            return L.divIcon({
-                className: '',
-                html: `<div style="width:${size}px;height:${size}px;background:${color};border-radius:50%;border:1px solid rgba(255,255,255,0.3);opacity:0.85;"></div>`,
-                iconSize: [size, size],
-                iconAnchor: [size / 2, size / 2],
-            });
-        }
-
-        const icons = {
-            ufo: createIcon('#00ff88', 8),
-            bigfoot: createIcon('#ff6633', 10),
-            haunted: createIcon('#aa44ff', 8),
-        };
-
         function escapeHtml(s) {
             if (!s) return '';
-            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
-        function makePopup(type, d) {
-            const cls = type;
-            const label = type === 'ufo' ? 'UFO / UAP SIGHTING' : type === 'bigfoot' ? 'BIGFOOT SIGHTING' : 'HAUNTED PLACE';
-            let html = `<div class="popup-type ${cls}">${label}</div>`;
-
-            if (type === 'ufo') {
-                html += `<strong>${escapeHtml(d.city)}, ${escapeHtml(d.state)}</strong><br>`;
-                if (d.date) html += `Date: ${d.date}<br>`;
-                if (d.shape) html += `Shape: ${escapeHtml(d.shape)}<br>`;
-                if (d.summary) html += `<br>${escapeHtml(d.summary)}`;
-            } else if (type === 'bigfoot') {
-                html += `<strong>${escapeHtml(d.county)}, ${escapeHtml(d.state)}</strong><br>`;
-                if (d.date) html += `Date: ${d.date}<br>`;
-                if (d.class) html += `Classification: ${escapeHtml(d.class)}<br>`;
-                if (d.title) html += `<em>${escapeHtml(d.title)}</em><br>`;
-                if (d.summary) html += `<br>${escapeHtml(d.summary)}`;
-            } else {
-                html += `<strong>${escapeHtml(d.city)}, ${escapeHtml(d.state)}</strong><br>`;
-                if (d.location) html += `Location: ${escapeHtml(d.location)}<br>`;
-                if (d.summary) html += `<br>${escapeHtml(d.summary)}`;
-            }
-
-            html += `<br><small style="color:#666">${d.lat.toFixed(4)}, ${d.lng.toFixed(4)}</small>`;
-            return html;
-        }
-
-        function createClusterGroup(type) {
-            const colors = { ufo: '0, 255, 136', bigfoot: '255, 102, 51', haunted: '170, 68, 255' };
-            const c = colors[type];
+        function createClusterGroup(catIdx) {
+            const cat = CATS[catIdx];
             return L.markerClusterGroup({
                 chunkedLoading: true,
                 chunkInterval: 100,
                 chunkDelay: 10,
                 maxClusterRadius: 50,
                 disableClusteringAtZoom: 12,
-                iconCreateFunction: function (cluster) {
+                iconCreateFunction: function(cluster) {
                     const count = cluster.getChildCount();
                     let size = count < 100 ? 30 : count < 1000 ? 40 : 50;
                     return L.divIcon({
-                        html: `<div style="background:rgba(${c},0.7);color:#fff;font-weight:700;font-size:11px;
+                        html: `<div style="background:rgba(${cat.rgb},0.7);color:#fff;font-weight:700;font-size:11px;
                             width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;
-                            justify-content:center;border:2px solid rgba(${c},0.4);box-shadow:0 0 8px rgba(${c},0.3);">
-                            ${count >= 1000 ? Math.round(count / 1000) + 'k' : count}</div>`,
+                            justify-content:center;border:2px solid rgba(${cat.rgb},0.4);box-shadow:0 0 8px rgba(${cat.rgb},0.3);">
+                            ${count >= 1000 ? Math.round(count/1000)+'k' : count}</div>`,
                         className: '',
                         iconSize: [size, size],
                     });
@@ -252,80 +209,122 @@
             });
         }
 
+        function makePopup(rec) {
+            const [lat, lon, catIdx, date, loc, sub] = rec;
+            const cat = CATS[catIdx];
+            let html = `<div class="popup-type cat-${catIdx}">${cat.name}</div>`;
+            html += `<strong>${escapeHtml(loc) || 'Unknown location'}</strong><br>`;
+            if (date) html += `Date: ${date}<br>`;
+            if (sub) html += `${escapeHtml(sub)}<br>`;
+            html += `<br><small style="color:#666">${lat.toFixed(4)}, ${lon.toFixed(4)}</small>`;
+            return html;
+        }
+
         function applyFilters() {
             const yearStart = parseInt(document.getElementById('year-start').value) || 0;
             const yearEnd = parseInt(document.getElementById('year-end').value) || 9999;
             const stateFilter = document.getElementById('state-filter').value.trim().toUpperCase();
             const states = stateFilter ? stateFilter.split(',').map(s => s.trim()) : [];
-
             let visibleCount = 0;
 
-            ['ufo', 'bigfoot', 'haunted'].forEach(type => {
-                const toggle = document.getElementById('toggle-' + type);
-                if (clusterGroups[type]) {
-                    map.removeLayer(clusterGroups[type]);
-                }
-                if (!toggle.checked) return;
-
-                const group = createClusterGroup(type);
-                let filtered = rawData[type];
-
-                if (yearStart > 0 || yearEnd < 9999) {
-                    filtered = filtered.filter(d => {
-                        if (!d.date) return false;
-                        const y = parseInt(d.date.substring(0, 4));
-                        return y >= yearStart && y <= yearEnd;
-                    });
+            for (let i = 0; i < 3; i++) {
+                const toggled = document.getElementById('toggle-' + i).checked;
+                if (clusterGroups[i]) {
+                    map.removeLayer(clusterGroups[i]);
+                    clusterGroups[i] = null;
                 }
 
-                if (states.length > 0) {
-                    filtered = filtered.filter(d => {
-                        const s = (d.state || '').toUpperCase();
-                        return states.some(st => s === st || s.includes(st));
-                    });
+                if (!toggled) {
+                    document.getElementById('count-' + i).textContent = 'off';
+                    continue;
                 }
 
-                const markers = filtered.map(d =>
-                    L.marker([d.lat, d.lng], { icon: icons[type] })
-                        .bindPopup(() => makePopup(type, d), { maxWidth: 320 })
-                );
+                const group = createClusterGroup(i);
+                let markers = [];
+
+                catMarkers[i].forEach(function(obj) {
+                    const rec = obj.rec;
+                    const dateStr = rec[3];
+                    if (dateStr && (yearStart > 0 || yearEnd < 9999)) {
+                        const y = parseInt(dateStr.substring(0, 4));
+                        if (y < yearStart || y > yearEnd) return;
+                    }
+                    if (states.length > 0) {
+                        const loc = (rec[4] || '').toUpperCase();
+                        if (!states.some(st => loc.includes(st))) return;
+                    }
+                    markers.push(obj.marker);
+                });
+
                 group.addLayers(markers);
                 group.addTo(map);
-                clusterGroups[type] = group;
+                clusterGroups[i] = group;
 
-                document.getElementById('count-' + type).textContent = filtered.length.toLocaleString();
-                visibleCount += filtered.length;
-            });
+                document.getElementById('count-' + i).textContent = markers.length.toLocaleString();
+                visibleCount += markers.length;
+            }
 
             document.getElementById('stat-visible').textContent = 'Visible: ' + visibleCount.toLocaleString();
         }
 
-        async function loadJSON(url, label) {
-            setProgress(0, `Loading ${label}...`);
-            const resp = await fetch(url);
-            const data = await resp.json();
-            return data;
-        }
-
         async function init() {
             try {
-                setProgress(10, 'Loading UFO sightings (~96K records)...');
-                rawData.ufo = await loadJSON('data/ufo_map.json', 'UFO sightings');
-                setProgress(40, 'Loading Bigfoot sightings...');
-                rawData.bigfoot = await loadJSON('data/bigfoot_map.json', 'Bigfoot sightings');
-                setProgress(60, 'Loading Haunted Places...');
-                rawData.haunted = await loadJSON('data/haunted_map.json', 'Haunted places');
-                setProgress(80, 'Rendering markers...');
+                setProgress(10, 'Loading sighting data (~184K records)...');
+                const resp = await fetch('data/sightings_map_data.json');
+                const json = await resp.json();
+                allData = json.data;
 
-                totalLoaded = rawData.ufo.length + rawData.bigfoot.length + rawData.haunted.length;
-                document.getElementById('stat-total').textContent = 'Total loaded: ' + totalLoaded.toLocaleString();
+                setProgress(50, 'Building markers...');
 
-                applyFilters();
+                // Create markers in batches
+                const icons = CATS.map(cat =>
+                    L.divIcon({
+                        className: '',
+                        html: `<div style="width:8px;height:8px;background:${cat.color};border-radius:50%;border:1px solid rgba(255,255,255,0.3);opacity:0.85;"></div>`,
+                        iconSize: [8, 8],
+                        iconAnchor: [4, 4],
+                    })
+                );
 
-                setProgress(100, 'Done!');
-                setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
-                }, 400);
+                let idx = 0;
+                const batch = 20000;
+
+                function processBatch() {
+                    const end = Math.min(idx + batch, allData.length);
+                    for (; idx < end; idx++) {
+                        const rec = allData[idx];
+                        const catIdx = rec[2];
+                        if (catIdx < 0 || catIdx >= 3) continue;
+
+                        const marker = L.marker([rec[0], rec[1]], { icon: icons[catIdx] })
+                            .bindPopup(function() { return makePopup(rec); }, { maxWidth: 320 });
+
+                        catMarkers[catIdx].push({ marker: marker, rec: rec });
+                    }
+
+                    const pct = 50 + Math.round((idx / allData.length) * 40);
+                    setProgress(pct, `Processing ${idx.toLocaleString()} of ${allData.length.toLocaleString()}...`);
+
+                    if (idx < allData.length) {
+                        requestAnimationFrame(processBatch);
+                    } else {
+                        finalize();
+                    }
+                }
+
+                function finalize() {
+                    document.getElementById('stat-total').textContent =
+                        'Total loaded: ' + allData.length.toLocaleString();
+                    setProgress(95, 'Rendering map...');
+                    applyFilters();
+                    setProgress(100, 'Done!');
+                    setTimeout(function() {
+                        document.getElementById('loading').style.display = 'none';
+                    }, 400);
+                }
+
+                requestAnimationFrame(processBatch);
+
             } catch (err) {
                 setProgress(0, 'Error loading data: ' + err.message);
                 console.error(err);
@@ -333,23 +332,21 @@
         }
 
         // Event listeners
-        document.getElementById('toggle-ufo').addEventListener('change', applyFilters);
-        document.getElementById('toggle-bigfoot').addEventListener('change', applyFilters);
-        document.getElementById('toggle-haunted').addEventListener('change', applyFilters);
+        for (let i = 0; i < 3; i++) {
+            document.getElementById('toggle-' + i).addEventListener('change', applyFilters);
+        }
         document.getElementById('apply-filters').addEventListener('click', applyFilters);
-
-        document.getElementById('collapse-btn').addEventListener('click', () => {
+        document.getElementById('collapse-btn').addEventListener('click', function() {
             document.getElementById('control-panel').classList.toggle('collapsed');
         });
-
-        // Handle enter key on filter inputs
-        ['year-start', 'year-end', 'state-filter'].forEach(id => {
-            document.getElementById(id).addEventListener('keydown', e => {
+        ['year-start', 'year-end', 'state-filter'].forEach(function(id) {
+            document.getElementById(id).addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') applyFilters();
             });
         });
 
         init();
+    })();
     </script>
 </body>
 </html>
