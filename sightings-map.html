@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>STRANGE SIGNALS // Paranormal Sightings Correlation Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -569,7 +569,7 @@ function makePopup(rec){
   if(rec[F.DATE])h+=`<div class="popup-date">${rec[F.DATE]}</div>`;
   if(rec[F.SUB])h+=`<div class="popup-sub">${esc(rec[F.SUB])}</div>`;
   if(rec[F.DESC])h+=`<div class="popup-desc">${esc(rec[F.DESC])}</div>`;
-  h+=`<div class="popup-coords">${rec[F.LAT].toFixed(4)}, ${rec[F.LON].toFixed(4)}</div>`;
+  h+=`<div class="popup-coords">${(rec[F.LAT]??0).toFixed(4)}, ${(rec[F.LON]??0).toFixed(4)}</div>`;
   // proximity analysis
   const radius=parseInt(document.getElementById('prox-radius').value);
   const pt=turf.point([rec[F.LON],rec[F.LAT]]);
@@ -922,7 +922,7 @@ function buildTimeline(){
   const x=d3.scaleBand().domain(years).range([0,iw]).padding(0.15);
   const stack=d3.stack().keys(['0','1','2']);
   const series=stack(stackData);
-  const yMax=d3.max(series,s=>d3.max(s,d=>d[1]));
+  const yMax=d3.max(series,s=>d3.max(s,d=>d[1]))||1;
   const y=d3.scaleLinear().domain([0,yMax]).range([ih,0]);
 
   // Bars
@@ -935,17 +935,19 @@ function buildTimeline(){
       .attr('height',d=>y(d[0])-y(d[1]))
       .attr('fill',CAT_COLORS[i])
       .attr('opacity',0.8)
-      .on('mouseover',function(event,d){
+      .on('mouseover pointerenter',function(event,d){
         const tt=document.getElementById('timeline-tooltip');
         tt.style.display='block';
-        tt.style.left=(event.offsetX+10)+'px';
-        tt.style.top=(event.offsetY-30)+'px';
+        const rect=document.getElementById('timeline-panel').getBoundingClientRect();
+        const cx=event.clientX-rect.left, cy=event.clientY-rect.top;
+        tt.style.left=Math.min(cx+10,rect.width-160)+'px';
+        tt.style.top=Math.max(cy-30,4)+'px';
         tt.innerHTML=`<b>${d.data.year}</b><br>
           <span style="color:${CAT_COLORS[0]}">UFO: ${d.data[0]}</span><br>
           <span style="color:${CAT_COLORS[1]}">Bigfoot: ${d.data[1]}</span><br>
           <span style="color:${CAT_COLORS[2]}">Haunted: ${d.data[2]}</span>`;
       })
-      .on('mouseout',()=>{document.getElementById('timeline-tooltip').style.display='none'});
+      .on('mouseout pointerleave',()=>{document.getElementById('timeline-tooltip').style.display='none'});
   });
 
   // Axes
@@ -1143,8 +1145,10 @@ document.getElementById('timeline-toggle').addEventListener('click',()=>{
   setTimeout(()=>map.invalidateSize(),350);
 });
 
-// URL state save on map move
-map.on('moveend',saveState);
+// URL state save on map move (debounced for rapid pinch-zoom on mobile)
+let saveTimer;
+function debouncedSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveState,300)}
+map.on('moveend',debouncedSave);
 
 // Handle screen resize (Fold 4 fold/unfold, orientation change)
 let resizeTimer;
