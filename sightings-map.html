@@ -11,6 +11,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 <style>
+/* ========== @property REGISTERED CUSTOM PROPERTIES ========== */
+@property --border-angle{syntax:"<angle>";initial-value:0deg;inherits:false}
+@property --pulse-size{syntax:"<percentage>";initial-value:20%;inherits:false}
+
 /* ========== RESET & BASE ========== */
 *,:before,:after{margin:0;padding:0;box-sizing:border-box}
 :root {
@@ -169,13 +173,17 @@ select option{background:var(--surface-solid);color:var(--text)}
   text-shadow:0 0 6px rgba(0,255,136,0.4)}
 .corr-btn:hover::after{opacity:1}
 .corr-btn:active{transform:scale(0.97)}
-.corr-result{background:rgba(0,255,136,0.05);border:1px solid var(--border);border-radius:4px;padding:10px;
-  display:none;position:relative;overflow:hidden}
+.corr-result{background:linear-gradient(var(--surface-solid),var(--surface-solid)) padding-box,
+  conic-gradient(from var(--border-angle),var(--green),var(--cyan),var(--purple),var(--green)) border-box;
+  border:1.5px solid transparent;border-radius:6px;padding:10px;
+  display:none;position:relative;overflow:hidden;animation:rotate-border 4s linear infinite}
+@keyframes rotate-border{to{--border-angle:360deg}}
 .corr-result::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 50% 0%,rgba(0,255,136,0.06),transparent 60%);pointer-events:none}
-.corr-result.visible{display:block;animation:float-in 0.3s ease}
+  background:radial-gradient(ellipse at 50% 0%,rgba(0,255,136,0.08),transparent 60%);pointer-events:none}
+.corr-result.visible{display:block;animation:float-in 0.3s ease,rotate-border 4s linear infinite}
 .corr-r{font-family:var(--font-display);font-size:22px;font-weight:700;text-align:center;
-  text-shadow:0 0 12px currentColor;transition:all .4s ease}
+  text-shadow:0 0 8px currentColor,0 0 20px currentColor,0 0 40px currentColor;
+  transition:all .4s ease;letter-spacing:2px}
 .corr-label{font-size:10px;color:var(--text-dim);text-align:center;margin-top:2px}
 .corr-detail{font-size:10px;color:var(--text-dim);margin-top:6px;line-height:1.6}
 
@@ -286,11 +294,15 @@ select option{background:var(--surface-solid);color:var(--text)}
 /* ========== PROXIMITY CIRCLE ========== */
 .prox-circle{fill:rgba(0,212,255,0.06);stroke:var(--cyan);stroke-width:1.5;stroke-dasharray:6 4}
 
-/* ========== SCANLINE OVERLAY (subtle) ========== */
+/* ========== SCANLINE + NOISE OVERLAY ========== */
 #sidebar::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
   background:repeating-linear-gradient(transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);
   pointer-events:none;z-index:1}
 #sidebar{position:relative}
+
+/* Specular highlight on header top edge */
+#header::before{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);pointer-events:none}
 
 /* ========== GLOBAL CRT VIGNETTE ========== */
 #app::after{content:'';position:fixed;inset:0;
@@ -427,6 +439,14 @@ select option{background:var(--surface-solid);color:var(--text)}
 
   /* Disable hover-only effects */
   .timeline-bar:hover{opacity:0.8!important}
+}
+
+/* ========== REDUCED MOTION (accessibility) ========== */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;
+    transition-duration:0.01ms!important}
+  #loading::after,.radar-sweep,.radar-ring{animation:none!important}
+  .logo h1::before,.logo h1::after{display:none}
 }
 </style>
 </head>
