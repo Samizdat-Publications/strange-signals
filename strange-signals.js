@@ -36,7 +36,11 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
   attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19
 }).addTo(map);
 
-map.on('zoomend',()=>{document.getElementById('stat-zoom').textContent=map.getZoom()});
+map.on('zoomend',()=>{
+  document.getElementById('stat-zoom').textContent=map.getZoom();
+  // Re-render heatmap/hexbin on zoom so dynamic radius/cell-size updates
+  if(currentView==='heatmap'||currentView==='hexbin')renderCurrentView();
+});
 
 /* ========== PROGRESS ========== */
 function setProgress(pct,msg){
@@ -834,24 +838,24 @@ function renderMarkers(){
 }
 
 function renderHeatmap(){
-  // Convert hex colors to rgba for canvas gradient compatibility
+  // leaflet-heat intensity formula: f = 1/Math.pow(2, maxZoom - zoom)
+  // Setting maxZoom = zoom gives f=1 (full intensity at current view).
+  // Zooming in past maxZoom clamps f=1; zooming out reduces intensity naturally.
   const catRGB=[[0,255,136],[255,102,34],[170,68,255]]; // green, orange, purple
+  const zoom=map.getZoom();
+  const dynRadius=zoom<=4?60:zoom<=5?45:zoom<=6?35:25;
   for(let i=0;i<3;i++){
     if(!filteredCat[i].length)continue;
-    const pts=filteredCat[i].map(r=>[r[F.LAT],r[F.LON],0.5]);
+    const pts=filteredCat[i].map(r=>[r[F.LAT],r[F.LON],1.0]);
     const rgb=catRGB[i];
     const gradient={
-      0.1:'rgba(0,0,0,0)',
-      0.3:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.25)`,
-      0.5:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.55)`,
-      0.7:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.8)`,
+      0.0:'rgba(0,0,0,0)',
+      0.15:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.35)`,
+      0.35:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.6)`,
+      0.6:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.85)`,
       1.0:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},1)`
     };
-    // maxZoom controls intensity falloff: lower = more visible at country scale
-    // max() ensures visibility adapts to zoom level
-    const zoom=map.getZoom();
-    const dynRadius=zoom<=4?50:zoom<=5?40:zoom<=6?30:25;
-    heatLayers[i]=L.heatLayer(pts,{radius:dynRadius,blur:dynRadius,maxZoom:zoom+2,minOpacity:0.25,gradient}).addTo(map);
+    heatLayers[i]=L.heatLayer(pts,{radius:dynRadius,blur:dynRadius*0.8,maxZoom:zoom,minOpacity:0.3,gradient}).addTo(map);
   }
 }
 
