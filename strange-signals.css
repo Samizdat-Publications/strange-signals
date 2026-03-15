@@ -238,6 +238,19 @@ select option{background:var(--surface-solid);color:var(--text)}
   pointer-events:none;z-index:1}
 #sidebar{position:relative}
 
+/* ========== PER CAPITA INDICATOR ========== */
+#percapita-indicator{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:1050;
+  background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.3);border-radius:4px;
+  padding:4px 12px;font-size:10px;color:#fff;letter-spacing:1px;
+  font-family:var(--font-display);pointer-events:none;white-space:nowrap}
+#percapita-indicator span{color:var(--cyan);font-weight:700}
+
+/* ========== MILITARY TOOLTIP ========== */
+.mil-tooltip{background:var(--surface-solid)!important;color:var(--text)!important;
+  border:1px solid rgba(68,136,255,0.3)!important;border-radius:4px!important;
+  font-family:var(--font-mono)!important;font-size:11px!important;
+  box-shadow:0 2px 12px rgba(0,0,0,.5)!important;padding:4px 8px!important}
+
 /* ========== MOBILE ========== */
 @media(max-width:768px){
   :root{--sidebar-w:100vw;--header-h:44px}

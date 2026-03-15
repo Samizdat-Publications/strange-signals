@@ -29,6 +29,13 @@ let temporalOverlayVisible=false;
 let nnResults=null;
 let attractionLayer=null;
 
+/* ========== OVERLAY STATE ========== */
+let popDensityGrid=null; // {resolution, lat_min, lat_max, lon_min, lon_max, rows, cols, grid}
+let perCapitaMode=false;
+let militaryData=null; // {fields, data}
+let militaryLayer=null;
+let showMilitaryBases=false;
+
 /* ========== MAP INIT ========== */
 const map=L.map('map',{center:[39.5,-98.35],zoom:4,preferCanvas:true,maxZoom:18,zoomControl:false});
 L.control.zoom({position:'topright'}).addTo(map);
@@ -104,6 +111,44 @@ function showProxCircle(rec){
 }
 function clearProxCircle(){
   if(proxCircle){map.removeLayer(proxCircle);proxCircle=null}
+}
+
+/* ========== POPULATION DENSITY LOOKUP ========== */
+function getPopDensity(lat,lon){
+  if(!popDensityGrid)return 0;
+  const g=popDensityGrid;
+  if(lat<g.lat_min||lat>g.lat_max||lon<g.lon_min||lon>g.lon_max)return 0;
+  const row=Math.floor((g.lat_max-lat)/g.resolution);
+  const col=Math.floor((lon-g.lon_min)/g.resolution);
+  if(row<0||row>=g.rows||col<0||col>=g.cols)return 0;
+  return g.grid[row][col]||0;
+}
+
+/* ========== MILITARY BASES LAYER ========== */
+function renderMilitaryBases(){
+  if(militaryLayer){map.removeLayer(militaryLayer);militaryLayer=null}
+  if(!showMilitaryBases||!militaryData)return;
+  militaryLayer=L.layerGroup();
+  const MF={LAT:0,LON:1,NAME:2,BRANCH:3,TYPE:4};
+  const branchColors={
+    'Air Force':'#4488ff','Space Force':'#44ccff','Navy':'#0066cc',
+    'Army':'#44aa44','Marines':'#cc4444','DoD':'#888888',
+    'DOE':'#ffaa00','NASA':'#ff6644','CIA':'#666666',
+    'Guard':'#66aa66','FAA':'#8888aa','Commerce':'#aa88cc'
+  };
+  militaryData.data.forEach(b=>{
+    const color=branchColors[b[MF.BRANCH]]||'#888888';
+    const icon=L.divIcon({className:'',iconSize:[10,10],iconAnchor:[5,5],
+      html:`<div style="width:10px;height:10px;background:${color};border:1.5px solid rgba(255,255,255,0.6);transform:rotate(45deg);opacity:0.85"></div>`});
+    const marker=L.marker([b[MF.LAT],b[MF.LON]],{icon});
+    marker.bindTooltip(`<b style="color:${color}">${esc(b[MF.NAME])}</b><br><span style="color:var(--text-dim)">${b[MF.BRANCH]} - ${b[MF.TYPE]}</span>`,{className:'mil-tooltip'});
+    marker.addTo(militaryLayer);
+  });
+  militaryLayer.addTo(map);
+}
+
+function removeMilitaryBases(){
+  if(militaryLayer){map.removeLayer(militaryLayer);militaryLayer=null}
 }
 
 /* ========== SHARED ANALYSIS INFRASTRUCTURE ========== */
@@ -839,23 +884,50 @@ function renderMarkers(){
 
 function renderHeatmap(){
   // leaflet-heat intensity: f = 1/Math.pow(2, maxZoom - zoom)
-  // maxZoom = zoom → f=1 at current view; zooming in clamps f=1
+  // maxZoom = zoom -> f=1 at current view; zooming in clamps f=1
   const catRGB=[[0,255,136],[255,102,34],[170,68,255]]; // green, orange, purple
   const zoom=map.getZoom();
-  const dynRadius=zoom<=4?18:zoom<=5?22:zoom<=6?25:zoom<=7?28:25;
+  // Tighter radii for sharper hotspots (was 18 at zoom 4)
+  const dynRadius=zoom<=4?14:zoom<=5?17:zoom<=6?21:zoom<=7?25:22;
+  const usePerCapita=perCapitaMode&&popDensityGrid;
   for(let i=0;i<3;i++){
     if(!filteredCat[i].length)continue;
-    const pts=filteredCat[i].map(r=>[r[F.LAT],r[F.LON],0.6]);
+    let pts;
+    if(usePerCapita){
+      // Per-capita: weight each point inversely by local population density
+      // Use log scale to prevent extreme rural amplification
+      pts=filteredCat[i].map(r=>{
+        const density=getPopDensity(r[F.LAT],r[F.LON]);
+        // weight: higher where density is lower (anomalous)
+        // log(1 + baseline/density) gives smooth inverse relationship
+        // baseline of 100 ppl/sqmi = median-ish US county density
+        const weight=density>0?Math.min(1.0,Math.log1p(100/density)/Math.log1p(100)):0.5;
+        return[r[F.LAT],r[F.LON],weight];
+      });
+    } else {
+      pts=filteredCat[i].map(r=>[r[F.LAT],r[F.LON],0.6]);
+    }
     const rgb=catRGB[i];
-    const gradient={
+    const gradient=usePerCapita?{
+      // Per-capita gradient: cyan-white to highlight anomalous areas
+      0.0:'rgba(0,0,0,0)',
+      0.15:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.2)`,
+      0.35:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.5)`,
+      0.6:`rgba(255,255,255,0.6)`,
+      0.85:`rgba(255,255,${rgb[2]>200?255:200},0.85)`,
+      1.0:'rgba(255,255,255,1)'
+    }:{
       0.0:'rgba(0,0,0,0)',
       0.2:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.3)`,
       0.45:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.6)`,
       0.7:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.85)`,
       1.0:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},1)`
     };
-    heatLayers[i]=L.heatLayer(pts,{radius:dynRadius,blur:dynRadius*0.6,maxZoom:zoom,minOpacity:0.15,gradient}).addTo(map);
+    heatLayers[i]=L.heatLayer(pts,{radius:dynRadius,blur:dynRadius*0.65,maxZoom:zoom,minOpacity:0.12,gradient}).addTo(map);
   }
+  // Update per-capita indicator
+  const pcLabel=document.getElementById('percapita-indicator');
+  if(pcLabel)pcLabel.style.display=usePerCapita?'block':'none';
 }
 
 function renderHexbin(){
@@ -1259,6 +1331,25 @@ document.getElementById('prox-radius').addEventListener('input',e=>{
   document.getElementById('prox-label').textContent=e.target.value+'km';
 });
 
+// Per-capita toggle
+const pcToggleEl=document.getElementById('percapita-toggle');
+if(pcToggleEl){
+  pcToggleEl.addEventListener('change',e=>{
+    perCapitaMode=e.target.checked;
+    if(currentView==='heatmap')renderCurrentView();
+  });
+}
+
+// Military bases toggle
+const milToggleEl=document.getElementById('military-toggle');
+if(milToggleEl){
+  milToggleEl.addEventListener('change',e=>{
+    showMilitaryBases=e.target.checked;
+    if(showMilitaryBases)renderMilitaryBases();
+    else removeMilitaryBases();
+  });
+}
+
 // Filters
 document.getElementById('apply-filters').addEventListener('click',applyFilters);
 document.getElementById('reset-filters').addEventListener('click',()=>{
@@ -1321,12 +1412,33 @@ document.addEventListener('keydown',e=>{
 /* ========== DATA LOADING ========== */
 async function init(){
   loadState();
-  setProgress(10,'Fetching sighting data...');
+  setProgress(5,'Fetching sighting data...');
 
+  // Load sightings + overlay data in parallel
   let json;
   try{
-    const resp=await fetch('data/sightings_map_data.json');
-    json=await resp.json();
+    const [sightResp,popResp,milResp]=await Promise.allSettled([
+      fetch('data/sightings_map_data.json').then(r=>r.json()),
+      fetch('data/us_population_density.json').then(r=>r.json()),
+      fetch('data/military_bases.json').then(r=>r.json())
+    ]);
+    if(sightResp.status==='rejected'){
+      setProgress(0,'Error loading data: '+sightResp.reason);
+      return;
+    }
+    json=sightResp.value;
+    if(popResp.status==='fulfilled'){
+      popDensityGrid=popResp.value;
+      console.log('Population density grid loaded:',popResp.value.rows+'x'+popResp.value.cols);
+    } else {
+      console.warn('Population density data not available:',popResp.reason);
+    }
+    if(milResp.status==='fulfilled'){
+      militaryData=milResp.value;
+      console.log('Military bases loaded:',milResp.value.data.length,'installations');
+    } else {
+      console.warn('Military bases data not available:',milResp.reason);
+    }
   }catch(err){
     setProgress(0,'Error loading data: '+err.message);
     return;
@@ -1357,6 +1469,13 @@ async function init(){
 
   document.getElementById('stat-total').textContent=allData.length.toLocaleString();
   document.getElementById('stat-zoom').textContent=map.getZoom();
+
+  // Enable/disable per-capita toggle based on data availability
+  const pcToggle=document.getElementById('percapita-toggle');
+  if(pcToggle&&!popDensityGrid)pcToggle.disabled=true;
+  // Enable/disable military toggle based on data availability
+  const milToggle=document.getElementById('military-toggle');
+  if(milToggle&&!militaryData)milToggle.disabled=true;
 
   setProgress(80,'Building map layers...');
   // Set initial view from URL state

@@ -62,6 +62,10 @@ echo "--- Exporting map data ---"
 python3 export_map_data.py
 
 echo ""
+echo "--- Building population density grid ---"
+python3 build_population_grid.py
+
+echo ""
 echo "================================================================="
 echo "  SETUP COMPLETE!"
 echo "================================================================="
@@ -69,6 +73,8 @@ echo ""
 echo "Files created:"
 echo "  data/paranormal_sightings_consolidated.xlsx  - All datasets in one workbook (7 tabs)"
 echo "  data/sightings_map_data.json                 - Combined data for interactive map"
+echo "  data/us_population_density.json              - Population density grid for per-capita mode"
+echo "  data/military_bases.json                     - US military/DOE installation locations"
 echo ""
 echo "Tabs in the workbook:"
 echo "  Summary             - Dataset metadata"

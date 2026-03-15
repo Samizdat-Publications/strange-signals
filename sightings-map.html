@@ -75,6 +75,26 @@
       </label>
     </div>
 
+    <!-- OVERLAYS -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9733;</span> OVERLAYS</div>
+      <label class="layer-row" id="layer-military">
+        <input type="checkbox" id="military-toggle">
+        <span class="layer-dot" style="background:#4488ff"></span>
+        <span class="layer-name">Military / DOE Sites</span>
+        <span class="layer-count" id="count-military" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+      </label>
+      <label class="layer-row" id="layer-percapita">
+        <input type="checkbox" id="percapita-toggle">
+        <span class="layer-dot" style="background:#ffffff"></span>
+        <span class="layer-name">Per Capita Heatmap</span>
+        <span class="layer-count" style="font-size:8px;color:var(--text-dim)">HEAT</span>
+      </label>
+      <div style="font-size:9px;color:var(--text-dim);padding:4px 0 0 20px;line-height:1.5" id="percapita-hint">
+        Normalizes sighting density by population.<br>Reveals anomalous hotspots vs. population centers.
+      </div>
+    </div>
+
     <!-- VIEW MODE (duplicate of header for sidebar usability) -->
     <div class="sb-section">
       <div class="sb-title"><span class="icon">&#9681;</span> VIEW MODE</div>
@@ -234,6 +254,10 @@
     <button id="sidebar-toggle" title="Toggle sidebar (S)">&#9776;</button>
     <div id="map-container">
       <div id="map"></div>
+      <!-- PER CAPITA INDICATOR -->
+      <div id="percapita-indicator" style="display:none">
+        <span>&#9878; PER CAPITA</span> &mdash; normalized by population density
+      </div>
       <!-- TEMPORAL OVERLAY -->
       <div class="temporal-overlay" id="temporal-overlay" style="display:none">
         <div class="temporal-header">
