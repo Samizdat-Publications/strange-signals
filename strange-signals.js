@@ -834,20 +834,34 @@ function renderMarkers(){
 }
 
 function renderHeatmap(){
+  // Convert hex colors to rgba for canvas gradient compatibility
+  const catRGB=[[0,255,136],[255,102,34],[170,68,255]]; // green, orange, purple
   for(let i=0;i<3;i++){
     if(!filteredCat[i].length)continue;
     const pts=filteredCat[i].map(r=>[r[F.LAT],r[F.LON],0.5]);
-    // parse color for gradient
-    const col=CAT_COLORS[i];
-    const gradient={0.2:'rgba(0,0,0,0)',0.4:col+'44',0.6:col+'88',0.8:col+'cc',1.0:col};
-    heatLayers[i]=L.heatLayer(pts,{radius:18,blur:22,maxZoom:10,gradient}).addTo(map);
+    const rgb=catRGB[i];
+    const gradient={
+      0.1:'rgba(0,0,0,0)',
+      0.3:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.25)`,
+      0.5:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.55)`,
+      0.7:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.8)`,
+      1.0:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},1)`
+    };
+    // maxZoom controls intensity falloff: lower = more visible at country scale
+    // max() ensures visibility adapts to zoom level
+    const zoom=map.getZoom();
+    const dynRadius=zoom<=4?50:zoom<=5?40:zoom<=6?30:25;
+    heatLayers[i]=L.heatLayer(pts,{radius:dynRadius,blur:dynRadius,maxZoom:zoom+2,minOpacity:0.25,gradient}).addTo(map);
   }
 }
 
 function renderHexbin(){
   const bounds=map.getBounds();
   const bbox=[bounds.getWest(),bounds.getSouth(),bounds.getEast(),bounds.getNorth()];
-  const cellSide=parseFloat(document.getElementById('corr-hex-size').value);
+  // Auto-scale hex size based on zoom: bigger hexes when zoomed out
+  const zoom=map.getZoom();
+  const autoSize=zoom<=4?80:zoom<=5?50:zoom<=6?30:zoom<=7?20:15;
+  const cellSide=Math.max(autoSize,parseFloat(document.getElementById('corr-hex-size').value));
   const grid=turf.hexGrid(bbox,cellSide,{units:'kilometers'});
 
   // count all active categories per hex
@@ -869,8 +883,8 @@ function renderHexbin(){
   hexLayer=L.geoJSON(collected,{
     style(feature){
       const c=feature.properties.count;
-      if(c===0)return{fillOpacity:0,weight:0};
-      return{fillColor:scale(c),fillOpacity:0.6,weight:1,color:'rgba(255,255,255,0.15)'};
+      if(c===0)return{fillOpacity:0,weight:0.3,color:'rgba(255,255,255,0.03)'};
+      return{fillColor:scale(c),fillOpacity:0.75,weight:1,color:'rgba(255,255,255,0.2)'};
     },
     onEachFeature(feature,layer){
       if(feature.properties.count>0){
@@ -904,7 +918,9 @@ function runCorrelation(catA,catB){
 
   const bounds=map.getBounds();
   const bbox=[bounds.getWest(),bounds.getSouth(),bounds.getEast(),bounds.getNorth()];
-  const cellSide=parseFloat(document.getElementById('corr-hex-size').value);
+  const zoom=map.getZoom();
+  const autoMin=zoom<=4?80:zoom<=5?50:zoom<=6?30:zoom<=7?20:15;
+  const cellSide=Math.max(autoMin,parseFloat(document.getElementById('corr-hex-size').value));
   const grid=turf.hexGrid(bbox,cellSide,{units:'kilometers'});
 
   // Build point collections per category
