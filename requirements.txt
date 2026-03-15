@@ -1,0 +1,7 @@
+# STRANGE SIGNALS data pipeline
+pandas>=2.0
+openpyxl>=3.1
+numpy>=1.24
+
+# Proxy server (API key management)
+python-dotenv>=1.0

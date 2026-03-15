@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
-GardenSync Gemini API Proxy Server
-Handles CORS for browser-to-Gemini API requests.
+STRANGE SIGNALS + GardenSync — API Proxy Server
+Handles CORS for browser-to-API requests (Gemini + Claude).
 Run: python3 proxy.py
-Serves the app on http://localhost:8080 and proxies /api/gemini/* to Google's API.
+Serves the app on http://localhost:8080 and proxies /api/gemini/* and /api/claude/*.
+
+API keys can be provided via:
+  1. Request headers (x-goog-api-key, x-api-key) — existing browser-side flow
+  2. .env file (GEMINI_API_KEY, CLAUDE_API_KEY) — server-side fallback
 """
 
 import http.server
@@ -14,7 +18,15 @@ import urllib.request
 import urllib.error
 from urllib.parse import urlparse, parse_qs
 
-PORT = 8080
+# Load .env file if python-dotenv is available
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # python-dotenv not installed — keys must come from headers or OS env
+    pass
+
+PORT = int(os.environ.get('PROXY_PORT', 8080))
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com"
 
 class GardenSyncHandler(http.server.SimpleHTTPRequestHandler):
@@ -58,8 +70,8 @@ class GardenSyncHandler(http.server.SimpleHTTPRequestHandler):
             content_length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(content_length)
 
-            # Get the API key from the request header
-            api_key = self.headers.get('x-goog-api-key', '')
+            # Get API key: header first, then .env fallback
+            api_key = self.headers.get('x-goog-api-key', '') or os.environ.get('GEMINI_API_KEY', '')
 
             # Build the proxied request
             req = urllib.request.Request(
@@ -109,7 +121,8 @@ class GardenSyncHandler(http.server.SimpleHTTPRequestHandler):
             content_length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(content_length)
 
-            api_key = self.headers.get('x-api-key', '')
+            # Get API key: header first, then .env fallback
+            api_key = self.headers.get('x-api-key', '') or os.environ.get('CLAUDE_API_KEY', '')
             anthropic_version = self.headers.get('anthropic-version', '2023-06-01')
 
             req = urllib.request.Request(
@@ -201,11 +214,13 @@ if __name__ == '__main__':
     except:
         pass
 
+    gemini_loaded = '***SET***' if os.environ.get('GEMINI_API_KEY') else 'not set (use header or .env)'
+    claude_loaded = '***SET***' if os.environ.get('CLAUDE_API_KEY') else 'not set (use header or .env)'
     print(f"""
-  GARDENSYNC // FOOD NOT BOMBS CANTON
+  STRANGE SIGNALS + GARDENSYNC // API Proxy
   Server running on http://localhost:{PORT}
-  Gemini API proxy active at /api/gemini/*
-  Claude API proxy active at /api/claude/*
+  Gemini API proxy: /api/gemini/*  [key: {gemini_loaded}]
+  Claude API proxy: /api/claude/*  [key: {claude_loaded}]
   Press Ctrl+C to stop
 """)
 
