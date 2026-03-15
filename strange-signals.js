@@ -838,24 +838,23 @@ function renderMarkers(){
 }
 
 function renderHeatmap(){
-  // leaflet-heat intensity formula: f = 1/Math.pow(2, maxZoom - zoom)
-  // Setting maxZoom = zoom gives f=1 (full intensity at current view).
-  // Zooming in past maxZoom clamps f=1; zooming out reduces intensity naturally.
+  // leaflet-heat intensity: f = 1/Math.pow(2, maxZoom - zoom)
+  // maxZoom = zoom → f=1 at current view; zooming in clamps f=1
   const catRGB=[[0,255,136],[255,102,34],[170,68,255]]; // green, orange, purple
   const zoom=map.getZoom();
-  const dynRadius=zoom<=4?60:zoom<=5?45:zoom<=6?35:25;
+  const dynRadius=zoom<=4?18:zoom<=5?22:zoom<=6?25:zoom<=7?28:25;
   for(let i=0;i<3;i++){
     if(!filteredCat[i].length)continue;
-    const pts=filteredCat[i].map(r=>[r[F.LAT],r[F.LON],1.0]);
+    const pts=filteredCat[i].map(r=>[r[F.LAT],r[F.LON],0.6]);
     const rgb=catRGB[i];
     const gradient={
       0.0:'rgba(0,0,0,0)',
-      0.15:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.35)`,
-      0.35:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.6)`,
-      0.6:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.85)`,
+      0.2:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.3)`,
+      0.45:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.6)`,
+      0.7:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.85)`,
       1.0:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},1)`
     };
-    heatLayers[i]=L.heatLayer(pts,{radius:dynRadius,blur:dynRadius*0.8,maxZoom:zoom,minOpacity:0.3,gradient}).addTo(map);
+    heatLayers[i]=L.heatLayer(pts,{radius:dynRadius,blur:dynRadius*0.6,maxZoom:zoom,minOpacity:0.15,gradient}).addTo(map);
   }
 }
 
