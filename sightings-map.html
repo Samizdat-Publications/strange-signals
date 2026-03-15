@@ -653,9 +653,6 @@ function runCorrelation(catA,catB){
   const fcB=turf.featureCollection(ptsB);
 
   // Count per hex
-  const collA=turf.collect(grid,fcA,'__dummy','ptsA');
-  // We need a property on the points for collect to work
-  // Actually collect counts by collecting values. Let's use within manually
   const hexFeatures=grid.features;
   const countsA=new Float64Array(hexFeatures.length);
   const countsB=new Float64Array(hexFeatures.length);
