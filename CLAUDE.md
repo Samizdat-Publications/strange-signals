@@ -4,7 +4,7 @@
 Interactive paranormal sightings correlation map ("STRANGE SIGNALS") visualizing 184K+ records of UFO/UAP, Bigfoot/Sasquatch, and Haunted Place sightings across the US. Built as a single-page app.
 
 ## Architecture
-- **`sightings-map.html`** — The entire Strange Signals app (HTML + CSS + JS in one file). Uses Leaflet, D3, Turf.js, leaflet.heat, MarkerCluster.
+- **`sightings-map.html`** — The entire Strange Signals app (HTML + CSS + JS in one file). Uses Leaflet, D3, Turf.js, leaflet.heat, MarkerCluster, html2canvas.
 - **`setup_sightings.sh`** — Downloads 5 raw datasets from GitHub
 - **`build_sightings_workbook.py`** — Consolidates raw CSVs into Excel workbook (7 tabs)
 - **`export_map_data.py`** — Exports compact JSON for the map from Excel
@@ -16,7 +16,12 @@ Interactive paranormal sightings correlation map ("STRANGE SIGNALS") visualizing
 - D3 timeline with brushable year filtering
 - Proximity analysis on marker click
 - Sidebar filters: year range, state, subcategory, per-category toggles
-- CSV export, geocode search, URL state persistence, keyboard shortcuts
+- CSV export, PNG map screenshot export, geocode search
+- Insights panel: top states, peak years, most common shapes (key: I)
+- Dark/light theme toggle with localStorage persistence (key: T)
+- Progressive data loading with download progress indicator
+- Spatial-indexed correlation engine for fast hex-based analysis
+- URL state persistence, keyboard shortcuts
 
 ## Data Pipeline
 ```
@@ -24,7 +29,8 @@ setup_sightings.sh → data/raw/*.csv → build_sightings_workbook.py → data/*
 ```
 
 ## Current Status
-- Feature-complete as of commit e4fac24
+- MVP complete — research-focused single-user tool for paranormal sighting analysis
+- Future: mine additional datasets and add to the platform
 - UI/UX polish pass completed:
   - Fixed WCAG AA color contrast (`--text-dim` bumped to `#8a9ab0`)
   - Added aria-labels on all form inputs, icon buttons, and SVG elements
@@ -39,6 +45,12 @@ setup_sightings.sh → data/raw/*.csv → build_sightings_workbook.py → data/*
   - Upgraded to semantic HTML (`<main>`, `<section>`, `<h2>`)
   - Extracted `NUM_CATS` constant to replace hardcoded `3`
   - Removed dead code (`proxMarkers`, `collA` + stale comments)
+- Feature additions completed:
+  - PNG map screenshot export (via html2canvas)
+  - Insights panel with category breakdown, top states, peak years, top shapes
+  - Grid-based spatial index for correlation engine (~10x faster)
+  - Streaming download with progress indicator
+  - Dark/light theme toggle with CARTO tile layer swap
 
 ## Conventions
 - Strange Signals is a single-file app — all changes go in `sightings-map.html`

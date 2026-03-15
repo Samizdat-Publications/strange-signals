@@ -33,6 +33,12 @@
   --header-h: 52px;
   --timeline-h: 180px;
 }
+:root[data-theme="light"]{
+  --bg:#e8e4df;--surface:rgba(245,242,238,0.92);--surface-solid:#f0ece5;
+  --border:rgba(16,185,129,0.2);--border-bright:rgba(16,185,129,0.5);
+  --green:#059669;--cyan:#0891b2;--pink:#e11d48;--orange:#ea580c;--purple:#7c3aed;
+  --text:#1a1a2e;--text-dim:#555;--text-bright:#0a0a0a;
+}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-mono);font-size:12px}
 input,select,button,textarea{font-family:inherit;font-size:inherit}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px}
@@ -270,6 +276,7 @@ select option{background:var(--surface-solid);color:var(--text)}
   <div class="header-right">
     <input type="text" id="search-box" placeholder="Search location..." aria-label="Search location">
     <span class="kbd-hint">/ to search</span>
+    <button id="theme-toggle" title="Toggle light/dark theme (T)" aria-label="Toggle theme" style="background:none;border:1px solid var(--border);border-radius:4px;color:var(--green);cursor:pointer;width:28px;height:28px;font-size:14px;display:flex;align-items:center;justify-content:center">&#9788;</button>
   </div>
 </header>
 
@@ -356,6 +363,7 @@ select option{background:var(--surface-solid);color:var(--text)}
         <button class="btn-sm primary" id="apply-filters">APPLY</button>
         <button class="btn-sm" id="reset-filters">RESET</button>
         <button class="btn-sm" id="export-csv" title="Export visible data as CSV">EXPORT CSV</button>
+        <button class="btn-sm" id="export-png" title="Screenshot current map view as PNG">EXPORT PNG</button>
       </div>
     </section>
 
@@ -380,6 +388,14 @@ select option{background:var(--surface-solid);color:var(--text)}
       <div style="font-size:10px;color:var(--text-dim);margin-top:4px">Click a sighting to see nearby points of other types</div>
     </section>
 
+    <!-- INSIGHTS -->
+    <section class="sb-section" id="insights-section">
+      <h2 class="sb-title"><span class="icon">&#9733;</span> INSIGHTS <span id="insights-toggle" style="margin-left:auto;cursor:pointer;font-size:10px;color:var(--cyan)">COMPUTE</span></h2>
+      <div id="insights-body" style="display:none">
+        <div id="insights-content" style="font-size:10px;line-height:1.8"></div>
+      </div>
+    </section>
+
     <!-- KEYBOARD SHORTCUTS -->
     <section class="sb-section">
       <h2 class="sb-title"><span class="icon">&#9000;</span> SHORTCUTS</h2>
@@ -392,8 +408,10 @@ select option{background:var(--surface-solid);color:var(--text)}
         <b style="color:var(--text)">X</b> Hex &nbsp;
         <b style="color:var(--text)">C</b> Corr<br>
         <b style="color:var(--text)">/</b> Search &nbsp;
-        <b style="color:var(--text)">Esc</b> Reset &nbsp;
-        <b style="color:var(--text)">S</b> Sidebar
+        <b style="color:var(--text)">S</b> Sidebar<br>
+        <b style="color:var(--text)">I</b> Insights &nbsp;
+        <b style="color:var(--text)">T</b> Theme &nbsp;
+        <b style="color:var(--text)">Esc</b> Reset
       </div>
     </section>
   </aside>
@@ -421,6 +439,7 @@ select option{background:var(--surface-solid);color:var(--text)}
 <script src="https://unpkg.com/leaflet-heat@0.2.0/dist/leaflet-heat.js"></script>
 <script src="https://unpkg.com/@turf/turf@7/turf.min.js"></script>
 <script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 (function(){
 'use strict';
@@ -442,10 +461,28 @@ let hexLayer=null, corrLayer=null, proxCircle=null;
 let brushRange=null; // [yearStart, yearEnd] from timeline brush
 let timelineBuilt=false;
 
+/* ========== THEME ========== */
+const TILES_DARK='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const TILES_LIGHT='https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+let currentTileLayer=null;
+
+function setTheme(theme){
+  document.documentElement.setAttribute('data-theme',theme);
+  localStorage.setItem('ss-theme',theme);
+  const btn=document.getElementById('theme-toggle');
+  if(btn)btn.innerHTML=theme==='light'?'&#9790;':'&#9788;';
+  // Swap tile layer
+  const tileUrl=theme==='light'?TILES_LIGHT:TILES_DARK;
+  if(currentTileLayer){currentTileLayer.setUrl(tileUrl)}
+}
+// Load saved theme
+const savedTheme=localStorage.getItem('ss-theme')||'dark';
+if(savedTheme!=='dark')document.documentElement.setAttribute('data-theme',savedTheme);
+
 /* ========== MAP INIT ========== */
 const map=L.map('map',{center:[39.5,-98.35],zoom:4,preferCanvas:true,maxZoom:18,zoomControl:false});
 L.control.zoom({position:'topright'}).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+currentTileLayer=L.tileLayer(savedTheme==='light'?TILES_LIGHT:TILES_DARK,{
   attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19
 }).addTo(map);
 
@@ -680,6 +717,46 @@ function renderCorrelation(){
 }
 
 /* ========== CORRELATION ENGINE ========== */
+function buildHexIndex(hexFeatures,bbox,cellSide){
+  // Grid-based spatial index: bin hex centroids into a coarse grid
+  // so point lookups only check nearby hexes instead of all hexes
+  const gridRes=cellSide*0.015; // ~degrees per cell side (rough)
+  const cols=Math.ceil((bbox[2]-bbox[0])/gridRes)+1;
+  const index={cols,gridRes,west:bbox[0],south:bbox[1],bins:{}};
+  hexFeatures.forEach((hex,i)=>{
+    const c=turf.centroid(hex).geometry.coordinates;
+    const col=Math.floor((c[0]-bbox[0])/gridRes);
+    const row=Math.floor((c[1]-bbox[1])/gridRes);
+    const key=row*cols+col;
+    if(!index.bins[key])index.bins[key]=[];
+    index.bins[key].push(i);
+  });
+  return index;
+}
+
+function assignPointsToHex(records,hexFeatures,index,bbox,counts){
+  const {cols,gridRes,west,south,bins}=index;
+  records.forEach(r=>{
+    const lon=r[F.LON],lat=r[F.LAT];
+    if(lon<bbox[0]||lon>bbox[2]||lat<bbox[1]||lat>bbox[3])return;
+    const col=Math.floor((lon-west)/gridRes);
+    const row=Math.floor((lat-south)/gridRes);
+    // Check this cell and neighbors (3x3 neighborhood for hex overlap)
+    for(let dr=-1;dr<=1;dr++){
+      for(let dc=-1;dc<=1;dc++){
+        const key=(row+dr)*cols+(col+dc);
+        const bucket=bins[key];
+        if(!bucket)continue;
+        for(const hi of bucket){
+          if(turf.booleanPointInPolygon(turf.point([lon,lat]),hexFeatures[hi])){
+            counts[hi]++;return;
+          }
+        }
+      }
+    }
+  });
+}
+
 function runCorrelation(catA,catB){
   if(corrLayer){map.removeLayer(corrLayer);corrLayer=null}
 
@@ -688,30 +765,14 @@ function runCorrelation(catA,catB){
   const cellSide=parseFloat(document.getElementById('corr-hex-size').value);
   const grid=turf.hexGrid(bbox,cellSide,{units:'kilometers'});
 
-  // Build point collections per category
-  const ptsA=filteredCat[catA].map(r=>turf.point([r[F.LON],r[F.LAT]]));
-  const ptsB=filteredCat[catB].map(r=>turf.point([r[F.LON],r[F.LAT]]));
-  const fcA=turf.featureCollection(ptsA);
-  const fcB=turf.featureCollection(ptsB);
-
-  // Count per hex
   const hexFeatures=grid.features;
   const countsA=new Float64Array(hexFeatures.length);
   const countsB=new Float64Array(hexFeatures.length);
 
-  // Spatial index: assign points to hex cells
-  // For performance, use point-in-polygon checks
-  // Build a simple grid lookup
-  ptsA.forEach(pt=>{
-    for(let i=0;i<hexFeatures.length;i++){
-      if(turf.booleanPointInPolygon(pt,hexFeatures[i])){countsA[i]++;break}
-    }
-  });
-  ptsB.forEach(pt=>{
-    for(let i=0;i<hexFeatures.length;i++){
-      if(turf.booleanPointInPolygon(pt,hexFeatures[i])){countsB[i]++;break}
-    }
-  });
+  // Use spatial index for fast point-to-hex assignment
+  const hexIndex=buildHexIndex(hexFeatures,bbox,cellSide);
+  assignPointsToHex(filteredCat[catA],hexFeatures,hexIndex,bbox,countsA);
+  assignPointsToHex(filteredCat[catB],hexFeatures,hexIndex,bbox,countsB);
 
   // Pearson correlation on cells with at least one sighting
   const pairs=[];
@@ -954,6 +1015,117 @@ function exportCSV(){
   URL.revokeObjectURL(url);
 }
 
+/* ========== INSIGHTS ========== */
+function computeInsights(){
+  const body=document.getElementById('insights-body');
+  const content=document.getElementById('insights-content');
+  const toggle=document.getElementById('insights-toggle');
+
+  if(body.style.display==='block'){
+    body.style.display='none';toggle.textContent='COMPUTE';return;
+  }
+
+  // Gather all visible records
+  const visible=[];
+  for(let i=0;i<NUM_CATS;i++) filteredCat[i].forEach(r=>visible.push(r));
+  if(!visible.length){content.innerHTML='<div style="color:var(--text-dim)">No visible data to analyze</div>';body.style.display='block';toggle.textContent='HIDE';return}
+
+  // Top states
+  const states={};
+  visible.forEach(r=>{
+    const loc=r[F.LOC]||'';
+    const parts=loc.split(',').map(s=>s.trim());
+    const st=parts[parts.length-1];
+    if(st&&st.length>=2)states[st]=(states[st]||0)+1;
+  });
+  const topStates=Object.entries(states).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+  // Peak years
+  const years={};
+  visible.forEach(r=>{
+    if(!r[F.DATE])return;
+    const y=parseInt(r[F.DATE].substring(0,4));
+    if(!isNaN(y)&&y>=1900)years[y]=(years[y]||0)+1;
+  });
+  const peakYears=Object.entries(years).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  // Top shapes/subtypes
+  const subs={};
+  visible.forEach(r=>{
+    const s=(r[F.SUB]||'').trim();
+    if(s)subs[s]=(subs[s]||0)+1;
+  });
+  const topSubs=Object.entries(subs).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+  // Category breakdown
+  const catCounts=[0,0,0];
+  for(let i=0;i<NUM_CATS;i++) catCounts[i]=filteredCat[i].length;
+
+  let html='';
+  html+='<div style="margin-bottom:8px"><b style="color:var(--text-bright)">CATEGORY BREAKDOWN</b></div>';
+  for(let i=0;i<NUM_CATS;i++){
+    const pct=visible.length?((catCounts[i]/visible.length)*100).toFixed(1):'0';
+    html+=`<div><span style="color:${CAT_COLORS[i]}">${CAT_NAMES[i]}</span>: ${catCounts[i].toLocaleString()} (${pct}%)</div>`;
+  }
+
+  html+='<div style="margin:8px 0 4px"><b style="color:var(--text-bright)">TOP STATES</b></div>';
+  topStates.forEach(([st,n])=>{
+    const bar=Math.round((n/topStates[0][1])*100);
+    html+=`<div style="display:flex;align-items:center;gap:6px"><span style="width:30px;text-align:right;color:var(--cyan)">${st}</span><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div style="width:${bar}%;height:100%;background:var(--green);border-radius:2px"></div></div><span style="width:40px;text-align:right">${n.toLocaleString()}</span></div>`;
+  });
+
+  html+='<div style="margin:8px 0 4px"><b style="color:var(--text-bright)">PEAK YEARS</b></div>';
+  peakYears.forEach(([yr,n])=>{
+    html+=`<div><span style="color:var(--cyan)">${yr}</span>: ${n.toLocaleString()} sightings</div>`;
+  });
+
+  if(topSubs.length){
+    html+='<div style="margin:8px 0 4px"><b style="color:var(--text-bright)">TOP SHAPES / TYPES</b></div>';
+    topSubs.forEach(([s,n])=>{
+      html+=`<div><span style="color:var(--orange)">${esc(s)}</span>: ${n.toLocaleString()}</div>`;
+    });
+  }
+
+  content.innerHTML=html;
+  body.style.display='block';
+  toggle.textContent='HIDE';
+}
+
+/* ========== EXPORT PNG ========== */
+async function exportPNG(){
+  const btn=document.getElementById('export-png');
+  const orig=btn.textContent;
+  btn.textContent='CAPTURING...';
+  btn.disabled=true;
+  try{
+    const mapEl=document.getElementById('map');
+    const canvas=await html2canvas(mapEl,{
+      useCORS:true,allowTaint:true,backgroundColor:'#05060f',
+      scale:2,logging:false
+    });
+    // Draw stats overlay on bottom-left
+    const ctx=canvas.getContext('2d');
+    const totalVis=document.getElementById('stat-visible').textContent;
+    const totalAll=document.getElementById('stat-total').textContent;
+    ctx.fillStyle='rgba(5,6,15,0.85)';
+    ctx.fillRect(0,canvas.height-60,320,60);
+    ctx.font='bold 14px "Space Mono", monospace';
+    ctx.fillStyle='#00ff88';
+    ctx.fillText('STRANGE SIGNALS',12,canvas.height-38);
+    ctx.font='11px "Space Mono", monospace';
+    ctx.fillStyle='#8a9ab0';
+    ctx.fillText(`${totalVis} visible / ${totalAll} total sightings`,12,canvas.height-16);
+
+    const url=canvas.toDataURL('image/png');
+    const a=document.createElement('a');
+    a.href=url;a.download='strange-signals-map.png';a.click();
+  }catch(e){
+    console.error('PNG export failed:',e);
+  }finally{
+    btn.textContent=orig;btn.disabled=false;
+  }
+}
+
 /* ========== GEOCODE SEARCH ========== */
 async function geocodeSearch(query){
   if(!query.trim())return;
@@ -1007,6 +1179,16 @@ document.getElementById('reset-filters').addEventListener('click',()=>{
 
 // Export
 document.getElementById('export-csv').addEventListener('click',exportCSV);
+document.getElementById('export-png').addEventListener('click',exportPNG);
+
+// Insights
+document.getElementById('insights-toggle').addEventListener('click',computeInsights);
+
+// Theme toggle
+document.getElementById('theme-toggle').addEventListener('click',()=>{
+  const current=document.documentElement.getAttribute('data-theme')||'dark';
+  setTheme(current==='dark'?'light':'dark');
+});
 
 // Search
 document.getElementById('search-box').addEventListener('keydown',e=>{
@@ -1044,6 +1226,8 @@ document.addEventListener('keydown',e=>{
   else if(key==='c')setView('correlation');
   else if(key==='/'){e.preventDefault();document.getElementById('search-box').focus()}
   else if(key==='s'){document.getElementById('sidebar').classList.toggle('collapsed')}
+  else if(key==='i'){computeInsights()}
+  else if(key==='t'){const cur=document.documentElement.getAttribute('data-theme')||'dark';setTheme(cur==='dark'?'light':'dark')}
   else if(key==='escape'){
     document.getElementById('search-box').blur();
     brushRange=null;applyFilters();
@@ -1066,6 +1250,10 @@ function showLoadError(msg){
 
 async function init(){
   loadState();
+  // Sync theme button icon
+  const initTheme=document.documentElement.getAttribute('data-theme')||'dark';
+  const tBtn=document.getElementById('theme-toggle');
+  if(tBtn)tBtn.innerHTML=initTheme==='light'?'&#9790;':'&#9788;';
   setProgress(10,'Fetching sighting data...');
 
   let json;
@@ -1075,7 +1263,29 @@ async function init(){
       showLoadError(`Server error: ${resp.status} ${resp.statusText}`);
       return;
     }
-    json=await resp.json();
+    // Stream response to show download progress
+    const contentLength=parseInt(resp.headers.get('Content-Length'))||0;
+    if(contentLength>0&&resp.body){
+      const reader=resp.body.getReader();
+      const chunks=[];
+      let received=0;
+      while(true){
+        const{done,value}=await reader.read();
+        if(done)break;
+        chunks.push(value);
+        received+=value.length;
+        const pct=Math.round((received/contentLength)*30)+10;
+        const mb=(received/1048576).toFixed(1);
+        setProgress(pct,`Downloading... ${mb} MB`);
+      }
+      const full=new Uint8Array(received);
+      let pos=0;
+      for(const chunk of chunks){full.set(chunk,pos);pos+=chunk.length}
+      const text=new TextDecoder().decode(full);
+      json=JSON.parse(text);
+    }else{
+      json=await resp.json();
+    }
   }catch(err){
     showLoadError('Error loading data: '+err.message);
     return;
@@ -1087,7 +1297,7 @@ async function init(){
   }
 
   allData=json.data;
-  setProgress(40,`Processing ${allData.length.toLocaleString()} records...`);
+  setProgress(45,`Processing ${allData.length.toLocaleString()} records...`);
 
   // Sort into categories
   await new Promise(resolve=>{
@@ -1101,7 +1311,7 @@ async function init(){
         if(cat>=0&&cat<NUM_CATS)catArrays[cat].push(r);
       }
       if(idx<allData.length){
-        setProgress(40+Math.round(idx/allData.length*30),
+        setProgress(45+Math.round(idx/allData.length*30),
           `Indexing ${idx.toLocaleString()} of ${allData.length.toLocaleString()}...`);
         requestAnimationFrame(process);
       } else resolve();
