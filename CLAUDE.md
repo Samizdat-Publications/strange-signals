@@ -162,7 +162,8 @@ Everything is wrapped in an IIFE `(function(){ 'use strict'; ... })();`
 | `9449b86` | Expanded to 184K+ records across 5 datasets with deduplication |
 | `e4fac24` | Full-featured map: markers, heatmap, hexbin, correlation, timeline, filters, keyboard shortcuts, URL state, CSV export |
 | `0fdbde8` | Advanced correlation suite: 3x3 matrix (SVG), temporal dashboard (rolling + seasonal D3 charts), cluster detection (BFS on hex adjacency), nearest-neighbor analysis with attraction zones |
-| `(current)` | Project restructuring: split monolith into CSS/JS/HTML, added .env secrets management, requirements.txt, CLAUDE.md |
+| `32d621b` | Project restructuring: split monolith into CSS/JS/HTML, added .env secrets management, requirements.txt, CLAUDE.md |
+| `2608a04` | Bug fixes: heatmap visibility (rgba gradients, dynamic radius/maxZoom), hex/corr auto-scaling (zoom-adaptive cell sizes), temporal close button (pink button styling) |
 
 ---
 
