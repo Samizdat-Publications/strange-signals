@@ -25,7 +25,7 @@
   --orange: #ff6622;
   --purple: #aa44ff;
   --text: #c8d4e0;
-  --text-dim: #5a6a7a;
+  --text-dim: #8a9ab0;
   --text-bright: #e8f0f8;
   --font-display: 'Orbitron', sans-serif;
   --font-mono: 'Space Mono', monospace;
@@ -83,6 +83,7 @@ input,select,button,textarea{font-family:inherit;font-size:inherit}
 .sb-section:last-child{border-bottom:none}
 .sb-title{font-family:var(--font-display);font-size:9px;font-weight:600;letter-spacing:2px;
   color:var(--text-dim);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+h2.sb-title{font-size:9px;margin:0 0 10px}
 .sb-title .icon{font-size:12px}
 
 /* Layer toggles */
@@ -197,6 +198,20 @@ select option{background:var(--surface-solid);color:var(--text)}
   pointer-events:none;z-index:1}
 #sidebar{position:relative}
 
+/* ========== EMPTY STATE ========== */
+#empty-state{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:500;
+  text-align:center;pointer-events:none}
+#empty-state.visible{display:block}
+#empty-state .empty-icon{font-size:32px;margin-bottom:8px;opacity:0.5}
+#empty-state .empty-msg{font-family:var(--font-display);font-size:11px;letter-spacing:2px;color:var(--text-dim)}
+#empty-state .empty-hint{font-size:10px;color:var(--text-dim);margin-top:6px;opacity:0.7}
+
+/* ========== VIEW LOADING ========== */
+#view-loading{display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:600;
+  background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:6px 16px;
+  font-family:var(--font-display);font-size:10px;letter-spacing:2px;color:var(--green)}
+#view-loading.visible{display:block}
+
 /* ========== MOBILE ========== */
 @media(max-width:768px){
   :root{--sidebar-w:100vw;--header-h:44px}
@@ -206,6 +221,19 @@ select option{background:var(--surface-solid);color:var(--text)}
   #sidebar.collapsed{margin-left:0;transform:translateX(-100%)}
   .header-nav{display:none}
   #search-box{width:120px}
+  #sidebar-toggle{width:44px;height:44px;font-size:18px}
+  #timeline-toggle{width:44px;height:44px;font-size:18px}
+  .btn-sm{min-height:44px;padding:8px 14px}
+  .view-btn{min-height:44px;padding:8px 12px}
+}
+@media(max-width:400px){
+  :root{--header-h:40px}
+  #header{padding:0 8px;gap:8px}
+  .logo h1{font-size:12px;letter-spacing:2px}
+  #search-box{width:90px;padding:4px 8px;font-size:11px}
+  .kbd-hint{display:none}
+  .sb-section{padding:10px 10px}
+  #loading h1{font-size:16px;letter-spacing:3px}
 }
 </style>
 </head>
@@ -226,7 +254,7 @@ select option{background:var(--surface-solid);color:var(--text)}
 <!-- HEADER -->
 <header id="header">
   <div class="logo">
-    <svg class="logo-icon" viewBox="0 0 32 32">
+    <svg class="logo-icon" viewBox="0 0 32 32" aria-hidden="true">
       <circle class="ring" cx="16" cy="16" r="14"/>
       <circle class="ring" cx="16" cy="16" r="9" stroke-dasharray="3 3"/>
       <circle class="dot" cx="16" cy="16" r="2"/>
@@ -250,8 +278,8 @@ select option{background:var(--surface-solid);color:var(--text)}
   <!-- SIDEBAR -->
   <aside id="sidebar">
     <!-- LAYERS -->
-    <div class="sb-section">
-      <div class="sb-title"><span class="icon">&#9678;</span> LAYERS</div>
+    <section class="sb-section">
+      <h2 class="sb-title"><span class="icon">&#9678;</span> LAYERS</h2>
       <label class="layer-row" id="layer-ufo">
         <input type="checkbox" checked data-cat="0">
         <span class="layer-dot" style="background:var(--green)"></span>
@@ -270,34 +298,35 @@ select option{background:var(--surface-solid);color:var(--text)}
         <span class="layer-name">Haunted Places</span>
         <span class="layer-count" id="count-2">-</span>
       </label>
-    </div>
+    </section>
 
     <!-- VIEW MODE (duplicate of header for sidebar usability) -->
-    <div class="sb-section">
-      <div class="sb-title"><span class="icon">&#9681;</span> VIEW MODE</div>
+    <section class="sb-section">
+      <h2 class="sb-title"><span class="icon">&#9681;</span> VIEW MODE</h2>
       <div class="view-modes">
-        <button class="view-btn active" data-view="markers">MARKERS</button>
-        <button class="view-btn" data-view="heatmap">HEAT</button>
-        <button class="view-btn" data-view="hexbin">HEX</button>
-        <button class="view-btn" data-view="correlation">CORR</button>
+        <button class="view-btn active" data-view="markers" title="Clustered marker pins (M)">MARKERS</button>
+        <button class="view-btn" data-view="heatmap" title="Heat density overlay (H)">HEAT</button>
+        <button class="view-btn" data-view="hexbin" title="Hexagonal bin density (X)">HEX</button>
+        <button class="view-btn" data-view="correlation" title="Cross-phenomenon correlation (C)">CORR</button>
       </div>
-    </div>
+    </section>
 
     <!-- CORRELATION CONTROLS -->
-    <div class="sb-section" id="corr-section" style="display:none">
-      <div class="sb-title"><span class="icon">&#9733;</span> CORRELATION ANALYSIS</div>
+    <section class="sb-section" id="corr-section" style="display:none">
+      <h2 class="sb-title"><span class="icon">&#9733;</span> CORRELATION ANALYSIS</h2>
+      <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;line-height:1.5">Compare spatial co-occurrence of two phenomenon types using Pearson r. Hotspots = cells above median for both.</div>
       <div class="corr-controls">
         <div class="corr-row">
-          <label>A</label>
-          <select id="corr-a"><option value="0">UFO / UAP</option><option value="1">Bigfoot</option><option value="2">Haunted</option></select>
+          <label for="corr-a">A</label>
+          <select id="corr-a" aria-label="Correlation category A"><option value="0">UFO / UAP</option><option value="1">Bigfoot</option><option value="2">Haunted</option></select>
         </div>
         <div class="corr-row">
-          <label>B</label>
-          <select id="corr-b"><option value="0">UFO / UAP</option><option value="1" selected>Bigfoot</option><option value="2">Haunted</option></select>
+          <label for="corr-b">B</label>
+          <select id="corr-b" aria-label="Correlation category B"><option value="0">UFO / UAP</option><option value="1" selected>Bigfoot</option><option value="2">Haunted</option></select>
         </div>
         <div class="corr-row">
           <label style="width:auto;font-size:9px">HEX</label>
-          <input type="range" id="corr-hex-size" min="10" max="100" value="25" step="5">
+          <input type="range" id="corr-hex-size" min="10" max="100" value="25" step="5" aria-label="Hex cell size in kilometers">
           <span id="corr-hex-label" style="font-size:10px;width:36px;text-align:right">25km</span>
         </div>
         <button class="corr-btn" id="corr-run">&#9672; RUN ANALYSIS</button>
@@ -307,52 +336,53 @@ select option{background:var(--surface-solid);color:var(--text)}
           <div class="corr-detail" id="corr-detail"></div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- FILTERS -->
-    <div class="sb-section">
-      <div class="sb-title"><span class="icon">&#9698;</span> FILTERS</div>
+    <section class="sb-section">
+      <h2 class="sb-title"><span class="icon">&#9698;</span> FILTERS</h2>
+      <div style="font-size:10px;color:var(--text-dim);margin-bottom:6px">Comma-separated state codes. Press Enter or APPLY.</div>
       <div class="filter-row">
-        <input type="number" id="year-from" placeholder="From year" min="1800" max="2030">
-        <input type="number" id="year-to" placeholder="To year" min="1800" max="2030">
+        <input type="number" id="year-from" placeholder="From year" min="1800" max="2030" aria-label="Filter from year">
+        <input type="number" id="year-to" placeholder="To year" min="1800" max="2030" aria-label="Filter to year">
       </div>
       <div class="filter-row">
-        <input type="text" id="state-filter" placeholder="State (OH, CA, TX...)">
+        <input type="text" id="state-filter" placeholder="State (OH, CA, TX...)" aria-label="Filter by state">
       </div>
       <div class="filter-row">
-        <input type="text" id="sub-filter" placeholder="Shape / class...">
+        <input type="text" id="sub-filter" placeholder="Shape / class..." aria-label="Filter by shape or classification">
       </div>
       <div class="filter-actions">
         <button class="btn-sm primary" id="apply-filters">APPLY</button>
         <button class="btn-sm" id="reset-filters">RESET</button>
         <button class="btn-sm" id="export-csv" title="Export visible data as CSV">EXPORT CSV</button>
       </div>
-    </div>
+    </section>
 
     <!-- STATS -->
-    <div class="sb-section">
-      <div class="sb-title"><span class="icon">&#9632;</span> STATISTICS</div>
+    <section class="sb-section">
+      <h2 class="sb-title"><span class="icon">&#9632;</span> STATISTICS</h2>
       <div class="stat-grid">
         <div class="stat-box"><div class="stat-val" id="stat-visible">-</div><div class="stat-label">VISIBLE</div></div>
         <div class="stat-box"><div class="stat-val" id="stat-total">-</div><div class="stat-label">TOTAL</div></div>
         <div class="stat-box"><div class="stat-val" id="stat-hotspots">-</div><div class="stat-label">HOTSPOTS</div></div>
         <div class="stat-box"><div class="stat-val" id="stat-zoom">-</div><div class="stat-label">ZOOM</div></div>
       </div>
-    </div>
+    </section>
 
     <!-- PROXIMITY -->
-    <div class="sb-section">
-      <div class="sb-title"><span class="icon">&#9737;</span> PROXIMITY RADIUS</div>
+    <section class="sb-section">
+      <h2 class="sb-title"><span class="icon">&#9737;</span> PROXIMITY RADIUS</h2>
       <div class="corr-row">
-        <input type="range" id="prox-radius" min="10" max="200" value="50" step="10" style="flex:1">
+        <input type="range" id="prox-radius" min="10" max="200" value="50" step="10" style="flex:1" aria-label="Proximity search radius in kilometers">
         <span id="prox-label" style="font-size:10px;width:40px;text-align:right">50km</span>
       </div>
       <div style="font-size:10px;color:var(--text-dim);margin-top:4px">Click a sighting to see nearby points of other types</div>
-    </div>
+    </section>
 
     <!-- KEYBOARD SHORTCUTS -->
-    <div class="sb-section">
-      <div class="sb-title"><span class="icon">&#9000;</span> SHORTCUTS</div>
+    <section class="sb-section">
+      <h2 class="sb-title"><span class="icon">&#9000;</span> SHORTCUTS</h2>
       <div style="font-size:10px;color:var(--text-dim);line-height:2">
         <b style="color:var(--text)">1</b> UFO &nbsp;
         <b style="color:var(--text)">2</b> Bigfoot &nbsp;
@@ -365,20 +395,24 @@ select option{background:var(--surface-solid);color:var(--text)}
         <b style="color:var(--text)">Esc</b> Reset &nbsp;
         <b style="color:var(--text)">S</b> Sidebar
       </div>
-    </div>
+    </section>
   </aside>
 
   <!-- MAIN CONTENT -->
-  <div id="main">
-    <button id="sidebar-toggle" title="Toggle sidebar (S)">&#9776;</button>
-    <div id="map-container"><div id="map"></div></div>
+  <main id="main">
+    <button id="sidebar-toggle" title="Toggle sidebar (S)" aria-label="Toggle sidebar">&#9776;</button>
+    <div id="map-container">
+      <div id="map"></div>
+      <div id="empty-state"><div class="empty-icon">&#9737;</div><div class="empty-msg">NO SIGHTINGS MATCH</div><div class="empty-hint">Adjust filters or enable more layers</div></div>
+      <div id="view-loading">RENDERING...</div>
+    </div>
     <div id="timeline-panel">
-      <span id="timeline-label">TIMELINE</span>
-      <button id="timeline-toggle" title="Toggle timeline">&#9660;</button>
+      <span id="timeline-label" title="Click and drag to select a year range">TIMELINE</span>
+      <button id="timeline-toggle" title="Toggle timeline" aria-label="Toggle timeline">&#9660;</button>
       <svg id="timeline-svg"></svg>
       <div class="timeline-tooltip" id="timeline-tooltip"></div>
     </div>
-  </div>
+  </main>
 </div>
 
 <!-- SCRIPTS -->
@@ -395,6 +429,7 @@ select option{background:var(--surface-solid);color:var(--text)}
 const CAT_COLORS = ['#00ff88','#ff6622','#aa44ff'];
 const CAT_NAMES = ['UFO/UAP','Bigfoot/Sasquatch','Haunted Place'];
 const CAT_RGB = ['0,255,136','255,102,34','170,68,255'];
+const NUM_CATS=3;
 const F={LAT:0,LON:1,CAT:2,DATE:3,LOC:4,SUB:5,DESC:6};
 
 /* ========== STATE ========== */
@@ -403,7 +438,7 @@ let filteredCat=[[],[],[]];
 let currentView='markers';
 let clusterGroups=[null,null,null];
 let heatLayers=[null,null,null];
-let hexLayer=null, corrLayer=null, proxCircle=null, proxMarkers=null;
+let hexLayer=null, corrLayer=null, proxCircle=null;
 let brushRange=null; // [yearStart, yearEnd] from timeline brush
 let timelineBuilt=false;
 
@@ -445,7 +480,7 @@ function makePopup(rec){
   const radius=parseInt(document.getElementById('prox-radius').value);
   const pt=turf.point([rec[F.LON],rec[F.LAT]]);
   let proxHtml='';
-  for(let i=0;i<3;i++){
+  for(let i=0;i<NUM_CATS;i++){
     if(i===cat)continue;
     if(!document.querySelector(`[data-cat="${i}"]`).checked)continue;
     let count=0;
@@ -533,7 +568,7 @@ function passesFilter(rec,f){
 function applyFilters(){
   const f=getFilters();
   let totalVis=0;
-  for(let i=0;i<3;i++){
+  for(let i=0;i<NUM_CATS;i++){
     const checked=document.querySelector(`[data-cat="${i}"]`).checked;
     if(!checked){
       filteredCat[i]=[];
@@ -545,12 +580,14 @@ function applyFilters(){
     totalVis+=filteredCat[i].length;
   }
   document.getElementById('stat-visible').textContent=totalVis.toLocaleString();
+  const emptyEl=document.getElementById('empty-state');
+  if(totalVis===0&&allData.length>0){emptyEl.classList.add('visible')}else{emptyEl.classList.remove('visible')}
   renderCurrentView();
 }
 
 /* ========== RENDER VIEWS ========== */
 function clearAllLayers(){
-  for(let i=0;i<3;i++){
+  for(let i=0;i<NUM_CATS;i++){
     if(clusterGroups[i]){map.removeLayer(clusterGroups[i]);clusterGroups[i]=null}
     if(heatLayers[i]){map.removeLayer(heatLayers[i]);heatLayers[i]=null}
   }
@@ -561,14 +598,19 @@ function clearAllLayers(){
 
 function renderCurrentView(){
   clearAllLayers();
-  if(currentView==='markers')renderMarkers();
-  else if(currentView==='heatmap')renderHeatmap();
-  else if(currentView==='hexbin')renderHexbin();
-  else if(currentView==='correlation')renderCorrelation();
+  const loadEl=document.getElementById('view-loading');
+  loadEl.classList.add('visible');
+  requestAnimationFrame(()=>{
+    if(currentView==='markers')renderMarkers();
+    else if(currentView==='heatmap')renderHeatmap();
+    else if(currentView==='hexbin')renderHexbin();
+    else if(currentView==='correlation')renderCorrelation();
+    loadEl.classList.remove('visible');
+  });
 }
 
 function renderMarkers(){
-  for(let i=0;i<3;i++){
+  for(let i=0;i<NUM_CATS;i++){
     if(!filteredCat[i].length)continue;
     const group=createCluster(i);
     const markers=filteredCat[i].map(r=>createMarker(r));
@@ -579,7 +621,7 @@ function renderMarkers(){
 }
 
 function renderHeatmap(){
-  for(let i=0;i<3;i++){
+  for(let i=0;i<NUM_CATS;i++){
     if(!filteredCat[i].length)continue;
     const pts=filteredCat[i].map(r=>[r[F.LAT],r[F.LON],0.5]);
     // parse color for gradient
@@ -597,7 +639,7 @@ function renderHexbin(){
 
   // count all active categories per hex
   const allPts=[];
-  for(let i=0;i<3;i++){
+  for(let i=0;i<NUM_CATS;i++){
     filteredCat[i].forEach(r=>allPts.push(turf.point([r[F.LON],r[F.LAT]],{cat:i})));
   }
   const collected=turf.collect(grid,turf.featureCollection(allPts),'cat','cats');
@@ -622,7 +664,7 @@ function renderHexbin(){
         const cats=feature.properties.cats;
         const breakdown=[0,0,0];cats.forEach(c=>breakdown[c]++);
         let tip=`<b>${feature.properties.count} sightings</b><br>`;
-        for(let i=0;i<3;i++){
+        for(let i=0;i<NUM_CATS;i++){
           if(breakdown[i])tip+=`<span style="color:${CAT_COLORS[i]}">${CAT_NAMES[i]}: ${breakdown[i]}</span><br>`;
         }
         layer.bindTooltip(tip);
@@ -892,7 +934,7 @@ function loadState(){
 function exportCSV(){
   const headers=['category','subcategory','date','latitude','longitude','location','description'];
   const rows=[headers.join(',')];
-  for(let i=0;i<3;i++){
+  for(let i=0;i<NUM_CATS;i++){
     filteredCat[i].forEach(r=>{
       const vals=[
         CAT_NAMES[r[F.CAT]],
@@ -1009,6 +1051,19 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ========== DATA LOADING ========== */
+function showLoadError(msg){
+  setProgress(0,msg);
+  let retryBtn=document.getElementById('retry-btn');
+  if(!retryBtn){
+    retryBtn=document.createElement('button');
+    retryBtn.id='retry-btn';
+    retryBtn.textContent='RETRY';
+    retryBtn.style.cssText='margin-top:16px;padding:8px 24px;background:none;border:1px solid var(--green);color:var(--green);border-radius:4px;cursor:pointer;font-family:var(--font-display);font-size:11px;letter-spacing:2px';
+    retryBtn.addEventListener('click',()=>{retryBtn.remove();init()});
+    document.getElementById('loading').appendChild(retryBtn);
+  }
+}
+
 async function init(){
   loadState();
   setProgress(10,'Fetching sighting data...');
@@ -1016,9 +1071,18 @@ async function init(){
   let json;
   try{
     const resp=await fetch('data/sightings_map_data.json');
+    if(!resp.ok){
+      showLoadError(`Server error: ${resp.status} ${resp.statusText}`);
+      return;
+    }
     json=await resp.json();
   }catch(err){
-    setProgress(0,'Error loading data: '+err.message);
+    showLoadError('Error loading data: '+err.message);
+    return;
+  }
+
+  if(!json||!Array.isArray(json.data)){
+    showLoadError('Invalid data format — expected {data:[...]}');
     return;
   }
 
@@ -1034,7 +1098,7 @@ async function init(){
       for(;idx<end;idx++){
         const r=allData[idx];
         const cat=r[F.CAT];
-        if(cat>=0&&cat<3)catArrays[cat].push(r);
+        if(cat>=0&&cat<NUM_CATS)catArrays[cat].push(r);
       }
       if(idx<allData.length){
         setProgress(40+Math.round(idx/allData.length*30),
