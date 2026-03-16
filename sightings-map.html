@@ -31,7 +31,7 @@
   --font-mono: 'Space Mono', monospace;
   --sidebar-w: 320px;
   --header-h: 52px;
-  --timeline-h: 180px;
+  --timeline-h: 140px;
 }
 :root[data-theme="light"]{
   --bg:#e8e4df;--surface:rgba(245,242,238,0.92);--surface-solid:#f0ece5;
@@ -81,7 +81,7 @@ input,select,button,textarea{font-family:inherit;font-size:inherit}
 #map-container{flex:1;position:relative}
 #map{width:100%;height:100%}
 #timeline-panel{height:var(--timeline-h);background:var(--surface-solid);
-  border-top:1px solid var(--border);padding:8px 16px 4px;flex-shrink:0;position:relative}
+  border-top:1px solid var(--border);padding:4px 16px 2px;flex-shrink:0;position:relative}
 #timeline-panel.collapsed{height:28px;overflow:hidden;cursor:pointer}
 
 /* ========== SIDEBAR SECTIONS ========== */
@@ -665,9 +665,9 @@ function renderHeatmap(){
   for(let i=0;i<NUM_CATS;i++){
     if(!filteredCat[i].length)continue;
     const pts=filteredCat[i].map(r=>[r[F.LAT],r[F.LON],0.5]);
-    const rgb=CAT_RGB[i];
-    const gradient={0.2:'rgba(0,0,0,0)',0.4:'rgba('+rgb+',0.27)',0.6:'rgba('+rgb+',0.53)',0.8:'rgba('+rgb+',0.8)',1.0:'rgb('+rgb+')'};
-    heatLayers[i]=L.heatLayer(pts,{radius:18,blur:22,maxZoom:10,gradient}).addTo(map);
+    const col=CAT_COLORS[i];
+    const gradient={0.4:col,0.65:col,1.0:col};
+    heatLayers[i]=L.heatLayer(pts,{radius:18,blur:22,maxZoom:17,minOpacity:0.12,gradient}).addTo(map);
   }
 }
 
