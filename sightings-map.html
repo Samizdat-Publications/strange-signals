@@ -173,6 +173,7 @@ select option{background:var(--surface-solid);color:var(--text)}
 .popup-sub{font-size:10px;color:var(--text-dim)}
 .popup-desc{font-size:10px;color:var(--text);margin-top:4px;line-height:1.4;font-style:italic}
 .popup-coords{font-size:9px;color:var(--text-dim);margin-top:4px}
+.popup-explore{margin-top:6px;font-size:11px}.popup-explore a{color:#00d4ff;text-decoration:none}.popup-explore a:hover{text-decoration:underline}
 .popup-prox{margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:10px}
 .popup-prox-title{font-family:var(--font-display);font-size:8px;letter-spacing:1.5px;color:var(--cyan);margin-bottom:3px}
 
@@ -513,6 +514,7 @@ function makePopup(rec){
   if(rec[F.SUB])h+=`<div class="popup-sub">${esc(rec[F.SUB])}</div>`;
   if(rec[F.DESC])h+=`<div class="popup-desc">${esc(rec[F.DESC])}</div>`;
   h+=`<div class="popup-coords">${rec[F.LAT].toFixed(4)}, ${rec[F.LON].toFixed(4)}</div>`;
+  h+=`<div class="popup-explore"><a href="https://www.google.com/maps/@${rec[F.LAT]},${rec[F.LON]},1000m/data=!3m1!1e3" target="_blank" rel="noopener" title="Open in Google Maps satellite view">&#127758; Explore in Google Maps</a> &middot; <a href="https://earth.google.com/web/@${rec[F.LAT]},${rec[F.LON]},0a,1000d,35y,0h,0t,0r" target="_blank" rel="noopener" title="Open in Google Earth 3D">&#127760; Google Earth</a></div>`;
   // proximity analysis
   const radius=parseInt(document.getElementById('prox-radius').value);
   const pt=turf.point([rec[F.LON],rec[F.LAT]]);
@@ -537,7 +539,7 @@ function createMarker(rec){
   const m=L.marker([rec[F.LAT],rec[F.LON]],{icon:icons[rec[F.CAT]]});
   m._rec=rec;
   m.bindPopup(()=>makePopup(rec),{maxWidth:300});
-  m.on('click',function(){showProxCircle(rec)});
+  m.on('click',function(){showProxCircle(rec);m.openPopup()});
   return m;
 }
 
@@ -638,10 +640,12 @@ function renderCurrentView(){
   const loadEl=document.getElementById('view-loading');
   loadEl.classList.add('visible');
   requestAnimationFrame(()=>{
-    if(currentView==='markers')renderMarkers();
-    else if(currentView==='heatmap')renderHeatmap();
-    else if(currentView==='hexbin')renderHexbin();
-    else if(currentView==='correlation')renderCorrelation();
+    try{
+      if(currentView==='markers')renderMarkers();
+      else if(currentView==='heatmap')renderHeatmap();
+      else if(currentView==='hexbin')renderHexbin();
+      else if(currentView==='correlation')renderCorrelation();
+    }catch(e){console.error('Render error:',e)}
     loadEl.classList.remove('visible');
   });
 }
@@ -661,9 +665,8 @@ function renderHeatmap(){
   for(let i=0;i<NUM_CATS;i++){
     if(!filteredCat[i].length)continue;
     const pts=filteredCat[i].map(r=>[r[F.LAT],r[F.LON],0.5]);
-    // parse color for gradient
-    const col=CAT_COLORS[i];
-    const gradient={0.2:'rgba(0,0,0,0)',0.4:col+'44',0.6:col+'88',0.8:col+'cc',1.0:col};
+    const rgb=CAT_RGB[i];
+    const gradient={0.2:'rgba(0,0,0,0)',0.4:'rgba('+rgb+',0.27)',0.6:'rgba('+rgb+',0.53)',0.8:'rgba('+rgb+',0.8)',1.0:'rgb('+rgb+')'};
     heatLayers[i]=L.heatLayer(pts,{radius:18,blur:22,maxZoom:10,gradient}).addTo(map);
   }
 }
