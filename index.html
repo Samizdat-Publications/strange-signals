@@ -1,757 +1,298 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>GardenSync // Food Not Bombs Canton</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=35">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STRANGE SIGNALS // Paranormal Sightings Correlation Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<link rel="stylesheet" href="strange-signals.css">
 </head>
 <body>
-    <!-- HEADER -->
-    <header id="main-header">
-        <div class="header-left">
-            <div class="logo-mark">
-                <svg viewBox="0 0 60 60" class="fist-icon">
-                    <circle cx="30" cy="30" r="28" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/>
-                    <text x="30" y="38" text-anchor="middle" font-size="28">&#x270A;</text>
-                </svg>
-            </div>
-            <div class="logo-text">
-                <h1>GARDEN<span class="accent">SYNC</span></h1>
-                <p class="tagline">FOOD NOT BOMBS // CANTON, OH</p>
-            </div>
-        </div>
-        <nav class="header-nav">
-            <button class="nav-btn active" data-tab="planner">BED PLANNER</button>
-            <button class="nav-btn" data-tab="schedule">GROW SCHEDULE</button>
-            <button class="nav-btn" data-tab="plantlog">PLANTING LOG</button>
-            <button class="nav-btn" data-tab="harvest">HARVEST</button>
-            <button class="nav-btn" data-tab="volunteers">VOLUNTEERS</button>
-            <button class="nav-btn" data-tab="climate">CLIMATE DATA</button>
-            <button class="nav-btn" data-tab="visualize">VISUALIZE</button>
-        </nav>
-        <div class="header-right">
-            <button id="theme-toggle" class="theme-toggle" title="Switch light/dark theme">LIGHT</button>
-            <div class="zone-badge">ZONE 6a</div>
-            <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Menu">
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-            </button>
-        </div>
-        <!-- Mobile nav drawer -->
-        <nav id="mobile-nav" class="mobile-nav hidden">
-            <button class="mobile-nav-btn active" data-tab="planner">&#x1F33E; BED PLANNER</button>
-            <button class="mobile-nav-btn" data-tab="schedule">&#x1F4C5; GROW SCHEDULE</button>
-            <button class="mobile-nav-btn" data-tab="plantlog">&#x1F4D3; PLANTING LOG</button>
-            <button class="mobile-nav-btn" data-tab="harvest">&#x1F33E; HARVEST LOG</button>
-            <button class="mobile-nav-btn" data-tab="volunteers">&#x270A; VOLUNTEERS</button>
-            <button class="mobile-nav-btn" data-tab="climate">&#x1F327; CLIMATE DATA</button>
-            <button class="mobile-nav-btn" data-tab="visualize">&#x1F3A8; VISUALIZE</button>
-        </nav>
-    </header>
 
-    <!-- ANARCHIST BANNER -->
-    <div class="ticker-banner">
-        <div class="ticker-content">
-            <span>MUTUAL AID NOT CHARITY</span>
-            <span class="ticker-sep">&#x2605;</span>
-            <span>SOLIDARITY NOT CHARITY</span>
-            <span class="ticker-sep">&#x2605;</span>
-            <span>FOOD IS A RIGHT NOT A PRIVILEGE</span>
-            <span class="ticker-sep">&#x2605;</span>
-            <span>GROW FOOD NOT LAWNS</span>
-            <span class="ticker-sep">&#x2605;</span>
-            <span>FEED THE PEOPLE</span>
-            <span class="ticker-sep">&#x2605;</span>
-            <span>COMMUNITY OVER PROFIT</span>
-            <span class="ticker-sep">&#x2605;</span>
-            <span>MUTUAL AID NOT CHARITY</span>
-            <span class="ticker-sep">&#x2605;</span>
-            <span>SOLIDARITY NOT CHARITY</span>
-            <span class="ticker-sep">&#x2605;</span>
-            <span>FOOD IS A RIGHT NOT A PRIVILEGE</span>
-            <span class="ticker-sep">&#x2605;</span>
-            <span>GROW FOOD NOT LAWNS</span>
-            <span class="ticker-sep">&#x2605;</span>
-        </div>
+<!-- LOADING SCREEN -->
+<div id="loading">
+  <div class="radar-container">
+    <div class="radar-ring"></div><div class="radar-ring"></div>
+    <div class="radar-ring"></div><div class="radar-ring"></div>
+    <div class="radar-sweep"></div>
+  </div>
+  <h1>STRANGE SIGNALS</h1>
+  <div id="loading-status">Initializing systems...</div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="logo">
+    <svg class="logo-icon" viewBox="0 0 32 32">
+      <circle class="ring" cx="16" cy="16" r="14"/>
+      <circle class="ring" cx="16" cy="16" r="9" stroke-dasharray="3 3"/>
+      <circle class="dot" cx="16" cy="16" r="2"/>
+    </svg>
+    <h1>STRANGE <span>SIGNALS</span></h1>
+  </div>
+  <nav class="header-nav">
+    <button class="nav-btn active" data-view="markers">MARKERS</button>
+    <button class="nav-btn" data-view="heatmap">HEATMAP</button>
+    <button class="nav-btn" data-view="hexbin">HEX DENSITY</button>
+    <button class="nav-btn" data-view="correlation">CORRELATION</button>
+  </nav>
+  <div class="header-right">
+    <input type="text" id="search-box" placeholder="Search location..." aria-label="Search location">
+    <span class="kbd-hint">/ to search</span>
+  </div>
+</header>
+
+<!-- APP LAYOUT -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <!-- LAYERS -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9678;</span> LAYERS</div>
+      <label class="layer-row" id="layer-ufo">
+        <input type="checkbox" checked data-cat="0">
+        <span class="layer-dot" style="background:var(--green)"></span>
+        <span class="layer-name">UFO / UAP</span>
+        <span class="layer-count" id="count-0">-</span>
+      </label>
+      <label class="layer-row" id="layer-bigfoot">
+        <input type="checkbox" checked data-cat="1">
+        <span class="layer-dot" style="background:var(--orange)"></span>
+        <span class="layer-name">Bigfoot / Sasquatch</span>
+        <span class="layer-count" id="count-1">-</span>
+      </label>
+      <label class="layer-row" id="layer-haunted">
+        <input type="checkbox" checked data-cat="2">
+        <span class="layer-dot" style="background:var(--purple)"></span>
+        <span class="layer-name">Haunted Places</span>
+        <span class="layer-count" id="count-2">-</span>
+      </label>
     </div>
 
-    <!-- ==================== TAB: BED PLANNER ==================== -->
-    <section id="tab-planner" class="tab-content active">
-        <!-- TODAY'S TASKS DASHBOARD -->
-        <div id="today-dashboard" class="today-dashboard">
-            <div class="today-header">
-                <div class="today-title-row">
-                    <h2 class="today-title">&#x1F4CB; TODAY'S TASKS</h2>
-                    <span id="today-date" class="today-date"></span>
-                </div>
-                <div id="season-progress" class="season-progress">
-                    <div class="season-progress-bar"><div id="season-progress-fill" class="season-progress-fill"></div></div>
-                    <span id="season-progress-label" class="season-progress-label"></span>
-                </div>
-            </div>
-            <div id="today-tasks-list" class="today-tasks-list">
-                <p class="muted-text">Loading...</p>
-            </div>
-        </div>
-        <div class="planner-layout">
-            <!-- PLANT PALETTE -->
-            <aside class="plant-palette">
-                <h2 class="section-title"><span class="title-icon">&#x1F331;</span> PLANT LIBRARY</h2>
-                <input type="text" id="plant-search" class="search-input" placeholder="Search: name, low water, easy, companion to tomato...">
-                <div class="filter-row">
-                    <button class="filter-btn active" data-filter="all">ALL</button>
-                    <button class="filter-btn" data-filter="vegetable">VEG</button>
-                    <button class="filter-btn" data-filter="fruit">FRUIT</button>
-                    <button class="filter-btn" data-filter="herb">HERB</button>
-                    <button class="filter-btn" data-filter="flower">FLOWER</button>
-                    <button id="btn-add-custom-seed" class="filter-btn accent" data-filter="custom" title="Filter custom seeds / click again to add new">+ CUSTOM</button>
-                </div>
-                <div class="sort-row">
-                    <label class="sort-label">SORT:</label>
-                    <select id="plant-sort" class="sort-select">
-                        <option value="name">A-Z</option>
-                        <option value="name-desc">Z-A</option>
-                        <option value="spacing">SPACING &#x2191;</option>
-                        <option value="days">HARVEST &#x2191;</option>
-                        <option value="water">WATER NEED</option>
-                        <option value="type">TYPE</option>
-                    </select>
-                </div>
-                <div id="plant-list" class="plant-list"></div>
-                <div class="palette-footer">
-                    <p class="helper-text">Drag or double-click to place</p>
-                    <div class="shortcut-hints">
-                        <span class="shortcut-hint"><kbd>Del</kbd> Remove</span>
-                        <span class="shortcut-hint"><kbd>Ctrl+Z</kbd> Undo</span>
-                        <span class="shortcut-hint"><kbd>Ctrl+Y</kbd> Redo</span>
-                        <span class="shortcut-hint"><kbd>Esc</kbd> Cancel</span>
-                        <span class="shortcut-hint"><kbd>Right-click</kbd> Menu</span>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- GARDEN CANVAS -->
-            <main class="garden-canvas-area">
-                <div class="canvas-toolbar">
-                    <div class="toolbar-left">
-                        <span class="toolbar-label">GARDEN OVERVIEW</span>
-                        <span class="toolbar-sublabel">4 beds &middot; 5' &times; 10' each</span>
-                        <span id="total-plant-count" class="total-plant-count"><span class="count-num">0</span> PLANTS</span>
-                    </div>
-                    <div class="toolbar-right">
-                        <button id="btn-stats-toggle" class="tool-btn" title="Toggle garden stats">STATS</button>
-                        <button id="btn-undo" class="tool-btn disabled" title="Undo (Ctrl+Z)">UNDO</button>
-                        <button id="btn-redo" class="tool-btn disabled" title="Redo (Ctrl+Y)">REDO</button>
-                        <button id="btn-grid-toggle" class="tool-btn">GRID: OFF</button>
-                        <button id="btn-auto-organize" class="tool-btn accent">AUTO-ORGANIZE</button>
-                        <button id="btn-clear-all" class="tool-btn danger">CLEAR ALL</button>
-                        <button id="btn-save" class="tool-btn">SAVE PLAN</button>
-                        <button id="btn-load" class="tool-btn">LOAD PLAN</button>
-                        <button id="btn-export" class="tool-btn accent">EXPORT PNG</button>
-                        <button id="btn-print-map" class="tool-btn">PRINT MAP</button>
-                        <button id="btn-share-url" class="tool-btn" title="Share garden plan via link">SHARE LINK</button>
-                    </div>
-                </div>
-                <!-- Watering Alert Banner -->
-                <div id="water-alert-banner" class="water-alert-banner hidden"></div>
-                <!-- Garden Stats Dashboard -->
-                <div id="stats-dashboard" class="stats-dashboard hidden">
-                    <div class="stats-grid">
-                        <div class="mini-stat"><span class="mini-stat-val" id="stat-total-plants">0</span><span class="mini-stat-label">PLANTS</span></div>
-                        <div class="mini-stat"><span class="mini-stat-val" id="stat-varieties">0</span><span class="mini-stat-label">VARIETIES</span></div>
-                        <div class="mini-stat"><span class="mini-stat-val" id="stat-beds-used">0</span><span class="mini-stat-label">BEDS USED</span></div>
-                        <div class="mini-stat"><span class="mini-stat-val" id="stat-avg-coverage">0%</span><span class="mini-stat-label">AVG COVERAGE</span></div>
-                        <div class="mini-stat"><span class="mini-stat-val" id="stat-companions">0</span><span class="mini-stat-label">COMPANIONS</span></div>
-                        <div class="mini-stat"><span class="mini-stat-val" id="stat-conflicts">0</span><span class="mini-stat-label">CONFLICTS</span></div>
-                        <div class="mini-stat"><span class="mini-stat-val" id="stat-water-avg">--</span><span class="mini-stat-label">AVG WATER</span></div>
-                        <div class="mini-stat"><span class="mini-stat-val" id="stat-harvest-days">--</span><span class="mini-stat-label">FIRST HARVEST</span></div>
-                    </div>
-                </div>
-                <div id="garden-viewport" class="garden-viewport">
-                    <div id="garden-grid" class="garden-grid">
-                        <!-- Beds generated by JS -->
-                    </div>
-                </div>
-                <!-- Plant info panel -->
-                <div id="plant-info-panel" class="plant-info-panel hidden">
-                    <button id="close-info" class="close-btn">&times;</button>
-                    <div id="plant-info-content"></div>
-                </div>
-            </main>
-
-            <!-- BED DETAILS SIDEBAR -->
-            <aside class="bed-details">
-                <h2 class="section-title"><span class="title-icon">&#x1F4CB;</span> BED DETAILS</h2>
-                <div id="bed-selector" class="bed-selector">
-                    <button class="bed-tab active" data-bed="0">BED 1</button>
-                    <button class="bed-tab" data-bed="1">BED 2</button>
-                    <button class="bed-tab" data-bed="2">BED 3</button>
-                    <button class="bed-tab" data-bed="3">BED 4</button>
-                </div>
-                <div class="bed-actions">
-                    <button id="btn-clear-bed" class="tool-btn small danger" title="Clear this bed">CLEAR BED</button>
-                    <button id="btn-copy-bed" class="tool-btn small" title="Copy this bed layout to another bed">COPY TO...</button>
-                    <button id="btn-bed-template" class="tool-btn small accent" title="Load a pre-made plant arrangement">TEMPLATE</button>
-                </div>
-                <div class="quick-add-row">
-                    <select id="quick-add-select" class="quick-add-select">
-                        <option value="">+ QUICK ADD PLANT...</option>
-                    </select>
-                    <button id="btn-quick-add" class="tool-btn accent small" title="Add selected plant to bed">ADD</button>
-                    <button id="btn-fill-row" class="tool-btn small" title="Fill next open row with this plant">FILL ROW</button>
-                </div>
-                <div id="bed-info" class="bed-info">
-                    <div class="stat-row">
-                        <span class="stat-label">PLANTS</span>
-                        <span id="bed-plant-count" class="stat-value">0</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">COVERAGE</span>
-                        <span id="bed-coverage" class="stat-value">0%</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">WATER NEED</span>
-                        <span id="bed-water" class="stat-value">--</span>
-                    </div>
-                </div>
-                <h3 class="subsection-title">PLANTED</h3>
-                <div id="bed-plant-list" class="bed-plant-list"></div>
-                <h3 class="subsection-title">COMPANION ALERTS</h3>
-                <div id="companion-alerts" class="companion-alerts">
-                    <p class="muted-text">Place plants to see companion tips</p>
-                </div>
-                <h3 class="subsection-title">&#x1F4DD; BED JOURNAL</h3>
-                <div class="bed-journal">
-                    <div class="journal-input-row">
-                        <input type="text" id="journal-entry-input" class="text-input" placeholder="Add a note for this bed...">
-                        <button id="btn-add-journal" class="tool-btn accent">+</button>
-                    </div>
-                    <div id="journal-entries" class="journal-entries">
-                        <p class="muted-text">No notes yet</p>
-                    </div>
-                </div>
-            </aside>
-        </div>
-    </section>
-
-    <!-- ==================== TAB: GROW SCHEDULE ==================== -->
-    <section id="tab-schedule" class="tab-content">
-        <div class="schedule-layout">
-            <div class="schedule-header-bar">
-                <h2 class="section-title"><span class="title-icon">&#x1F4C5;</span> GROW SCHEDULE &mdash; CANTON, OH</h2>
-                <div class="frost-badges">
-                    <div class="frost-badge">
-                        <span class="frost-label">LAST FROST</span>
-                        <span class="frost-date">APR 18</span>
-                    </div>
-                    <div class="frost-badge">
-                        <span class="frost-label">FIRST FROST</span>
-                        <span class="frost-date">OCT 28</span>
-                    </div>
-                    <div class="frost-badge">
-                        <span class="frost-label">SEASON</span>
-                        <span class="frost-date">193 DAYS</span>
-                    </div>
-                </div>
-            </div>
-            <p class="schedule-intro">Based on your planted beds, here's your complete growing calendar. All dates calibrated for Canton's Zone 6a climate.</p>
-            <div id="schedule-empty" class="schedule-empty">
-                <div class="empty-icon">&#x1F33F;</div>
-                <p>No plants placed yet. Use the <strong>Bed Planner</strong> to add plants, then return here for your custom grow schedule.</p>
-            </div>
-            <div id="schedule-content" class="schedule-content hidden">
-                <div id="schedule-timeline" class="schedule-timeline"></div>
-                <h3 class="subsection-title" style="font-size:1rem;margin-top:2rem;margin-bottom:1rem;border-bottom:2px solid var(--emerald-dark);padding-bottom:0.5rem;">PLANTING TASK TRACKER</h3>
-                <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">Check off each task as you complete it. Progress is saved automatically.</p>
-                <div id="schedule-tasks" class="schedule-tasks"></div>
-                <div id="schedule-instructions" class="schedule-instructions" style="margin-top:2rem;"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== TAB: PLANTING LOG ==================== -->
-    <section id="tab-plantlog" class="tab-content">
-        <div class="plantlog-layout">
-            <div class="plantlog-header-bar">
-                <div>
-                    <h2 class="section-title"><span class="title-icon">&#x1F4D3;</span> PLANTING LOG</h2>
-                    <p class="section-intro">Week-by-week planting tasks for the full season. Check off each task as you complete it. Based on all plants in your library &mdash; no need to place them in beds first.</p>
-                </div>
-                <div class="plantlog-controls">
-                    <div class="plantlog-filter-row">
-                        <button class="filter-btn active" data-plantlog-filter="all">ALL</button>
-                        <button class="filter-btn" data-plantlog-filter="upcoming">UPCOMING</button>
-                        <button class="filter-btn" data-plantlog-filter="overdue">OVERDUE</button>
-                        <button class="filter-btn" data-plantlog-filter="done">DONE</button>
-                    </div>
-                    <div style="display:flex;gap:4px;margin-top:0.5rem;">
-                        <button id="btn-export-calendar" class="tool-btn accent">&#x1F4C5; EXPORT TO CALENDAR</button>
-                        <button id="btn-plantlog-reset" class="tool-btn danger">RESET ALL</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Progress bar -->
-            <div class="plantlog-progress-bar">
-                <div class="plantlog-progress-fill" id="plantlog-progress-fill"></div>
-                <span class="plantlog-progress-text" id="plantlog-progress-text">0 / 0 tasks done</span>
-            </div>
-
-            <!-- Current week highlight -->
-            <div id="plantlog-current-week" class="plantlog-current-week"></div>
-
-            <!-- Full timeline -->
-            <div id="plantlog-timeline" class="plantlog-timeline"></div>
-        </div>
-    </section>
-
-    <!-- ==================== TAB: HARVEST LOG ==================== -->
-    <section id="tab-harvest" class="tab-content">
-        <div class="harvest-layout">
-            <div class="harvest-header-bar">
-                <div>
-                    <h2 class="section-title"><span class="title-icon">&#x1F33E;</span> HARVEST LOG</h2>
-                    <p class="section-intro">Track what you pick, how much you grow, and how much food goes out to the community. Every pound counts for mutual aid.</p>
-                </div>
-            </div>
-
-            <!-- Season stats -->
-            <div class="harvest-stats-row">
-                <div class="harvest-stat-card">
-                    <div class="harvest-stat-label">TOTAL HARVESTS</div>
-                    <div class="harvest-stat-value" id="harvest-total-count">0</div>
-                </div>
-                <div class="harvest-stat-card accent">
-                    <div class="harvest-stat-label">TOTAL WEIGHT</div>
-                    <div class="harvest-stat-value" id="harvest-total-weight">0 lbs</div>
-                </div>
-                <div class="harvest-stat-card">
-                    <div class="harvest-stat-label">DISTRIBUTED TO COMMUNITY</div>
-                    <div class="harvest-stat-value" id="harvest-total-donated">0 lbs</div>
-                </div>
-                <div class="harvest-stat-card">
-                    <div class="harvest-stat-label">PLANT VARIETIES</div>
-                    <div class="harvest-stat-value" id="harvest-total-varieties">0</div>
-                </div>
-            </div>
-
-            <!-- Log entry form -->
-            <div class="harvest-form-card">
-                <h3 class="subsection-title">LOG A HARVEST</h3>
-                <div class="harvest-form">
-                    <div class="harvest-form-row">
-                        <div class="harvest-field">
-                            <label>PLANT</label>
-                            <select id="harvest-plant" class="select-input">
-                                <!-- Populated by JS -->
-                            </select>
-                        </div>
-                        <div class="harvest-field">
-                            <label>BED</label>
-                            <select id="harvest-bed" class="select-input">
-                                <option value="1">BED 1</option>
-                                <option value="2">BED 2</option>
-                                <option value="3">BED 3</option>
-                                <option value="4">BED 4</option>
-                            </select>
-                        </div>
-                        <div class="harvest-field">
-                            <label>WEIGHT (lbs)</label>
-                            <input type="number" id="harvest-weight" class="text-input" placeholder="0.0" step="0.1" min="0">
-                        </div>
-                        <div class="harvest-field">
-                            <label>DATE</label>
-                            <input type="date" id="harvest-date" class="text-input">
-                        </div>
-                    </div>
-                    <div class="harvest-form-row">
-                        <div class="harvest-field" style="flex:2;">
-                            <label>NOTES (optional)</label>
-                            <input type="text" id="harvest-notes" class="text-input" placeholder="e.g. First tomato pick of the season!">
-                        </div>
-                        <div class="harvest-field">
-                            <label>DONATED TO FNB?</label>
-                            <select id="harvest-donated" class="select-input">
-                                <option value="yes">YES &mdash; DONATED</option>
-                                <option value="partial">PARTIAL</option>
-                                <option value="no">NO &mdash; PERSONAL</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button id="btn-log-harvest" class="tool-btn accent large-btn" style="margin-top:0.5rem;">&#x1F33E; LOG HARVEST</button>
-                </div>
-            </div>
-
-            <!-- Harvest Goals -->
-            <div class="harvest-goals-card">
-                <h3 class="subsection-title" style="margin-top:0;">&#x1F3AF; HARVEST GOALS</h3>
-                <div class="harvest-goals-form">
-                    <input type="number" id="harvest-goal-weight" class="text-input" placeholder="Target lbs" min="0" step="1" style="width:100px;">
-                    <button id="btn-set-goal" class="tool-btn accent">SET SEASON GOAL</button>
-                    <span id="goal-display" class="goal-display"></span>
-                </div>
-                <div id="goal-progress-bar" class="goal-progress-wrap hidden">
-                    <div class="goal-progress-fill" id="goal-progress-fill"></div>
-                    <span class="goal-progress-text" id="goal-progress-text">0%</span>
-                </div>
-            </div>
-
-            <!-- Season Summary Insights -->
-            <div id="harvest-insights" class="harvest-insights" hidden>
-                <h3 class="subsection-title" style="margin-top:1.5rem;font-size:0.85rem;">SEASON INSIGHTS</h3>
-                <div class="insights-grid">
-                    <div class="insight-card">
-                        <span class="insight-label">TOP PRODUCER</span>
-                        <span id="insight-top-plant" class="insight-value">--</span>
-                    </div>
-                    <div class="insight-card">
-                        <span class="insight-label">BEST BED</span>
-                        <span id="insight-best-bed" class="insight-value">--</span>
-                    </div>
-                    <div class="insight-card">
-                        <span class="insight-label">AVG BETWEEN HARVESTS</span>
-                        <span id="insight-avg-gap" class="insight-value">--</span>
-                    </div>
-                    <div class="insight-card">
-                        <span class="insight-label">DONATION RATE</span>
-                        <span id="insight-donation-rate" class="insight-value">--</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Harvest entries -->
-            <h3 class="subsection-title" style="margin-top:1.5rem;font-size:0.85rem;">HARVEST HISTORY</h3>
-            <div id="harvest-entries" class="harvest-entries"></div>
-        </div>
-    </section>
-
-    <!-- ==================== TAB: VOLUNTEERS ==================== -->
-    <section id="tab-volunteers" class="tab-content">
-        <div class="volunteers-layout">
-            <h2 class="section-title"><span class="title-icon">&#x270A;</span> VOLUNTEER COLLECTIVE</h2>
-            <p class="section-intro">Manage your crew of 5 volunteers and assign bed responsibilities. Built for spotty availability &mdash; because mutual aid runs on real life, not corporate schedules.</p>
-            <div class="volunteers-grid">
-                <div class="vol-management">
-                    <h3 class="subsection-title">THE CREW</h3>
-                    <div id="volunteer-list" class="volunteer-list"></div>
-                    <div class="add-volunteer-form">
-                        <input type="text" id="vol-name" class="text-input" placeholder="Name">
-                        <input type="text" id="vol-phone" class="text-input" placeholder="Phone/Contact">
-                        <select id="vol-availability" class="select-input">
-                            <option value="high">HIGH AVAILABILITY</option>
-                            <option value="medium" selected>MEDIUM AVAILABILITY</option>
-                            <option value="low">LOW AVAILABILITY</option>
-                        </select>
-                        <button id="btn-add-volunteer" class="tool-btn accent">ADD VOLUNTEER</button>
-                    </div>
-                </div>
-                <div class="vol-assignments">
-                    <h3 class="subsection-title">BED ASSIGNMENTS</h3>
-                    <div id="bed-assignments" class="bed-assignments"></div>
-                    <button id="btn-auto-assign" class="tool-btn" style="margin-top:1rem;">AUTO-ASSIGN BY AVAILABILITY</button>
-                </div>
-                <div class="vol-schedule">
-                    <h3 class="subsection-title">WEEKLY TASKS</h3>
-                    <div id="weekly-tasks" class="weekly-tasks">
-                        <div class="task-week" id="current-week-tasks"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== TAB: CLIMATE ==================== -->
-    <section id="tab-climate" class="tab-content">
-        <div class="climate-layout">
-            <h2 class="section-title"><span class="title-icon">&#x1F327;</span> CANTON CLIMATE DATA</h2>
-            <p class="section-intro">Canton, OH sits in USDA Zone 6a with a humid continental climate (K&ouml;ppen Dfa). Annual precipitation ~42&Prime;. Here's what you need to know for low-maintenance gardening.</p>
-
-            <!-- LIVE WEATHER DASHBOARD -->
-            <div id="weather-dashboard" class="weather-dashboard">
-                <div class="weather-loading">
-                    <span class="weather-loading-text">FETCHING LIVE WEATHER DATA...</span>
-                </div>
-            </div>
-
-            <!-- FROST ALERTS -->
-            <div id="frost-alert-banner" class="frost-alert-banner hidden"></div>
-
-            <div class="climate-grid">
-                <div class="climate-card">
-                    <h3>MONTHLY RAINFALL</h3>
-                    <div class="chart-container">
-                        <canvas id="rainfall-chart"></canvas>
-                    </div>
-                </div>
-                <div class="climate-card">
-                    <h3>GROWING SEASON TEMPS</h3>
-                    <div class="chart-container">
-                        <canvas id="temp-chart"></canvas>
-                    </div>
-                </div>
-                <div class="climate-card rain-barrel-card">
-                    <h3>&#x1FAA3; RAIN BARREL CALCULATOR</h3>
-                    <div class="barrel-calc">
-                        <div class="calc-row">
-                            <label>Roof catchment area (sq ft)</label>
-                            <input type="number" id="roof-area" class="text-input" value="200" min="10">
-                        </div>
-                        <div class="calc-row">
-                            <label>Number of barrels (55 gal each)</label>
-                            <input type="number" id="barrel-count" class="text-input" value="2" min="1" max="10">
-                        </div>
-                        <div class="calc-row">
-                            <label>Storage capacity</label>
-                            <span id="barrel-capacity" class="calc-result">110 gallons</span>
-                        </div>
-                        <div class="calc-row">
-                            <label>Monthly collection (avg)</label>
-                            <span id="barrel-monthly" class="calc-result">--</span>
-                        </div>
-                        <div class="calc-row">
-                            <label>Garden water need (4 beds)</label>
-                            <span id="garden-need" class="calc-result">~250 gal/week peak</span>
-                        </div>
-                        <div id="barrel-verdict" class="barrel-verdict"></div>
-                    </div>
-                </div>
-                <div class="climate-card">
-                    <h3>RAINFALL VS GARDEN NEEDS</h3>
-                    <p class="card-note">Low-maintenance target: plants that need &le;1&Prime;/week. Canton averages 3.5&Prime;/month in growing season, so natural rainfall covers ~88% of needs for drought-tolerant selections.</p>
-                    <div class="rain-needs-grid">
-                        <div class="rain-month" data-month="Apr"><span class="rm-label">APR</span><div class="rm-bar"><div class="rm-fill" style="height:68%"></div></div><span class="rm-val">3.4&Prime;</span></div>
-                        <div class="rain-month" data-month="May"><span class="rm-label">MAY</span><div class="rm-bar"><div class="rm-fill" style="height:82%"></div></div><span class="rm-val">4.1&Prime;</span></div>
-                        <div class="rain-month" data-month="Jun"><span class="rm-label">JUN</span><div class="rm-bar"><div class="rm-fill" style="height:100%"></div></div><span class="rm-val">5.4&Prime;</span></div>
-                        <div class="rain-month" data-month="Jul"><span class="rm-label">JUL</span><div class="rm-bar"><div class="rm-fill" style="height:82%"></div></div><span class="rm-val">4.1&Prime;</span></div>
-                        <div class="rain-month" data-month="Aug"><span class="rm-label">AUG</span><div class="rm-bar"><div class="rm-fill" style="height:68%"></div></div><span class="rm-val">3.4&Prime;</span></div>
-                        <div class="rain-month" data-month="Sep"><span class="rm-label">SEP</span><div class="rm-bar"><div class="rm-fill" style="height:54%"></div></div><span class="rm-val">2.7&Prime;</span></div>
-                        <div class="rain-month" data-month="Oct"><span class="rm-label">OCT</span><div class="rm-bar"><div class="rm-fill" style="height:46%"></div></div><span class="rm-val">2.3&Prime;</span></div>
-                    </div>
-                    <div class="need-line-label">&#x25B6; 1&Prime;/week minimum line</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== TAB: VISUALIZE ==================== -->
-    <section id="tab-visualize" class="tab-content">
-        <div class="visualize-layout">
-            <h2 class="section-title"><span class="title-icon">&#x1F3A8;</span> GARDEN VISUALIZER</h2>
-            <p class="section-intro">Generate AI mockup images of your garden layout using Google Gemini. See what your beds will look like before you plant.</p>
-            <div class="viz-config">
-                <div class="viz-api-row">
-                    <label>GEMINI API KEY</label>
-                    <input type="password" id="gemini-key" class="text-input" placeholder="Enter your Google Gemini API key">
-                    <button id="btn-save-key" class="tool-btn">SAVE KEY</button>
-                </div>
-                <div class="viz-bed-select">
-                    <label>SELECT BED TO VISUALIZE</label>
-                    <select id="viz-bed-select" class="select-input">
-                        <option value="all">ALL BEDS (Full Garden)</option>
-                        <option value="0">BED 1</option>
-                        <option value="1">BED 2</option>
-                        <option value="2">BED 3</option>
-                        <option value="3">BED 4</option>
-                    </select>
-                </div>
-                <div class="viz-bed-select">
-                    <label>GEMINI MODEL</label>
-                    <select id="viz-model-select" class="select-input">
-                        <option value="gemini-2.5-flash-image">Nano Banana (gemini-2.5-flash-image) &mdash; Fast</option>
-                        <option value="gemini-3-pro-image-preview">Nano Banana Pro (gemini-3-pro-image-preview) &mdash; High Quality</option>
-                    </select>
-                </div>
-                <button id="btn-generate-viz" class="tool-btn accent large-btn">&#x2728; GENERATE GARDEN PREVIEW</button>
-                <div id="viz-status" class="viz-status hidden"></div>
-            </div>
-            <div id="viz-prompts" class="viz-prompts hidden">
-                <h3 class="subsection-title">GENERATED PROMPTS</h3>
-                <div id="viz-prompt-list"></div>
-            </div>
-            <div id="viz-gallery" class="viz-gallery hidden">
-                <h3 class="subsection-title">GARDEN PREVIEWS</h3>
-                <div id="viz-images" class="viz-images"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- PRESET MODAL -->
-    <div id="preset-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <button id="close-preset-modal" class="close-btn">&times;</button>
-            <h2 class="section-title" style="margin-bottom:0.5rem;"><span class="title-icon">&#x1F33F;</span> LOAD GARDEN PLAN</h2>
-            <p style="color:var(--text-secondary);margin-bottom:1.25rem;font-size:0.9rem;">Choose a preset garden layout or load your saved plan.</p>
-            <div id="preset-list" class="preset-list"></div>
-            <div style="margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--border);">
-                <button id="btn-load-saved" class="tool-btn" style="width:100%;">LOAD MY SAVED PLAN</button>
-            </div>
-        </div>
+    <!-- OVERLAYS -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9733;</span> OVERLAYS</div>
+      <label class="layer-row" id="layer-military">
+        <input type="checkbox" id="military-toggle">
+        <span class="layer-dot" style="background:#4488ff"></span>
+        <span class="layer-name">Military / DOE Sites</span>
+        <span class="layer-count" id="count-military" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+      </label>
+      <label class="layer-row" id="layer-percapita">
+        <input type="checkbox" id="percapita-toggle">
+        <span class="layer-dot" style="background:#ffffff"></span>
+        <span class="layer-name">Per Capita Heatmap</span>
+        <span class="layer-count" style="font-size:8px;color:var(--text-dim)">HEAT</span>
+      </label>
+      <div style="font-size:9px;color:var(--text-dim);padding:4px 0 0 20px;line-height:1.5" id="percapita-hint">
+        Normalizes sighting density by population.<br>Reveals anomalous hotspots vs. population centers.
+      </div>
     </div>
 
-    <!-- FOOTER -->
-    <footer class="main-footer">
-        <div class="footer-left">
-            <span class="footer-logo">&#x270A; GARDENSYNC</span>
-            <span class="footer-sep">//</span>
-            <span>Food Not Bombs Canton</span>
-        </div>
-        <div class="footer-center">
-            <button id="btn-export-data" class="footer-action-btn">EXPORT DATA</button>
-            <button id="btn-import-data" class="footer-action-btn">IMPORT DATA</button>
-            <button id="btn-load-demo" class="footer-action-btn demo-btn">&#x1F33F; LOAD DEMO GARDEN</button>
-            <a href="guide.html" class="footer-action-btn" target="_blank" style="text-decoration:none;">&#x1F4D6; USER GUIDE</a>
-            <input type="file" id="import-file-input" accept=".json" style="display:none;">
-        </div>
-        <div class="footer-right">
-            <span>NO COPYRIGHT &mdash; NO GODS NO MASTERS &mdash; SHARE FREELY</span>
-        </div>
-    </footer>
-
-    <!-- Custom Seed Modal -->
-    <div id="custom-seed-modal" class="modal-overlay hidden">
-        <div class="modal-content custom-seed-modal">
-            <div class="modal-header">
-                <h3 class="modal-title">&#x1F331; ADD CUSTOM SEED</h3>
-                <button class="modal-close" id="custom-seed-close">&times;</button>
-            </div>
-            <div class="modal-tabs">
-                <button class="modal-tab active" data-tab="manual">MANUAL ENTRY</button>
-                <button class="modal-tab" data-tab="photo">PHOTO SCAN</button>
-            </div>
-            <div class="modal-body">
-                <!-- Photo tab -->
-                <div class="tab-panel" id="tab-photo" hidden>
-                    <div class="photo-upload-area" id="photo-drop-zone">
-                        <input type="file" id="seed-photo-input" accept="image/*" capture="environment" multiple hidden>
-                        <div class="upload-prompt">
-                            <span class="upload-icon">&#x1F4F7;</span>
-                            <p>Drop seed packet photo here or <button class="link-btn" id="btn-choose-photo">choose file</button></p>
-                            <p class="upload-hint">Snap the back of the seed packet for best results</p>
-                        </div>
-                        <div class="photo-preview hidden" id="photo-preview">
-                            <img id="photo-preview-img" alt="Seed packet">
-                            <button class="tool-btn small" id="btn-clear-photo">CLEAR</button>
-                        </div>
-                    </div>
-                    <button id="btn-extract-ocr" class="tool-btn accent" disabled>EXTRACT DETAILS</button>
-                    <div class="ocr-status hidden" id="ocr-status">
-                        <div class="ocr-progress-bar"><div class="ocr-progress-fill" id="ocr-progress"></div></div>
-                        <span class="ocr-status-text" id="ocr-status-text">Initializing OCR...</span>
-                    </div>
-                    <div class="ocr-raw hidden" id="ocr-raw">
-                        <label class="form-label">EXTRACTED TEXT</label>
-                        <textarea id="ocr-raw-text" rows="4" readonly></textarea>
-                        <button class="tool-btn small" id="btn-use-extracted">USE &amp; EDIT BELOW</button>
-                    </div>
-                </div>
-                <!-- Manual form (always visible below photo results) -->
-                <div class="tab-panel" id="tab-manual">
-                    <div class="form-grid">
-                        <div class="form-group full-width">
-                            <label class="form-label">PLANT NAME *</label>
-                            <input type="text" id="cs-name" class="form-input" placeholder="e.g. Cherry Belle Radish">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">EMOJI</label>
-                            <input type="text" id="cs-emoji" class="form-input" placeholder="&#x1F331;" maxlength="4">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">TYPE *</label>
-                            <select id="cs-type" class="form-input">
-                                <option value="vegetable">Vegetable</option>
-                                <option value="herb">Herb</option>
-                                <option value="fruit">Fruit</option>
-                                <option value="flower">Flower</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">SPACING (inches) *</label>
-                            <input type="number" id="cs-spacing" class="form-input" min="1" max="72" placeholder="12">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">DAYS TO HARVEST *</label>
-                            <input type="number" id="cs-days" class="form-input" min="1" max="365" placeholder="60">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">SUN NEED</label>
-                            <select id="cs-sun" class="form-input">
-                                <option value="full">Full Sun</option>
-                                <option value="partial">Partial Sun</option>
-                                <option value="shade">Shade</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">WATER NEED</label>
-                            <select id="cs-water" class="form-input">
-                                <option value="medium">Medium</option>
-                                <option value="low">Low</option>
-                                <option value="high">High</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">PLANTING DEPTH</label>
-                            <input type="text" id="cs-depth" class="form-input" placeholder='1/4"'>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">HARVEST WEEKS</label>
-                            <input type="number" id="cs-harvest-weeks" class="form-input" min="1" max="52" placeholder="8">
-                        </div>
-                        <div class="form-group full-width">
-                            <label class="form-label">SEED START INSTRUCTIONS</label>
-                            <textarea id="cs-seed-instructions" class="form-input" rows="2" placeholder="Start indoors 6 weeks before last frost..."></textarea>
-                        </div>
-                        <div class="form-group full-width">
-                            <label class="form-label">CARE NOTES</label>
-                            <textarea id="cs-care-notes" class="form-input" rows="2" placeholder="Water deeply 1-2x per week..."></textarea>
-                        </div>
-                        <div class="form-group full-width">
-                            <label class="form-label">NOTES</label>
-                            <textarea id="cs-notes" class="form-input" rows="2" placeholder="Additional growing notes..."></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <span class="custom-seed-edit-id hidden" id="cs-edit-id"></span>
-                <button class="tool-btn" id="btn-cs-cancel">CANCEL</button>
-                <button class="tool-btn accent" id="btn-cs-save">SAVE SEED</button>
-            </div>
-        </div>
+    <!-- VIEW MODE (duplicate of header for sidebar usability) -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9681;</span> VIEW MODE</div>
+      <div class="view-modes">
+        <button class="view-btn active" data-view="markers">MARKERS</button>
+        <button class="view-btn" data-view="heatmap">HEAT</button>
+        <button class="view-btn" data-view="hexbin">HEX</button>
+        <button class="view-btn" data-view="correlation">CORR</button>
+      </div>
     </div>
 
-    <!-- Garden Buddy AI Chat FAB -->
-    <button id="garden-buddy-fab" class="gb-fab" title="Garden Buddy AI Assistant">&#x1F331;</button>
+    <!-- CORRELATION CONTROLS -->
+    <div class="sb-section" id="corr-section" style="display:none">
+      <div class="sb-title"><span class="icon">&#9733;</span> CORRELATION ANALYSIS</div>
 
-    <!-- Garden Buddy Chat Panel -->
-    <div id="garden-buddy-panel" class="gb-panel hidden">
-        <div class="gb-panel-header">
-            <div class="gb-header-left">
-                <span class="gb-logo">&#x1F331;</span>
-                <span class="gb-title">GARDEN BUDDY</span>
-                <span id="gb-token-display" class="gb-token-display"></span>
-            </div>
-            <div class="gb-header-right">
-                <button id="gb-clear" class="gb-clear-btn" title="Clear conversation">&#x1F5D1;</button>
-                <button id="gb-close" class="gb-close-btn">&times;</button>
-            </div>
+      <!-- Sub-mode tabs -->
+      <div class="corr-submodes" id="corr-submodes">
+        <button class="corr-sub-btn active" data-submode="spatial">SPATIAL</button>
+        <button class="corr-sub-btn" data-submode="matrix">MATRIX</button>
+        <button class="corr-sub-btn" data-submode="temporal">TEMPORAL</button>
+        <button class="corr-sub-btn" data-submode="clusters">CLUSTERS</button>
+        <button class="corr-sub-btn" data-submode="nearest">NEAREST</button>
+      </div>
+
+      <!-- Shared hex size slider -->
+      <div class="corr-row" style="margin-bottom:8px">
+        <label style="width:auto;font-size:9px">HEX</label>
+        <input type="range" id="corr-hex-size" min="10" max="100" value="25" step="5">
+        <span id="corr-hex-label" style="font-size:10px;width:36px;text-align:right">25km</span>
+      </div>
+
+      <!-- SPATIAL sub-panel (existing 2-category) -->
+      <div id="spatial-panel" class="corr-subpanel">
+        <div class="corr-controls">
+          <div class="corr-row">
+            <label>A</label>
+            <select id="corr-a"><option value="0">UFO / UAP</option><option value="1">Bigfoot</option><option value="2">Haunted</option></select>
+          </div>
+          <div class="corr-row">
+            <label>B</label>
+            <select id="corr-b"><option value="0">UFO / UAP</option><option value="1" selected>Bigfoot</option><option value="2">Haunted</option></select>
+          </div>
+          <button class="corr-btn" id="corr-run">&#9672; RUN ANALYSIS</button>
+          <div class="corr-result" id="corr-result">
+            <div class="corr-r" id="corr-r-value">-</div>
+            <div class="corr-label">Pearson correlation (r)</div>
+            <div class="corr-detail" id="corr-detail"></div>
+          </div>
         </div>
-        <div class="gb-key-row" id="gb-key-row">
-            <input type="password" id="gb-claude-key" class="gb-key-input" placeholder="Claude API key">
-            <button id="gb-save-key" class="gb-key-btn">SAVE</button>
+      </div>
+
+      <!-- MATRIX sub-panel -->
+      <div id="matrix-panel" class="corr-subpanel" style="display:none">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">All-pairs correlation across 3 categories</div>
+        <button class="corr-btn" id="matrix-run">&#9672; COMPUTE MATRIX</button>
+        <svg id="corr-matrix-svg" width="260" height="180" style="display:none;margin-top:8px"></svg>
+        <div class="corr-detail" id="matrix-detail"></div>
+      </div>
+
+      <!-- TEMPORAL sub-panel -->
+      <div id="temporal-panel" class="corr-subpanel" style="display:none">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">Temporal co-occurrence and seasonal patterns</div>
+        <button class="corr-btn" id="temporal-run">&#9672; OPEN DASHBOARD</button>
+      </div>
+
+      <!-- CLUSTERS sub-panel -->
+      <div id="cluster-panel" class="corr-subpanel" style="display:none">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">Detect dense multi-category hotspot regions</div>
+        <div class="corr-row">
+          <label style="width:auto;font-size:9px">MIN</label>
+          <input type="range" id="cluster-threshold" min="5" max="200" value="30" step="5">
+          <span id="cluster-threshold-label" style="font-size:10px;width:36px;text-align:right">30</span>
         </div>
-        <div id="gb-messages" class="gb-messages"></div>
-        <div class="gb-input-row">
-            <textarea id="gb-input" class="gb-input" placeholder="Ask Garden Buddy..." rows="1"></textarea>
-            <button id="gb-send" class="gb-send-btn" title="Send">&#x27A4;</button>
+        <button class="corr-btn" id="cluster-run">&#9672; DETECT CLUSTERS</button>
+        <div id="cluster-list" class="cluster-list"></div>
+      </div>
+
+      <!-- NEAREST sub-panel -->
+      <div id="nearest-panel" class="corr-subpanel" style="display:none">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">Mean nearest-neighbor distance between categories (sampled, ~3K pts)</div>
+        <button class="corr-btn" id="nearest-run">&#9672; COMPUTE DISTANCES</button>
+        <div class="analysis-progress" id="nearest-progress" style="display:none">
+          <div class="progress-track"><div class="progress-fill" id="nearest-progress-fill"></div></div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:4px" id="nearest-status">Computing...</div>
         </div>
+        <div id="nearest-results" style="display:none"></div>
+        <label class="layer-row" style="margin-top:8px;display:none" id="attraction-toggle-row">
+          <input type="checkbox" id="show-attraction-zones">
+          <span class="layer-dot" style="background:var(--pink)"></span>
+          <span class="layer-name">Show attraction zones</span>
+        </label>
+      </div>
+
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script src="app.js?v=35"></script>
+    <!-- FILTERS -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9698;</span> FILTERS</div>
+      <div class="filter-row">
+        <input type="number" id="year-from" placeholder="From year" min="1800" max="2030">
+        <input type="number" id="year-to" placeholder="To year" min="1800" max="2030">
+      </div>
+      <div class="filter-row">
+        <input type="text" id="state-filter" placeholder="State (OH, CA, TX...)">
+      </div>
+      <div class="filter-row">
+        <input type="text" id="sub-filter" placeholder="Shape / class...">
+      </div>
+      <div class="filter-actions">
+        <button class="btn-sm primary" id="apply-filters">APPLY</button>
+        <button class="btn-sm" id="reset-filters">RESET</button>
+        <button class="btn-sm" id="export-csv" title="Export visible data as CSV">EXPORT CSV</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9632;</span> STATISTICS</div>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-val" id="stat-visible">-</div><div class="stat-label">VISIBLE</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-total">-</div><div class="stat-label">TOTAL</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-hotspots">-</div><div class="stat-label">HOTSPOTS</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-zoom">-</div><div class="stat-label">ZOOM</div></div>
+      </div>
+    </div>
+
+    <!-- PROXIMITY -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9737;</span> PROXIMITY RADIUS</div>
+      <div class="corr-row">
+        <input type="range" id="prox-radius" min="10" max="200" value="50" step="10" style="flex:1">
+        <span id="prox-label" style="font-size:10px;width:40px;text-align:right">50km</span>
+      </div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:4px">Click a sighting to see nearby points of other types</div>
+    </div>
+
+    <!-- KEYBOARD SHORTCUTS -->
+    <div class="sb-section">
+      <div class="sb-title"><span class="icon">&#9000;</span> SHORTCUTS</div>
+      <div style="font-size:10px;color:var(--text-dim);line-height:2">
+        <b style="color:var(--text)">1</b> UFO &nbsp;
+        <b style="color:var(--text)">2</b> Bigfoot &nbsp;
+        <b style="color:var(--text)">3</b> Haunted<br>
+        <b style="color:var(--text)">M</b> Markers &nbsp;
+        <b style="color:var(--text)">H</b> Heat &nbsp;
+        <b style="color:var(--text)">X</b> Hex &nbsp;
+        <b style="color:var(--text)">C</b> Corr<br>
+        <b style="color:var(--text)">/</b> Search &nbsp;
+        <b style="color:var(--text)">Esc</b> Reset &nbsp;
+        <b style="color:var(--text)">S</b> Sidebar
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div id="main">
+    <button id="sidebar-toggle" title="Toggle sidebar (S)">&#9776;</button>
+    <div id="map-container">
+      <div id="map"></div>
+      <!-- PER CAPITA INDICATOR -->
+      <div id="percapita-indicator" style="display:none">
+        <span>&#9878; PER CAPITA</span> &mdash; normalized by population density
+      </div>
+      <!-- TEMPORAL OVERLAY -->
+      <div class="temporal-overlay" id="temporal-overlay" style="display:none">
+        <div class="temporal-header">
+          <span class="sb-title" style="margin:0"><span class="icon">&#9202;</span> TEMPORAL CORRELATION</span>
+          <button class="temporal-close" id="temporal-close">&times;</button>
+        </div>
+        <div class="temporal-content">
+          <div class="temporal-chart-row">
+            <div class="temporal-chart-label">ROLLING CORRELATION (5-YEAR WINDOW)</div>
+            <svg id="temporal-rolling-svg" width="100%" height="130"></svg>
+          </div>
+          <div class="temporal-chart-row">
+            <div class="temporal-chart-label">SEASONAL PATTERN (MONTH-OF-YEAR)</div>
+            <svg id="temporal-seasonal-svg" width="100%" height="110"></svg>
+          </div>
+          <div class="temporal-stats" id="temporal-stats"></div>
+        </div>
+      </div>
+    </div>
+    <div id="timeline-panel">
+      <span id="timeline-label">TIMELINE</span>
+      <button id="timeline-toggle" title="Toggle timeline">&#9660;</button>
+      <svg id="timeline-svg"></svg>
+      <div class="timeline-tooltip" id="timeline-tooltip"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CDN Libraries -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="https://unpkg.com/@turf/turf@7/turf.min.js"></script>
+<script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
+<!-- App Logic -->
+<script src="strange-signals.js"></script>
 </body>
 </html>
