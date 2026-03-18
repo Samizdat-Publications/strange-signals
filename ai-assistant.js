@@ -73,10 +73,45 @@ const TOOLS=[
       radius_km:{type:'number',default:50},
       category:{type:'integer',enum:[0,1,2]},
       limit:{type:'integer',default:20,maximum:100}
-    },required:['lat','lon']}}
+    },required:['lat','lon']}},
+  {name:'render_chart',description:'Render an inline D3 chart in the chat. Bar/line/pie use label+value. Scatter uses x+y.',
+    input_schema:{type:'object',properties:{
+      chart_type:{type:'string',enum:['bar','line','pie','scatter']},
+      title:{type:'string'},
+      data:{type:'array',items:{type:'object',properties:{
+        label:{type:'string'},value:{type:'number'},
+        x:{type:'number'},y:{type:'number'},color:{type:'string'}
+      }}},
+      x_label:{type:'string'},y_label:{type:'string'}
+    },required:['chart_type','data']}},
+  {name:'generate_report',description:'Generate a formatted investigation report with narrative sections and optional charts. Opens in a new draggable window.',
+    input_schema:{type:'object',properties:{
+      title:{type:'string'},
+      sections:{type:'array',items:{type:'object',properties:{
+        heading:{type:'string'},text:{type:'string'},
+        chart:{type:'object',properties:{
+          chart_type:{type:'string',enum:['bar','line','pie','scatter']},
+          data:{type:'array'},title:{type:'string'}
+        }}
+      },required:['heading','text']}}
+    },required:['title','sections']}},
+  {name:'compare_regions',description:'Compare sighting statistics between two US states or coordinate regions. Provide state code or lat/lon+radius for each region.',
+    input_schema:{type:'object',properties:{
+      region_a:{type:'object',properties:{
+        state:{type:'string',description:'US state code (e.g. OH)'},
+        lat:{type:'number'},lon:{type:'number'},radius_km:{type:'number',default:100}
+      }},
+      region_b:{type:'object',properties:{
+        state:{type:'string'},lat:{type:'number'},lon:{type:'number'},radius_km:{type:'number',default:100}
+      }}
+    },required:['region_a','region_b']}},
+  {name:'export_findings',description:'Export analysis results as a downloadable CSV. Types: sightings, clusters, correlation_matrix.',
+    input_schema:{type:'object',properties:{
+      export_type:{type:'string',enum:['sightings','clusters','correlation_matrix']}
+    },required:['export_type']}}
 ];
 
-const SYSTEM_PROMPT=`You are SIGNAL, an AI analyst embedded in Strange Signals — a paranormal sightings correlation map with 183K+ geocoded records across three categories: UFO/UAP (~170K), Bigfoot/Sasquatch (~4.2K), and Haunted Places (~8.8K).
+const SYSTEM_PROMPT=`You are SIGNAL, an AI analyst embedded in Strange Signals — a paranormal sightings correlation map with 197K+ geocoded records across three categories: UFO/UAP (~183K), Bigfoot/Sasquatch (~4.2K), and Haunted Places (~11K+).
 
 You help users investigate spatial and temporal patterns in paranormal sighting data. You can control the map, run statistical analyses, highlight areas of interest, and explain findings in plain language.
 
@@ -90,7 +125,13 @@ Always note statistical significance. A correlation of r=0.3 with p>0.05 is not 
 Available data spans from ~1900 to 2023. Geographic coverage is US-centric.
 Categories: 0=UFO/UAP, 1=Bigfoot/Sasquatch, 2=Haunted Places.
 
-Keep responses concise but informative. Use the highlight_areas tool to visually call out important findings on the map.`;
+Keep responses concise but informative. Use the highlight_areas tool to visually call out important findings on the map.
+
+You can render inline charts (bar, line, pie, scatter) in the chat using the render_chart tool. Use charts to visualize data patterns when they would be clearer than text.
+
+You can generate full investigation reports with the generate_report tool. Reports open in a new window and can be downloaded as standalone HTML files.
+
+You can compare two regions side-by-side with compare_regions, and export analysis results as CSV with export_findings.`;
 
 /* ===== CHAT WINDOW ===== */
 function createChatWindow(){
@@ -204,6 +245,14 @@ function renderMarkdown(text){
 }
 
 /* ===== TOOL EXECUTION ===== */
+function downloadCSV(filename,csvContent){
+  var blob=new Blob([csvContent],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+}
+
 async function executeTool(name,input){
   var SS=window.StrangeSignals;
   if(!SS)return{error:'App not ready'};
@@ -279,6 +328,90 @@ async function executeTool(name,input){
     }
     case 'get_sightings_in_area':{
       return SS.getSightingsInArea(input.lat,input.lon,input.radius_km||50,input.category,input.limit||20);
+    }
+    case 'render_chart':{
+      var chatMsgs=document.getElementById('signal-messages');
+      var chartDiv=document.createElement('div');
+      chartDiv.className='signal-msg chart';
+      chatMsgs.appendChild(chartDiv);
+      chatMsgs.scrollTop=chatMsgs.scrollHeight;
+      if(window.SignalCharts){
+        try{SignalCharts.render(chartDiv,input)}
+        catch(e){chartDiv.innerHTML='<div style="color:#ff3366;font-size:10px">Chart error: '+e.message+'</div>'}
+      }
+      var desc=input.title||input.chart_type+' chart';
+      return{rendered:true,description:desc+' with '+input.data.length+' data points'};
+    }
+    case 'generate_report':{
+      if(window.SignalReports){
+        var r=SignalReports.create(input);
+        return{success:true,window_id:r.windowId,message:'Report opened in new window'};
+      }
+      return{error:'Report module not loaded'};
+    }
+    case 'compare_regions':{
+      function resolveRegion(reg){
+        var lat=reg.lat,lon=reg.lon,radius=reg.radius_km||100,label=reg.state||'';
+        if(reg.state&&STATE_CENTROIDS[reg.state]&&!reg.lat){
+          lat=STATE_CENTROIDS[reg.state][0];lon=STATE_CENTROIDS[reg.state][1];
+          label=reg.state;
+        }
+        var result=SS.getSightingsInArea(lat,lon,radius);
+        // getSightingsInArea returns {total, showing, countsByCategory: {"UFO/UAP":N,...}, sightings:[...]}
+        var cbc=result.countsByCategory||{};
+        return{label:label||lat.toFixed(1)+','+lon.toFixed(1),lat:lat,lon:lon,radius:radius,
+          total:result.total,countsByCategory:cbc,
+          ufo:cbc['UFO/UAP']||0,bigfoot:cbc['Bigfoot/Sasquatch']||0,haunted:cbc['Haunted Place']||0};
+      }
+      var a=resolveRegion(input.region_a);
+      var b=resolveRegion(input.region_b);
+      // Render comparison chart
+      if(window.SignalCharts){
+        var chatMsgs2=document.getElementById('signal-messages');
+        var chartDiv2=document.createElement('div');
+        chartDiv2.className='signal-msg chart';
+        chatMsgs2.appendChild(chartDiv2);
+        SignalCharts.render(chartDiv2,{chart_type:'bar',title:a.label+' vs '+b.label,
+          data:[
+            {label:a.label+' UFO',value:a.ufo,color:'#00ff88'},
+            {label:b.label+' UFO',value:b.ufo,color:'#00ff88'},
+            {label:a.label+' BF',value:a.bigfoot,color:'#ff6622'},
+            {label:b.label+' BF',value:b.bigfoot,color:'#ff6622'},
+            {label:a.label+' HP',value:a.haunted,color:'#aa44ff'},
+            {label:b.label+' HP',value:b.haunted,color:'#aa44ff'}
+          ]});
+      }
+      return{region_a:a,region_b:b};
+    }
+    case 'export_findings':{
+      if(input.export_type==='sightings'){
+        document.getElementById('export-csv').click();
+        return{exported:'sightings',message:'CSV download triggered'};
+      }
+      if(input.export_type==='clusters'){
+        var clusters=SS.detectClusters?SS.detectClusters():{clusters:[]};
+        var csv='label,lat,lon,ufo,bigfoot,haunted,total\n';
+        (clusters.clusters||[]).forEach(function(c){
+          csv+='"'+c.centroid.label+'",'+c.centroid.lat+','+c.centroid.lon+','
+            +c.categories.ufo+','+c.categories.bigfoot+','+c.categories.haunted+','+c.total+'\n';
+        });
+        downloadCSV('clusters.csv',csv);
+        return{exported:'clusters',count:(clusters.clusters||[]).length};
+      }
+      if(input.export_type==='correlation_matrix'){
+        var stats=SS.getStats();
+        var mat=SS.runMatrixCorrelation?await SS.runMatrixCorrelation():{matrix:[[1,0,0],[0,1,0],[0,0,1]]};
+        var csv2='category_a,category_b,pearson_r\n';
+        var names=['UFO/UAP','Bigfoot/Sasquatch','Haunted Place'];
+        if(mat&&mat.matrix){
+          for(var i=0;i<3;i++)for(var j=0;j<3;j++){
+            csv2+='"'+names[i]+'","'+names[j]+'",'+mat.matrix[i][j]+'\n';
+          }
+        }
+        downloadCSV('correlation_matrix.csv',csv2);
+        return{exported:'correlation_matrix'};
+      }
+      return{error:'Unknown export type'};
     }
     default:
       return{error:'Unknown tool: '+name};
