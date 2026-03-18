@@ -112,10 +112,12 @@ function makePopup(rec){
 }
 
 function createMarker(rec){
-  const m=L.marker([rec[F.LAT],rec[F.LON]],{icon:icons[rec[F.CAT]]});
+  const label=CAT_NAMES[rec[F.CAT]]+' sighting'+(rec[F.LOC]?' near '+rec[F.LOC]:'');
+  const m=L.marker([rec[F.LAT],rec[F.LON]],{icon:icons[rec[F.CAT]],alt:label});
   m._rec=rec;
   m.bindPopup(()=>makePopup(rec),{maxWidth:300});
   m.on('click',function(){showProxCircle(rec)});
+  m.on('add',function(){if(m._icon)m._icon.setAttribute('aria-label',label)});
   return m;
 }
 
@@ -917,8 +919,9 @@ function createCluster(catIdx){
     iconCreateFunction(cluster){
       const n=cluster.getChildCount();
       const sz=n<100?28:n<1000?36:44;
+      const label=n+' '+CAT_NAMES[catIdx]+' sightings';
       return L.divIcon({className:'',iconSize:[sz,sz],
-        html:`<div style="background:rgba(${c},0.65);color:#fff;font-weight:700;font-size:${sz>36?12:10}px;
+        html:`<div aria-label="${label}" style="background:rgba(${c},0.65);color:#fff;font-weight:700;font-size:${sz>36?12:10}px;
           width:${sz}px;height:${sz}px;border-radius:50%;display:flex;align-items:center;justify-content:center;
           border:2px solid rgba(${c},0.4);box-shadow:0 0 8px rgba(${c},0.3);font-family:var(--font-mono)">
           ${n>=1000?Math.round(n/1000)+'k':n}</div>`});
@@ -1989,5 +1992,26 @@ window.StrangeSignals={
   // Constants
   F,CAT_NAMES,CAT_COLORS
 };
+
+/* A11y: ensure all Leaflet marker icons have aria-label */
+new MutationObserver(function(mutations){
+  mutations.forEach(function(m){
+    m.addedNodes.forEach(function(node){
+      if(node.nodeType!==1)return;
+      var icons=node.classList&&node.classList.contains('leaflet-marker-icon')?[node]:
+        node.querySelectorAll?Array.from(node.querySelectorAll('.leaflet-marker-icon')):[];
+      icons.forEach(function(el){
+        if(el.getAttribute('role')==='button'&&!el.getAttribute('aria-label')){
+          var inner=el.querySelector('[aria-label]');
+          if(inner)el.setAttribute('aria-label',inner.getAttribute('aria-label'));
+          else{
+            var text=el.textContent.trim();
+            el.setAttribute('aria-label',text?text+' sightings cluster':'Map marker');
+          }
+        }
+      });
+    });
+  });
+}).observe(document.getElementById('map'),{childList:true,subtree:true});
 
 })();

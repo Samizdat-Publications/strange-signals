@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STRANGE SIGNALS // Paranormal Sightings Correlation Map</title>
+<meta name="description" content="Interactive map visualizing 258K+ paranormal sightings — UFO/UAP, Bigfoot, and Haunted Places — with spatial correlation analysis, temporal trends, and AI-powered insights.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -139,7 +140,7 @@
       <!-- Shared hex size slider -->
       <div class="corr-row" style="margin-bottom:8px">
         <label style="width:auto;font-size:9px">HEX</label>
-        <input type="range" id="corr-hex-size" min="10" max="100" value="25" step="5">
+        <input type="range" id="corr-hex-size" min="10" max="100" value="25" step="5" aria-label="Hex grid size in kilometers">
         <span id="corr-hex-label" style="font-size:10px;width:36px;text-align:right">25km</span>
       </div>
 
@@ -148,11 +149,11 @@
         <div class="corr-controls">
           <div class="corr-row">
             <label>A</label>
-            <select id="corr-a"><option value="0">UFO / UAP</option><option value="1">Bigfoot</option><option value="2">Haunted</option></select>
+            <select id="corr-a" aria-label="Correlation category A"><option value="0">UFO / UAP</option><option value="1">Bigfoot</option><option value="2">Haunted</option></select>
           </div>
           <div class="corr-row">
             <label>B</label>
-            <select id="corr-b"><option value="0">UFO / UAP</option><option value="1" selected>Bigfoot</option><option value="2">Haunted</option></select>
+            <select id="corr-b" aria-label="Correlation category B"><option value="0">UFO / UAP</option><option value="1" selected>Bigfoot</option><option value="2">Haunted</option></select>
           </div>
           <button class="corr-btn" id="corr-run">&#9672; RUN ANALYSIS</button>
           <div class="analysis-progress" id="hex-progress" style="display:none">
@@ -186,7 +187,7 @@
         <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">Detect dense multi-category hotspot regions</div>
         <div class="corr-row">
           <label style="width:auto;font-size:9px">MIN</label>
-          <input type="range" id="cluster-threshold" min="5" max="200" value="30" step="5">
+          <input type="range" id="cluster-threshold" min="5" max="200" value="30" step="5" aria-label="Minimum cluster threshold">
           <span id="cluster-threshold-label" style="font-size:10px;width:36px;text-align:right">30</span>
         </div>
         <button class="corr-btn" id="cluster-run">&#9672; DETECT CLUSTERS</button>
@@ -215,14 +216,14 @@
     <div class="sb-section">
       <div class="sb-title"><span class="icon">&#9698;</span> FILTERS</div>
       <div class="filter-row">
-        <input type="number" id="year-from" placeholder="From year" min="1800" max="2030">
-        <input type="number" id="year-to" placeholder="To year" min="1800" max="2030">
+        <input type="number" id="year-from" placeholder="From year" min="1800" max="2030" aria-label="Filter from year">
+        <input type="number" id="year-to" placeholder="To year" min="1800" max="2030" aria-label="Filter to year">
       </div>
       <div class="filter-row">
-        <input type="text" id="state-filter" placeholder="State (OH, CA, TX...)">
+        <input type="text" id="state-filter" placeholder="State (OH, CA, TX...)" aria-label="Filter by state">
       </div>
       <div class="filter-row">
-        <input type="text" id="sub-filter" placeholder="Shape / class...">
+        <input type="text" id="sub-filter" placeholder="Shape / class..." aria-label="Filter by shape or class">
       </div>
       <div class="filter-actions">
         <button class="btn-sm primary" id="apply-filters">APPLY</button>
@@ -246,7 +247,8 @@
     <div class="sb-section">
       <div class="sb-title"><span class="icon">&#9737;</span> PROXIMITY RADIUS</div>
       <div class="corr-row">
-        <input type="range" id="prox-radius" min="10" max="200" value="50" step="10" style="flex:1">
+        <label for="prox-radius" class="sr-only">Proximity radius</label>
+        <input type="range" id="prox-radius" min="10" max="200" value="50" step="10" aria-label="Proximity radius in kilometers" style="flex:1">
         <span id="prox-label" style="font-size:10px;width:40px;text-align:right">50km</span>
       </div>
       <div style="font-size:10px;color:var(--text-dim);margin-top:4px">Click a sighting to see nearby points of other types</div>

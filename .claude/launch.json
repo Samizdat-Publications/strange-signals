@@ -4,8 +4,8 @@
     {
       "name": "strange-signals",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8001", "-d", "C:/Users/stewa/OneDrive/Documents/Claude/UAP Correlation Project/.claude/worktrees/crazy-lehmann"],
-      "port": 8001
+      "runtimeArgs": ["-m", "http.server", "8002", "-d", "C:/Users/stewa/OneDrive/Documents/Claude/UAP Correlation Project/.claude/worktrees/wizardly-gates"],
+      "port": 8002
     }
   ]
 }

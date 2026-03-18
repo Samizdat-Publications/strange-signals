@@ -382,8 +382,12 @@ function updateToolIndicator(div){
   div.querySelector('.signal-tool-icon').innerHTML='&#10003;';
 }
 
+function escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function renderMarkdown(text){
-  return text
+  return escHtml(text)
     .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
     .replace(/\*(.+?)\*/g,'<em>$1</em>')
     .replace(/`(.+?)`/g,'<code>$1</code>')
@@ -714,8 +718,8 @@ function showError(errInfo){
   if(typing)typing.remove();
   var div=document.createElement('div');
   div.className='signal-error';
-  div.innerHTML=errInfo.msg+' <span class="signal-error-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'block\'?\'none\':\'block\'">Show details</span>'
-    +'<div class="signal-error-details">'+errInfo.details+'</div>';
+  div.innerHTML=escHtml(errInfo.msg)+' <span class="signal-error-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'block\'?\'none\':\'block\'">Show details</span>'
+    +'<div class="signal-error-details">'+escHtml(errInfo.details||'')+'</div>';
   document.getElementById('signal-messages').appendChild(div);
   document.getElementById('signal-messages').scrollTop=document.getElementById('signal-messages').scrollHeight;
   isStreaming=false;
