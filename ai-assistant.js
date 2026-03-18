@@ -111,7 +111,7 @@ const TOOLS=[
     },required:['export_type']}}
 ];
 
-const SYSTEM_PROMPT=`You are SIGNAL, an AI analyst embedded in Strange Signals — a paranormal sightings correlation map with 197K+ geocoded records across three categories: UFO/UAP (~183K), Bigfoot/Sasquatch (~4.2K), and Haunted Places (~11K+).
+const SYSTEM_PROMPT=`You are SIGNAL, an AI analyst embedded in Strange Signals — a paranormal sightings correlation map with 242K+ geocoded records across three categories: UFO/UAP (~232K), Bigfoot/Sasquatch (~4.2K), and Haunted Places (~9.7K).
 
 You help users investigate spatial and temporal patterns in paranormal sighting data. You can control the map, run statistical analyses, highlight areas of interest, and explain findings in plain language.
 

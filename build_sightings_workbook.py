@@ -108,6 +108,8 @@ def load_ufo_corgis():
         return pd.DataFrame()
     print("  [6/7] UFO CORGIS (80K nested columns)...")
     df = pd.read_csv(path, low_memory=False)
+    # Strip whitespace from column names (CORGIS has trailing spaces on some)
+    df.columns = df.columns.str.strip()
     df = df.rename(columns={
         "Location.Coordinates.Latitude": "latitude",
         "Location.Coordinates.Longitude": "longitude",
@@ -118,10 +120,12 @@ def load_ufo_corgis():
         "Data.Description excerpt": "description",
     })
     # Reconstruct date from year/month/day columns
+    # Note: CORGIS uses "Date.Sighted.Day" (singular) not "Dates.Sighted.Day"
+    day_col = "Date.Sighted.Day" if "Date.Sighted.Day" in df.columns else "Dates.Sighted.Day"
     df["date"] = pd.to_datetime({
         "year": df["Dates.Sighted.Year"],
         "month": df["Dates.Sighted.Month"].clip(1, 12),
-        "day": df["Dates.Sighted.Day"].clip(1, 31)
+        "day": df[day_col].clip(1, 31)
     }, errors="coerce").dt.strftime("%Y-%m-%d")
     before = len(df)
     df = clean_coords(df)
