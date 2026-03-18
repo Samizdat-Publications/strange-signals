@@ -29,29 +29,37 @@ mkdir -p data/raw
 echo "--- Downloading datasets ---"
 echo ""
 
-echo "[1/6] UFO Sightings - NUFORC (TidyTuesday 2023, ~97K records)..."
+echo "[1/8] UFO Sightings - NUFORC (TidyTuesday 2023, ~97K records)..."
 curl -L -o data/raw/ufo_sightings_tidytuesday.csv \
     "https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2023/2023-06-20/ufo_sightings.csv"
 
-echo "[2/6] UFO Places - geocoding table for NUFORC sightings..."
+echo "[2/8] UFO Places - geocoding table for NUFORC sightings..."
 curl -L -o data/raw/ufo_places_tidytuesday.csv \
     "https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2023/2023-06-20/places.csv"
 
-echo "[3/6] UFO Sightings - planetsig geocoded+time-standardized (~80K)..."
+echo "[3/8] UFO Sightings - planetsig geocoded+time-standardized (~80K)..."
 curl -L -o data/raw/ufo_planetsig.csv \
     "https://raw.githubusercontent.com/planetsig/ufo-reports/master/csv-data/ufo-scrubbed-geocoded-time-standardized.csv"
 
-echo "[4/6] Bigfoot Sightings - BFRO detailed (TidyTuesday, ~5K with weather)..."
+echo "[4/8] Bigfoot Sightings - BFRO detailed (TidyTuesday, ~5K with weather)..."
 curl -L -o data/raw/bigfoot_tidytuesday.csv \
     "https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2022/2022-09-13/bigfoot.csv"
 
-echo "[5/6] Bigfoot Sightings - BFRO locations (~4.2K lightweight)..."
+echo "[5/8] Bigfoot Sightings - BFRO locations (~4.2K lightweight)..."
 curl -L -o data/raw/bigfoot_bfro.csv \
     "https://raw.githubusercontent.com/Christopher1994-1/bigfoot-dataset-website/master/bfro_locations.csv"
 
-echo "[6/6] Haunted Places - Shadowlands (TidyTuesday, ~11K US)..."
+echo "[6/8] Haunted Places - Shadowlands (TidyTuesday, ~11K US)..."
 curl -L -o data/raw/haunted_places.csv \
     "https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2023/2023-10-10/haunted_places.csv"
+
+echo "[7/8] UFO Sightings - CORGIS (80K with nested columns)..."
+curl -L -o data/raw/ufo_corgis.csv \
+    "https://corgis-edu.github.io/corgis/datasets/csv/ufo_sightings/ufo_sightings.csv" || echo "  (optional source unavailable, continuing)"
+
+echo "[8/8] Haunted Places - Kaggle mirror (expanded ~10K)..."
+curl -L -o data/raw/haunted_kaggle.csv \
+    "https://raw.githubusercontent.com/sujaykapadnis/haunted-places/main/haunted_places.csv" || echo "  (optional source unavailable, continuing)"
 
 echo ""
 echo "--- Building Excel workbook ---"
@@ -83,7 +91,9 @@ echo "  UFO_Geocoded_80K    - NUFORC geocoded time-standardized (~80K)"
 echo "  Bigfoot_Detailed    - BFRO with weather/moon data (~4K)"
 echo "  Bigfoot_Locations   - BFRO report locations (~4.2K)"
 echo "  Haunted_Places      - Shadowlands haunted places (~9.7K)"
-echo "  Combined_All        - Union of all datasets, normalized for mapping (~184K)"
+echo "  UFO_CORGIS_80K      - CORGIS UFO sightings with nested columns (~80K)"
+echo "  Haunted_Kaggle      - Kaggle Haunted Places expanded (~10K)"
+echo "  Combined_All        - Union of all datasets, normalized for mapping (~197K)"
 echo ""
 echo "Open sightings_map.html in a browser to view the interactive map."
 echo "(Must serve via HTTP: python3 -m http.server 8000)"
