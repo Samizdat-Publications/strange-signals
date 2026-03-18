@@ -25,6 +25,11 @@
   width:8px;height:8px;border-right:2px solid var(--border-bright);
   border-bottom:2px solid var(--border-bright)}
 
+.ss-window-resize-bl{position:absolute;bottom:0;left:0;width:16px;height:16px;cursor:nesw-resize}
+.ss-window-resize-bl::after{content:'';position:absolute;bottom:3px;left:3px;
+  width:8px;height:8px;border-left:2px solid var(--border-bright);
+  border-bottom:2px solid var(--border-bright)}
+
 /* Minimized dock */
 .ss-dock{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
   display:flex;gap:6px;z-index:1199}

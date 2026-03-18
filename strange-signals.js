@@ -80,7 +80,16 @@ function makePopup(rec){
   h+=`<div class="popup-loc">${esc(rec[F.LOC])||'Unknown location'}</div>`;
   if(rec[F.DATE])h+=`<div class="popup-date">${rec[F.DATE]}</div>`;
   if(rec[F.SUB])h+=`<div class="popup-sub">${esc(rec[F.SUB])}</div>`;
-  if(rec[F.DESC])h+=`<div class="popup-desc">${esc(rec[F.DESC])}</div>`;
+  if(rec[F.DESC]){
+    const desc=esc(rec[F.DESC]);
+    const TRUNC=200;
+    if(desc.length>TRUNC){
+      const id='desc-'+Math.random().toString(36).slice(2,8);
+      h+=`<div class="popup-desc"><span id="${id}-short">${desc.slice(0,TRUNC)}... <a href="#" class="popup-expand" onclick="document.getElementById('${id}-short').style.display='none';document.getElementById('${id}-full').style.display='inline';return false">Show more</a></span><span id="${id}-full" style="display:none">${desc} <a href="#" class="popup-expand" onclick="document.getElementById('${id}-full').style.display='none';document.getElementById('${id}-short').style.display='inline';return false">Show less</a></span></div>`;
+    } else {
+      h+=`<div class="popup-desc">${desc}</div>`;
+    }
+  }
   h+=`<div class="popup-coords">${rec[F.LAT].toFixed(4)}, ${rec[F.LON].toFixed(4)}</div>`;
   // proximity analysis
   const radius=parseInt(document.getElementById('prox-radius').value);

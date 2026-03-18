@@ -44,7 +44,7 @@ def main():
         date = str(r.get("date", ""))[:10] if pd.notna(r.get("date")) else ""
         sub = str(r.get("subcategory", "")) if pd.notna(r.get("subcategory")) else ""
 
-        desc = str(r.get("description", ""))[:60] if pd.notna(r.get("description")) else ""
+        desc = str(r.get("description", ""))[:500] if pd.notna(r.get("description")) else ""
 
         records.append([
             round(float(r["latitude"]), 4),

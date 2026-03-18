@@ -70,10 +70,14 @@ class SSWindow{
     }
     this.el.appendChild(this.bodyEl);
 
-    // Resize handle
+    // Resize handles (bottom-right and bottom-left)
     const resizeHandle=document.createElement('div');
     resizeHandle.className='ss-window-resize';
     this.el.appendChild(resizeHandle);
+
+    const resizeHandleBL=document.createElement('div');
+    resizeHandleBL.className='ss-window-resize-bl';
+    this.el.appendChild(resizeHandleBL);
 
     // Set size
     const dw=opts.defaultSize||{width:500,height:400};
@@ -98,8 +102,9 @@ class SSWindow{
 
     // Drag
     this._initDrag(titlebar);
-    // Resize
+    // Resize (bottom-right and bottom-left)
     this._initResize(resizeHandle,opts.minSize||{width:300,height:200});
+    this._initResizeBL(resizeHandleBL,opts.minSize||{width:300,height:200});
 
     windows[this.id]=this;
   }
@@ -178,6 +183,61 @@ class SSWindow{
       document.addEventListener('mousemove',onMove);
       document.addEventListener('mouseup',onUp);
     });
+  }
+
+  _initResizeBL(handle,minSize){
+    let startX,startY,startW,startH,startLeft;
+    const onMove=(e)=>{
+      const cx=e.clientX||e.touches[0].clientX;
+      const cy=e.clientY||e.touches[0].clientY;
+      const dx=cx-startX;
+      const dy=cy-startY;
+      const newW=Math.max(minSize.width,startW-dx);
+      const newH=Math.max(minSize.height,startH+dy);
+      // Adjust left position to keep right edge fixed
+      const actualDx=startW-newW;
+      this.el.style.width=newW+'px';
+      this.el.style.height=newH+'px';
+      this.el.style.left=(startLeft+actualDx)+'px';
+      this.el.style.right='auto';
+      if(this.onResize)this.onResize();
+    };
+    const onUp=()=>{
+      document.removeEventListener('mousemove',onMove);
+      document.removeEventListener('mouseup',onUp);
+      document.removeEventListener('touchmove',onMove);
+      document.removeEventListener('touchend',onUp);
+      this._savePosition();
+    };
+    handle.addEventListener('mousedown',(e)=>{
+      e.preventDefault();e.stopPropagation();
+      startX=e.clientX;startY=e.clientY;
+      startW=this.el.offsetWidth;startH=this.el.offsetHeight;
+      // Ensure we have left positioning
+      const rect=this.el.getBoundingClientRect();
+      const parentRect=this.el.parentElement.getBoundingClientRect();
+      startLeft=rect.left-parentRect.left;
+      this.el.style.left=startLeft+'px';
+      this.el.style.right='auto';
+      this.el.style.bottom='auto';
+      this.el.style.top=(rect.top-parentRect.top)+'px';
+      document.addEventListener('mousemove',onMove);
+      document.addEventListener('mouseup',onUp);
+    });
+    handle.addEventListener('touchstart',(e)=>{
+      e.stopPropagation();
+      startX=e.touches[0].clientX;startY=e.touches[0].clientY;
+      startW=this.el.offsetWidth;startH=this.el.offsetHeight;
+      const rect=this.el.getBoundingClientRect();
+      const parentRect=this.el.parentElement.getBoundingClientRect();
+      startLeft=rect.left-parentRect.left;
+      this.el.style.left=startLeft+'px';
+      this.el.style.right='auto';
+      this.el.style.bottom='auto';
+      this.el.style.top=(rect.top-parentRect.top)+'px';
+      document.addEventListener('touchmove',onMove,{passive:false});
+      document.addEventListener('touchend',onUp);
+    },{passive:false});
   }
 
   _savePosition(){

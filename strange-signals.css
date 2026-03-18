@@ -197,7 +197,9 @@ select option{background:var(--surface-solid);color:var(--text)}
 .popup-loc{font-size:12px;font-weight:700;color:var(--text-bright)}
 .popup-date{font-size:10px;color:var(--text-dim);margin-top:2px}
 .popup-sub{font-size:10px;color:var(--text-dim)}
-.popup-desc{font-size:10px;color:var(--text);margin-top:4px;line-height:1.4;font-style:italic}
+.popup-desc{font-size:10px;color:var(--text);margin-top:4px;line-height:1.4;font-style:italic;max-height:300px;overflow-y:auto}
+.popup-expand{color:var(--cyan);text-decoration:none;font-style:normal;font-size:9px;cursor:pointer}
+.popup-expand:hover{text-decoration:underline}
 .popup-coords{font-size:9px;color:var(--text-dim);margin-top:4px}
 .popup-prox{margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:10px}
 .popup-prox-title{font-family:var(--font-display);font-size:8px;letter-spacing:1.5px;color:var(--cyan);margin-bottom:3px}

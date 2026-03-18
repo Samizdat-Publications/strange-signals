@@ -218,6 +218,51 @@ For region comparisons, you can use these named hotspot regions: Pacific Northwe
 
 You can place persistent annotation pins on the map using add_annotation. Use annotations to mark specific locations for the user — hotspots you've identified, anomaly sites, areas of interest, etc. Choose appropriate icons: 'ufo' for UFO-related, 'skull' for haunted, 'eye' for observation points, 'alert' for anomalies, 'star' for notable finds, 'pin' for general. Annotations persist across page reloads and can be exported/imported by the user. Use list_annotations to see existing pins, remove_annotation to delete specific ones, and clear_annotations to wipe the slate. When the user asks you to "pin" or "mark" a location, use add_annotation. When presenting analysis results with specific locations (like anomalies or clusters), proactively place annotation pins so the user has a persistent record.`;
 
+/* ===== CHART MODAL ===== */
+let chartModal=null;
+function ensureChartModal(){
+  if(chartModal)return chartModal;
+  chartModal=document.createElement('div');
+  chartModal.className='signal-chart-modal';
+  var inner=document.createElement('div');
+  inner.className='signal-chart-modal-inner';
+  var closeBtn=document.createElement('button');
+  closeBtn.className='signal-chart-modal-close';
+  closeBtn.textContent='\u00D7';
+  closeBtn.addEventListener('click',closeChartModal);
+  var body=document.createElement('div');
+  body.className='signal-chart-modal-body';
+  inner.appendChild(closeBtn);
+  inner.appendChild(body);
+  chartModal.appendChild(inner);
+  document.body.appendChild(chartModal);
+  chartModal.addEventListener('click',function(e){
+    if(e.target===chartModal)closeChartModal();
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&chartModal.classList.contains('open'))closeChartModal();
+  });
+  return chartModal;
+}
+function openChartModal(chartOpts){
+  var modal=ensureChartModal();
+  var body=modal.querySelector('.signal-chart-modal-body');
+  body.textContent='';
+  if(window.SignalCharts){
+    try{SignalCharts.render(body,chartOpts)}
+    catch(e){
+      var errEl=document.createElement('div');
+      errEl.style.color='#ff3366';
+      errEl.textContent='Chart error: '+e.message;
+      body.appendChild(errEl);
+    }
+  }
+  modal.classList.add('open');
+}
+function closeChartModal(){
+  if(chartModal)chartModal.classList.remove('open');
+}
+
 /* ===== CHAT WINDOW ===== */
 function createChatWindow(){
   if(chatWindow)return chatWindow;
@@ -440,10 +485,19 @@ async function executeTool(name,input){
       chatMsgs.scrollTop=chatMsgs.scrollHeight;
       if(window.SignalCharts){
         try{SignalCharts.render(chartDiv,input)}
-        catch(e){chartDiv.innerHTML='<div style="color:#ff3366;font-size:10px">Chart error: '+e.message+'</div>'}
+        catch(e){
+          var errMsg=document.createElement('div');
+          errMsg.style.cssText='color:#ff3366;font-size:10px';
+          errMsg.textContent='Chart error: '+e.message;
+          chartDiv.appendChild(errMsg);
+        }
       }
+      // Click to expand in modal
+      var chartOpts=JSON.parse(JSON.stringify(input));
+      chartDiv.addEventListener('click',function(){openChartModal(chartOpts)});
       var desc=input.title||input.chart_type+' chart';
-      return{rendered:true,description:desc+' with '+input.data.length+' data points'};
+      var pointCount=input.data&&input.data.length?input.data.length:0;
+      return{rendered:true,description:desc+' with '+pointCount+' data points'};
     }
     case 'generate_report':{
       if(window.SignalReports){
@@ -487,7 +541,7 @@ async function executeTool(name,input){
         var chartDiv2=document.createElement('div');
         chartDiv2.className='signal-msg chart';
         chatMsgs2.appendChild(chartDiv2);
-        SignalCharts.render(chartDiv2,{chart_type:'bar',title:a.label+' vs '+b.label,
+        var compareOpts={chart_type:'bar',title:a.label+' vs '+b.label,
           data:[
             {label:a.label+' UFO',value:a.ufo,color:'#00ff88'},
             {label:b.label+' UFO',value:b.ufo,color:'#00ff88'},
@@ -495,7 +549,10 @@ async function executeTool(name,input){
             {label:b.label+' BF',value:b.bigfoot,color:'#ff6622'},
             {label:a.label+' HP',value:a.haunted,color:'#aa44ff'},
             {label:b.label+' HP',value:b.haunted,color:'#aa44ff'}
-          ]});
+          ]};
+        SignalCharts.render(chartDiv2,compareOpts);
+        chatMsgs2.scrollTop=chatMsgs2.scrollHeight;
+        chartDiv2.addEventListener('click',function(){openChartModal(compareOpts)});
       }
       return{region_a:a,region_b:b};
     }
@@ -641,10 +698,14 @@ async function executeTool(name,input){
 }
 
 /* ===== API CALL WITH STREAMING ===== */
+var MAX_RETRIES=3;
+var BASE_DELAY_MS=2000;
+
 function formatApiError(err,response){
   if(!response){return{msg:'Unable to reach the API. Check your internet connection.',details:err.message}}
   if(response.status===401){return{msg:'API key not set or invalid. Click the gear icon to configure.',details:'HTTP 401'}}
-  if(response.status===429){return{msg:'Rate limited. Please wait a moment and try again.',details:'HTTP 429'}}
+  if(response.status===429){return{msg:'Rate limited by the API. Try again in a minute or switch to a faster model (Haiku).',details:'HTTP 429 \u2014 Too many requests. The Anthropic API limits request frequency per key.'}}
+  if(response.status===529){return{msg:'Anthropic API is temporarily overloaded. Please try again shortly.',details:'HTTP 529'}}
   return{msg:'Something went wrong.',details:err.message||'HTTP '+response.status}
 }
 
@@ -718,16 +779,34 @@ async function runConversationLoop(){
       stream:true
     };
 
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key':apiKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify(body)
-    });
+    var resp=null;
+    for(var attempt=0;attempt<=MAX_RETRIES;attempt++){
+      resp=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key':apiKey,
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true'
+        },
+        body:JSON.stringify(body)
+      });
+      if(resp.status!==429&&resp.status!==529)break;
+      if(attempt<MAX_RETRIES){
+        var retryAfter=resp.headers.get('retry-after');
+        var delayMs=retryAfter?parseInt(retryAfter,10)*1000:BASE_DELAY_MS*Math.pow(2,attempt);
+        var delaySec=Math.round(delayMs/1000);
+        var typing=document.getElementById('signal-typing');
+        if(typing){
+          var dots=typing.querySelector('.signal-typing-dots');
+          // Clear and rebuild: keep dots animation, update text
+          typing.textContent='';
+          if(dots)typing.appendChild(dots);
+          typing.appendChild(document.createTextNode(' Rate limited \u2014 retrying in '+delaySec+'s (attempt '+(attempt+2)+'/'+(MAX_RETRIES+1)+')...'));
+        }
+        await new Promise(function(r){setTimeout(r,delayMs)});
+      }
+    }
 
     if(!resp.ok){
       var errText=await resp.text();
