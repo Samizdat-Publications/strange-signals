@@ -61,9 +61,17 @@ echo "[8/9] Haunted Places - Kaggle mirror (expanded ~10K)..."
 curl -L -o data/raw/haunted_kaggle.csv \
     "https://raw.githubusercontent.com/sujaykapadnis/haunted-places/main/haunted_places.csv" || echo "  (optional source unavailable, continuing)"
 
-echo "[9/9] UFO Sightings - wlouie1 geocoded (~80K, includes ~3.6K Canadian)..."
+echo "[9/10] UFO Sightings - wlouie1 geocoded (~80K, includes ~3.6K Canadian)..."
 curl -L -o data/raw/ufo_wlouie1.csv \
     "https://raw.githubusercontent.com/wlouie1/UFO-Sightings/master/resources/data/ufo_sightings_final.csv" || echo "  (optional source unavailable, continuing)"
+
+echo "[10/10] Larry Hatch *U* Database - RR0 digitization (~18K historical, 593 BC–2003)..."
+mkdir -p data/raw/tier1
+if [ ! -d "data/raw/tier1/uDb" ]; then
+    git clone --depth 1 https://github.com/RR0/uDb.git data/raw/tier1/uDb || echo "  (optional source unavailable, continuing)"
+else
+    echo "  (already downloaded)"
+fi
 
 echo ""
 echo "--- Building Excel workbook ---"
