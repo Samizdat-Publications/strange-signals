@@ -1799,7 +1799,7 @@ window.StrangeSignals={
     const cats=category!=null?[category]:[0,1,2];
     const stateUpper=state?state.toUpperCase():null;
     for(const cat of cats){
-      for(const r of filteredCat[cat]){
+      for(const r of catArrays[cat]){
         if(!r[F.DATE])continue;
         const dateStr=r[F.DATE];
         const year=parseInt(dateStr.substring(0,4));
@@ -1823,15 +1823,37 @@ window.StrangeSignals={
       filters:{category:category!=null?CAT_NAMES[category]:'all',state:state||'all',yearFrom,yearTo,granularity}};
   },
 
-  // Hex data access (for anomaly detection)
+  // Hex data access (for anomaly detection) — uses full continental US bounds
   getHexCounts:(cellSide)=>{
     cellSide=cellSide||25;
-    const data=getOrBuildHexData(cellSide);
-    return{hexes:data.grid.features.map((f,i)=>({
+    // Build hex grid over full continental US (not just viewport)
+    const bbox=[-125,24,-66,50];
+    const grid=turf.hexGrid(bbox,cellSide,{units:'kilometers'});
+    const hexes=grid.features;
+    const counts=hexes.map(()=>[0,0,0]);
+    const cellDeg=cellSide/111;
+    const idx=buildSpatialIndex(cellDeg);
+    hexes.forEach((hex,hi)=>{
+      const bb=turf.bbox(hex);
+      const minR=Math.floor(bb[1]/cellDeg),maxR=Math.floor(bb[3]/cellDeg);
+      const minC=Math.floor(bb[0]/cellDeg),maxC=Math.floor(bb[2]/cellDeg);
+      for(let r=minR;r<=maxR;r++){
+        for(let c=minC;c<=maxC;c++){
+          const pts=idx[r+','+c];
+          if(!pts)continue;
+          pts.forEach(pt=>{
+            if(turf.booleanPointInPolygon(turf.point([pt[F.LON],pt[F.LAT]]),hex)){
+              counts[hi][pt[F.CAT]]++;
+            }
+          });
+        }
+      }
+    });
+    return{hexes:hexes.map((f,i)=>({
       lat:turf.centroid(f).geometry.coordinates[1],
       lon:turf.centroid(f).geometry.coordinates[0],
-      counts:data.counts[i],
-      total:data.counts[i][0]+data.counts[i][1]+data.counts[i][2]
+      counts:counts[i],
+      total:counts[i][0]+counts[i][1]+counts[i][2]
     })),cellSide};
   },
   getPopDensityGrid:()=>popDensityGrid,
