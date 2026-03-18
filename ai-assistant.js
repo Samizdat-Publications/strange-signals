@@ -170,7 +170,22 @@ const TOOLS=[
       category:{type:'integer',enum:[0,1,2],description:'Category filter (optional)'},
       top_n:{type:'integer',default:10,description:'Number of top anomalies to return'},
       threshold_sigma:{type:'number',default:2.0,description:'Standard deviation threshold'}
-    },required:['anomaly_type']}}
+    },required:['anomaly_type']}},
+  {name:'add_annotation',description:'Place an annotation pin on the map with a note. Use this to mark locations of interest for the user — hotspots, anomalies, points of discussion, etc.',
+    input_schema:{type:'object',properties:{
+      lat:{type:'number',description:'Latitude'},
+      lon:{type:'number',description:'Longitude'},
+      note:{type:'string',description:'Text note for the annotation'},
+      icon:{type:'string',enum:['pin','eye','alert','star','skull','ufo'],default:'pin',description:'Icon type: pin (general), eye (observation), alert (anomaly), star (notable), skull (haunted), ufo (UFO-related)'}
+    },required:['lat','lon','note']}},
+  {name:'remove_annotation',description:'Remove an annotation by its ID.',
+    input_schema:{type:'object',properties:{
+      id:{type:'integer',description:'Annotation ID to remove'}
+    },required:['id']}},
+  {name:'list_annotations',description:'List all current annotations on the map.',
+    input_schema:{type:'object',properties:{}}},
+  {name:'clear_annotations',description:'Remove all annotations from the map.',
+    input_schema:{type:'object',properties:{}}}
 ];
 
 const SYSTEM_PROMPT=`You are SIGNAL, an AI analyst embedded in Strange Signals — a paranormal sightings correlation map with 258K+ geocoded records across three categories: UFO/UAP (~244K, including ~3.6K Canadian), Bigfoot/Sasquatch (~4.2K), and Haunted Places (~9.7K).
@@ -199,7 +214,9 @@ You can query temporal trends with query_temporal and then render the results as
 
 You can detect anomalies with find_anomalies. Use 'density' to find unusual spatial clusters, 'temporal_spike' to find abnormal yearly increases, and 'population_adjusted' to find areas with high sightings relative to population. After finding anomalies, use highlight_areas to mark them on the map and render_chart to visualize them.
 
-For region comparisons, you can use these named hotspot regions: Pacific Northwest, Appalachia, Skinwalker Ranch, Area 51, Pine Barrens, Hudson Valley, Gulf Breeze, Bridgewater Triangle, San Luis Valley, Marfa, Great Lakes, Ozarks, Point Pleasant, Sedona, Roswell. You can also use US state codes or lat/lon coordinates.`;
+For region comparisons, you can use these named hotspot regions: Pacific Northwest, Appalachia, Skinwalker Ranch, Area 51, Pine Barrens, Hudson Valley, Gulf Breeze, Bridgewater Triangle, San Luis Valley, Marfa, Great Lakes, Ozarks, Point Pleasant, Sedona, Roswell. You can also use US state codes or lat/lon coordinates.
+
+You can place persistent annotation pins on the map using add_annotation. Use annotations to mark specific locations for the user — hotspots you've identified, anomaly sites, areas of interest, etc. Choose appropriate icons: 'ufo' for UFO-related, 'skull' for haunted, 'eye' for observation points, 'alert' for anomalies, 'star' for notable finds, 'pin' for general. Annotations persist across page reloads and can be exported/imported by the user. Use list_annotations to see existing pins, remove_annotation to delete specific ones, and clear_annotations to wipe the slate. When the user asks you to "pin" or "mark" a location, use add_annotation. When presenting analysis results with specific locations (like anomalies or clusters), proactively place annotation pins so the user has a persistent record.`;
 
 /* ===== CHAT WINDOW ===== */
 function createChatWindow(){
@@ -595,6 +612,28 @@ async function executeTool(name,input){
       }
 
       return{error:'Unknown anomaly_type: '+input.anomaly_type};
+    }
+    case 'add_annotation':{
+      if(!window.Annotations)return{error:'Annotations module not loaded'};
+      var anno=window.Annotations.add(input.lat,input.lon,input.note,input.icon||'pin');
+      return{success:true,annotation:anno,message:'Annotation placed at '+input.lat.toFixed(2)+', '+input.lon.toFixed(2)};
+    }
+    case 'remove_annotation':{
+      if(!window.Annotations)return{error:'Annotations module not loaded'};
+      window.Annotations.remove(input.id);
+      return{success:true,removed:input.id};
+    }
+    case 'list_annotations':{
+      if(!window.Annotations)return{error:'Annotations module not loaded'};
+      var all=window.Annotations.getAll();
+      return{count:all.length,annotations:all.map(function(a){
+        return{id:a.id,lat:a.lat.toFixed(3),lon:a.lon.toFixed(3),note:a.note,icon:a.icon,created:a.created};
+      })};
+    }
+    case 'clear_annotations':{
+      if(!window.Annotations)return{error:'Annotations module not loaded'};
+      window.Annotations.clearAll();
+      return{success:true,message:'All annotations cleared'};
     }
     default:
       return{error:'Unknown tool: '+name};

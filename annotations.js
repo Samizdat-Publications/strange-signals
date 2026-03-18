@@ -187,10 +187,31 @@ function removeAnnotation(id){
   map.closePopup();
 }
 
+// Programmatic add (used by SIGNAL AI)
+function addAnnotation(lat,lon,note,icon){
+  var anno={id:nextId++,lat:lat,lon:lon,
+    icon:icon||'pin',note:note||'',color:'#ff3366',created:new Date().toISOString()};
+  annotations.push(anno);
+  if(annoLayer)addMarker(anno);
+  saveAnnotations();
+  return anno;
+}
+
+// Programmatic clear all
+function clearAll(){
+  annotations=[];
+  if(annoLayer)annoLayer.clearLayers();
+  saveAnnotations();
+  updateCount();
+}
+
 window.Annotations={
+  add:addAnnotation,
   remove:removeAnnotation,
+  clearAll:clearAll,
   getAll:function(){return annotations.slice()},
-  getCount:function(){return annotations.length}
+  getCount:function(){return annotations.length},
+  getIcons:function(){return Object.keys(ICONS)}
 };
 
 if(document.readyState==='loading'){
