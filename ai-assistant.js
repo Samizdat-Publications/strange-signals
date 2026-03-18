@@ -23,6 +23,25 @@ const STATE_CENTROIDS={
   DC:[38.9,-77.0]
 };
 
+/* ===== NAMED PARANORMAL HOTSPOT REGIONS ===== */
+const NAMED_REGIONS={
+  'pacific northwest':{lat:46.5,lon:-122.5,radius_km:300,label:'Pacific Northwest'},
+  'appalachia':{lat:37.5,lon:-80.5,radius_km:250,label:'Appalachia'},
+  'skinwalker ranch':{lat:40.2,lon:-109.9,radius_km:100,label:'Skinwalker Ranch Area'},
+  'area 51':{lat:37.2,lon:-115.8,radius_km:150,label:'Area 51 / Nevada Test Range'},
+  'pine barrens':{lat:39.8,lon:-74.5,radius_km:80,label:'Pine Barrens (NJ)'},
+  'hudson valley':{lat:41.5,lon:-74.0,radius_km:100,label:'Hudson Valley (NY)'},
+  'gulf breeze':{lat:30.4,lon:-87.0,radius_km:80,label:'Gulf Breeze (FL)'},
+  'bridgewater triangle':{lat:41.9,lon:-71.0,radius_km:50,label:'Bridgewater Triangle (MA)'},
+  'san luis valley':{lat:37.5,lon:-106.0,radius_km:100,label:'San Luis Valley (CO)'},
+  'marfa':{lat:30.3,lon:-104.0,radius_km:80,label:'Marfa Lights Area (TX)'},
+  'great lakes':{lat:43.5,lon:-82.5,radius_km:300,label:'Great Lakes Corridor'},
+  'ozarks':{lat:37.0,lon:-92.0,radius_km:150,label:'Missouri Ozarks'},
+  'point pleasant':{lat:38.8,lon:-82.1,radius_km:80,label:'Point Pleasant / Mothman (WV)'},
+  'sedona':{lat:34.9,lon:-111.8,radius_km:80,label:'Sedona Vortex (AZ)'},
+  'roswell':{lat:33.4,lon:-104.5,radius_km:100,label:'Roswell (NM)'}
+};
+
 /* ===== TOOL DEFINITIONS ===== */
 const TOOLS=[
   {name:'zoom_to_region',description:'Pan and zoom the map to a US state, city, or coordinates.',
@@ -95,14 +114,15 @@ const TOOLS=[
         }}
       },required:['heading','text']}}
     },required:['title','sections']}},
-  {name:'compare_regions',description:'Compare sighting statistics between two US states or coordinate regions. Provide state code or lat/lon+radius for each region.',
+  {name:'compare_regions',description:'Compare sighting statistics between two regions. Use named hotspot (e.g. "Pacific Northwest", "Area 51"), US state code, or lat/lon+radius.',
     input_schema:{type:'object',properties:{
       region_a:{type:'object',properties:{
+        name:{type:'string',description:'Named region (e.g. "Pacific Northwest", "Area 51", "Skinwalker Ranch", "Roswell")'},
         state:{type:'string',description:'US state code (e.g. OH)'},
         lat:{type:'number'},lon:{type:'number'},radius_km:{type:'number',default:100}
       }},
       region_b:{type:'object',properties:{
-        state:{type:'string'},lat:{type:'number'},lon:{type:'number'},radius_km:{type:'number',default:100}
+        name:{type:'string'},state:{type:'string'},lat:{type:'number'},lon:{type:'number'},radius_km:{type:'number',default:100}
       }}
     },required:['region_a','region_b']}},
   {name:'export_findings',description:'Export analysis results as a downloadable CSV. Types: sightings, clusters, correlation_matrix.',
@@ -150,7 +170,9 @@ You can compare two regions side-by-side with compare_regions, and export analys
 
 You can query temporal trends with query_temporal and then render the results as a chart. For time-based questions, call query_temporal first to get the data, then use render_chart (line chart for trends, bar chart for comparisons) to visualize it.
 
-You can detect anomalies with find_anomalies. Use 'density' to find unusual spatial clusters, 'temporal_spike' to find abnormal yearly increases, and 'population_adjusted' to find areas with high sightings relative to population. After finding anomalies, use highlight_areas to mark them on the map and render_chart to visualize them.`;
+You can detect anomalies with find_anomalies. Use 'density' to find unusual spatial clusters, 'temporal_spike' to find abnormal yearly increases, and 'population_adjusted' to find areas with high sightings relative to population. After finding anomalies, use highlight_areas to mark them on the map and render_chart to visualize them.
+
+For region comparisons, you can use these named hotspot regions: Pacific Northwest, Appalachia, Skinwalker Ranch, Area 51, Pine Barrens, Hudson Valley, Gulf Breeze, Bridgewater Triangle, San Luis Valley, Marfa, Great Lakes, Ozarks, Point Pleasant, Sedona, Roswell. You can also use US state codes or lat/lon coordinates.`;
 
 /* ===== CHAT WINDOW ===== */
 function createChatWindow(){
@@ -370,10 +392,23 @@ async function executeTool(name,input){
     }
     case 'compare_regions':{
       function resolveRegion(reg){
-        var lat=reg.lat,lon=reg.lon,radius=reg.radius_km||100,label=reg.state||'';
-        if(reg.state&&STATE_CENTROIDS[reg.state]&&!reg.lat){
-          lat=STATE_CENTROIDS[reg.state][0];lon=STATE_CENTROIDS[reg.state][1];
-          label=reg.state;
+        var lat=reg.lat,lon=reg.lon,radius=reg.radius_km||100,label=reg.name||reg.state||'';
+        // Check named regions first
+        if(reg.name){
+          var key=reg.name.toLowerCase();
+          var named=NAMED_REGIONS[key];
+          if(!named){
+            // Try partial match
+            var keys=Object.keys(NAMED_REGIONS);
+            for(var k=0;k<keys.length;k++){
+              if(keys[k].indexOf(key)>=0||key.indexOf(keys[k])>=0){named=NAMED_REGIONS[keys[k]];break}
+            }
+          }
+          if(named){lat=named.lat;lon=named.lon;radius=named.radius_km;label=named.label}
+        }
+        if((!lat||!lon)&&reg.state){
+          var code=reg.state.toUpperCase();
+          if(STATE_CENTROIDS[code]){lat=STATE_CENTROIDS[code][0];lon=STATE_CENTROIDS[code][1];label=label||code;}
         }
         var result=SS.getSightingsInArea(lat,lon,radius);
         // getSightingsInArea returns {total, showing, countsByCategory: {"UFO/UAP":N,...}, sightings:[...]}
