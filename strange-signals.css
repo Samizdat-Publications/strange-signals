@@ -29,7 +29,7 @@ input,select,button,textarea{font-family:inherit;font-size:inherit}
   position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:1100;
   background:var(--surface);border-bottom:1px solid var(--border);
   display:flex;align-items:center;padding:0 16px;gap:16px;
-  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
 }
 .logo{display:flex;align-items:center;gap:10px}
 .logo-icon{width:32px;height:32px;position:relative}
@@ -250,6 +250,9 @@ select option{background:var(--surface-solid);color:var(--text)}
   border:1px solid rgba(68,136,255,0.3)!important;border-radius:4px!important;
   font-family:var(--font-mono)!important;font-size:11px!important;
   box-shadow:0 2px 12px rgba(0,0,0,.5)!important;padding:4px 8px!important}
+
+/* ========== DISABLED STATES ========== */
+button:disabled,input:disabled,select:disabled{opacity:0.5;cursor:not-allowed}
 
 /* ========== MOBILE ========== */
 @media(max-width:768px){

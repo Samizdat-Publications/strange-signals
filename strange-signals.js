@@ -6,6 +6,8 @@ const CAT_COLORS = ['#00ff88','#ff6622','#aa44ff'];
 const CAT_NAMES = ['UFO/UAP','Bigfoot/Sasquatch','Haunted Place'];
 const CAT_RGB = ['0,255,136','255,102,34','170,68,255'];
 const F={LAT:0,LON:1,CAT:2,DATE:3,LOC:4,SUB:5,DESC:6};
+function autoHexSize(zoom){return zoom<=4?80:zoom<=5?50:zoom<=6?30:zoom<=7?20:15}
+function autoHeatRadius(zoom){return zoom<=4?14:zoom<=5?17:zoom<=6?21:zoom<=7?25:22}
 
 /* ========== STATE ========== */
 let allData=[], catArrays=[[],[],[]];
@@ -155,11 +157,14 @@ function removeMilitaryBases(){
 function invalidateAnalysisCache(){
   cachedHexGrid=null;cachedHexCounts=null;cachedHexSize=null;cachedBoundsKey=null;cachedSpatialIndex=null;
   monthlyBins=null;
+  corrMatrix=null;
+  detectedClusters=[];
+  nnResults=null;
 }
 
 function pearsonR(xArr,yArr){
   const n=xArr.length;
-  if(n<3)return 0;
+  if(n<5)return NaN;
   const mx=d3.mean(xArr),my=d3.mean(yArr);
   let num=0,dx2=0,dy2=0;
   for(let i=0;i<n;i++){
@@ -167,7 +172,35 @@ function pearsonR(xArr,yArr){
     num+=dx*dy;dx2+=dx*dx;dy2+=dy*dy;
   }
   const den=Math.sqrt(dx2*dy2);
-  return den>0?num/den:0;
+  return den>0?num/den:NaN;
+}
+
+function permutationPValue(xArr,yArr,observedR,nPerms){
+  nPerms=nPerms||999;
+  if(xArr.length<5||isNaN(observedR))return 1;
+  let extremeCount=0;
+  const yCopy=yArr.slice();
+  for(let p=0;p<nPerms;p++){
+    for(let i=yCopy.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [yCopy[i],yCopy[j]]=[yCopy[j],yCopy[i]];
+    }
+    const permR=pearsonR(xArr,yCopy);
+    if(!isNaN(permR)&&Math.abs(permR)>=Math.abs(observedR))extremeCount++;
+  }
+  return(extremeCount+1)/(nPerms+1);
+}
+
+function significanceStars(p){
+  if(p<0.001)return'***';
+  if(p<0.01)return'**';
+  if(p<0.05)return'*';
+  return'';
+}
+
+function formatPValue(p){
+  const stars=significanceStars(p);
+  return'p'+(p<0.001?'<0.001':'='+p.toFixed(3))+' '+(stars||'n.s.');
 }
 
 function buildSpatialIndex(cellDeg){
@@ -220,6 +253,7 @@ function getOrBuildHexData(cellSide){
 }
 
 function interpretR(r){
+  if(isNaN(r))return'Insufficient data for correlation';
   if(r>0.7)return'Strong positive — cluster together';
   if(r>0.4)return'Moderate positive — notable co-occurrence';
   if(r>0.2)return'Weak positive — some overlap';
@@ -251,8 +285,9 @@ function runMatrixCorrelation(){
   const{grid,counts}=getOrBuildHexData(cellSide);
   const hexes=grid.features;
 
-  // Compute 3x3 Pearson r matrix
+  // Compute 3x3 Pearson r matrix with p-values
   const rMatrix=[[1,0,0],[0,1,0],[0,0,1]];
+  const pMatrix=[[0,1,1],[1,0,1],[1,1,0]];
   const pairs=[[0,1],[0,2],[1,2]];
   pairs.forEach(([a,b])=>{
     const xArr=[],yArr=[];
@@ -260,7 +295,10 @@ function runMatrixCorrelation(){
       if(c[a]>0||c[b]>0){xArr.push(c[a]);yArr.push(c[b])}
     });
     const r=pearsonR(xArr,yArr);
-    rMatrix[a][b]=r;rMatrix[b][a]=r;
+    const rVal=isNaN(r)?0:r;
+    rMatrix[a][b]=rVal;rMatrix[b][a]=rVal;
+    const p=isNaN(r)?1:permutationPValue(xArr,yArr,r,999);
+    pMatrix[a][b]=p;pMatrix[b][a]=p;
   });
   corrMatrix=rMatrix;
 
@@ -310,18 +348,20 @@ function runMatrixCorrelation(){
   document.getElementById('stat-hotspots').textContent=hotspotCount;
 
   // Render matrix SVG
-  renderMatrixSVG(rMatrix);
+  renderMatrixSVG(rMatrix,pMatrix);
 
   // Update detail
   const strongest=pairs.reduce((best,p)=>Math.abs(rMatrix[p[0]][p[1]])>Math.abs(rMatrix[best[0]][best[1]])?p:best,pairs[0]);
   const sr=rMatrix[strongest[0]][strongest[1]];
+  const sp=pMatrix[strongest[0]][strongest[1]];
   document.getElementById('matrix-detail').innerHTML=
     `<div>Strongest: <span style="color:${CAT_COLORS[strongest[0]]}">${CAT_NAMES[strongest[0]].split('/')[0]}</span> &harr; `+
     `<span style="color:${CAT_COLORS[strongest[1]]}">${CAT_NAMES[strongest[1]].split('/')[0]}</span> (r=${sr.toFixed(3)})</div>`+
+    `<div style="margin-top:3px;font-size:10px;color:${sp<0.05?'var(--green)':'var(--text-dim)'}">${formatPValue(sp)}</div>`+
     `<div style="margin-top:3px">${hexes.length} hex cells &middot; ${hotspotCount} triple hotspots</div>`;
 }
 
-function renderMatrixSVG(rMatrix){
+function renderMatrixSVG(rMatrix,pMatrix){
   const svg=d3.select('#corr-matrix-svg');
   svg.selectAll('*').remove();
   svg.style('display','block');
@@ -351,17 +391,26 @@ function renderMatrixSVG(rMatrix){
       g.append('rect').attr('x',c*cellW).attr('y',r*cellH).attr('width',cellW-2).attr('height',cellH-2)
         .attr('rx',3).attr('fill',r===c?'rgba(255,255,255,0.03)':diverge(v))
         .attr('stroke','var(--border)').attr('stroke-width',0.5);
-      g.append('text').attr('x',c*cellW+cellW/2-1).attr('y',r*cellH+cellH/2+4)
+      g.append('text').attr('x',c*cellW+cellW/2-1).attr('y',r*cellH+cellH/2-1)
         .attr('text-anchor','middle').attr('font-size',r===c?10:13).attr('font-weight',r===c?400:700)
         .attr('fill',r===c?'var(--text-dim)':'var(--text-bright)')
         .text(r===c?'1.0':v.toFixed(3));
+      // Show significance stars below r value
+      if(r!==c&&pMatrix){
+        const sig=significanceStars(pMatrix[r][c]);
+        if(sig){
+          g.append('text').attr('x',c*cellW+cellW/2-1).attr('y',r*cellH+cellH/2+12)
+            .attr('text-anchor','middle').attr('font-size',8)
+            .attr('fill','var(--green)').text(sig);
+        }
+      }
     }
   }
 }
 
 /* ========== PHASE 2: CLUSTER DETECTION ========== */
 function buildHexAdjacency(hexes,cellSide){
-  const threshold=cellSide*2.05; // hex center-to-center ≈ cellSide*sqrt(3) for flat-top hexes
+  const threshold=cellSide*Math.sqrt(3)*1.05; // hex center-to-center = cellSide*sqrt(3), +5% tolerance
   const centroids=hexes.map(f=>turf.centroid(f).geometry.coordinates);
   const step=threshold/111;
   const idx={};
@@ -540,7 +589,8 @@ function rollingCorrelation(bins,catA,catB,windowMonths){
     const wKeys=keys.slice(i-windowMonths,i);
     const xArr=wKeys.map(k=>bins[k][catA]);
     const yArr=wKeys.map(k=>bins[k][catB]);
-    results.push({month:keys[i],r:pearsonR(xArr,yArr)});
+    const r=pearsonR(xArr,yArr);
+    results.push({month:keys[i],r:isNaN(r)?0:r});
   }
   return results;
 }
@@ -865,6 +915,8 @@ function clearAllLayers(){
 
 function renderCurrentView(){
   clearAllLayers();
+  document.getElementById('temporal-overlay').style.display='none';
+  temporalOverlayVisible=false;
   if(currentView==='markers')renderMarkers();
   else if(currentView==='heatmap')renderHeatmap();
   else if(currentView==='hexbin')renderHexbin();
@@ -888,7 +940,7 @@ function renderHeatmap(){
   const catRGB=[[0,255,136],[255,102,34],[170,68,255]]; // green, orange, purple
   const zoom=map.getZoom();
   // Tighter radii for sharper hotspots (was 18 at zoom 4)
-  const dynRadius=zoom<=4?14:zoom<=5?17:zoom<=6?21:zoom<=7?25:22;
+  const dynRadius=autoHeatRadius(zoom);
   const usePerCapita=perCapitaMode&&popDensityGrid;
   for(let i=0;i<3;i++){
     if(!filteredCat[i].length)continue;
@@ -935,7 +987,7 @@ function renderHexbin(){
   const bbox=[bounds.getWest(),bounds.getSouth(),bounds.getEast(),bounds.getNorth()];
   // Auto-scale hex size based on zoom: bigger hexes when zoomed out
   const zoom=map.getZoom();
-  const autoSize=zoom<=4?80:zoom<=5?50:zoom<=6?30:zoom<=7?20:15;
+  const autoSize=autoHexSize(zoom);
   const cellSide=Math.max(autoSize,parseFloat(document.getElementById('corr-hex-size').value));
   const grid=turf.hexGrid(bbox,cellSide,{units:'kilometers'});
 
@@ -991,40 +1043,13 @@ function renderCorrelation(){
 function runCorrelation(catA,catB){
   if(corrLayer){map.removeLayer(corrLayer);corrLayer=null}
 
-  const bounds=map.getBounds();
-  const bbox=[bounds.getWest(),bounds.getSouth(),bounds.getEast(),bounds.getNorth()];
-  const zoom=map.getZoom();
-  const autoMin=zoom<=4?80:zoom<=5?50:zoom<=6?30:zoom<=7?20:15;
-  const cellSide=Math.max(autoMin,parseFloat(document.getElementById('corr-hex-size').value));
-  const grid=turf.hexGrid(bbox,cellSide,{units:'kilometers'});
-
-  // Build point collections per category
-  const ptsA=filteredCat[catA].map(r=>turf.point([r[F.LON],r[F.LAT]]));
-  const ptsB=filteredCat[catB].map(r=>turf.point([r[F.LON],r[F.LAT]]));
-  const fcA=turf.featureCollection(ptsA);
-  const fcB=turf.featureCollection(ptsB);
-
-  // Count per hex
-  const collA=turf.collect(grid,fcA,'__dummy','ptsA');
-  // We need a property on the points for collect to work
-  // Actually collect counts by collecting values. Let's use within manually
+  const cellSide=parseFloat(document.getElementById('corr-hex-size').value);
+  const{grid,counts}=getOrBuildHexData(cellSide);
   const hexFeatures=grid.features;
-  const countsA=new Float64Array(hexFeatures.length);
-  const countsB=new Float64Array(hexFeatures.length);
 
-  // Spatial index: assign points to hex cells
-  // For performance, use point-in-polygon checks
-  // Build a simple grid lookup
-  ptsA.forEach(pt=>{
-    for(let i=0;i<hexFeatures.length;i++){
-      if(turf.booleanPointInPolygon(pt,hexFeatures[i])){countsA[i]++;break}
-    }
-  });
-  ptsB.forEach(pt=>{
-    for(let i=0;i<hexFeatures.length;i++){
-      if(turf.booleanPointInPolygon(pt,hexFeatures[i])){countsB[i]++;break}
-    }
-  });
+  // Extract per-category counts from shared spatial-indexed hex data
+  const countsA=counts.map(c=>c[catA]);
+  const countsB=counts.map(c=>c[catB]);
 
   // Pearson correlation on cells with at least one sighting
   const pairs=[];
@@ -1046,18 +1071,23 @@ function runCorrelation(catA,catB){
     }
   }
 
-  // Compute Pearson r using shared helper
-  const r=pearsonR(pairs.map(p=>p[0]),pairs.map(p=>p[1]));
+  // Compute Pearson r and p-value using permutation test
+  const xArr=pairs.map(p=>p[0]),yArr=pairs.map(p=>p[1]);
+  const r=pearsonR(xArr,yArr);
+  const pVal=isNaN(r)?1:permutationPValue(xArr,yArr,r,999);
 
   // Display result
   const resultEl=document.getElementById('corr-result');
   resultEl.classList.add('visible');
   const rEl=document.getElementById('corr-r-value');
-  rEl.textContent=r.toFixed(3);
-  rEl.style.color=r>0.3?'var(--green)':r<-0.1?'var(--pink)':'var(--cyan)';
+  const rDisplay=isNaN(r)?'N/A':r.toFixed(3);
+  rEl.textContent=rDisplay;
+  rEl.style.color=isNaN(r)?'var(--text-dim)':r>0.3?'var(--green)':r<-0.1?'var(--pink)':'var(--cyan)';
 
   document.getElementById('corr-detail').innerHTML=
-    `<div>${interpretR(r)}</div><div style="margin-top:4px">${pairs.length} hex cells analyzed &middot; ${hotspotCount} hotspots</div>`;
+    `<div>${interpretR(r)}</div>`+
+    `<div style="margin-top:3px;font-size:10px;color:${pVal<0.05?'var(--green)':'var(--text-dim)'}">${formatPValue(pVal)}</div>`+
+    `<div style="margin-top:4px">${pairs.length} hex cells analyzed &middot; ${hotspotCount} hotspots</div>`;
   document.getElementById('stat-hotspots').textContent=hotspotCount;
 
   // Color scale: diverging red-blue through neutral
@@ -1206,6 +1236,11 @@ function saveState(){
   if(yt)params.set('yt',yt);
   const sf=document.getElementById('state-filter').value;
   if(sf)params.set('sf',sf);
+  const sub=document.getElementById('sub-filter').value;
+  if(sub)params.set('sub',sub);
+  if(currentView==='correlation')params.set('csm',corrSubMode);
+  if(perCapitaMode)params.set('pc','1');
+  if(showMilitaryBases)params.set('mil','1');
   history.replaceState(null,'','#'+params.toString());
 }
 
@@ -1224,6 +1259,10 @@ function loadState(){
     if(params.has('yf'))document.getElementById('year-from').value=params.get('yf');
     if(params.has('yt'))document.getElementById('year-to').value=params.get('yt');
     if(params.has('sf'))document.getElementById('state-filter').value=params.get('sf');
+    if(params.has('sub'))document.getElementById('sub-filter').value=params.get('sub');
+    if(params.has('csm'))corrSubMode=params.get('csm');
+    if(params.get('pc')==='1'){perCapitaMode=true;const el=document.getElementById('percapita-toggle');if(el)el.checked=true}
+    if(params.get('mil')==='1'){showMilitaryBases=true;const el=document.getElementById('military-toggle');if(el)el.checked=true}
   }catch(e){console.warn('Failed to load state from URL',e)}
 }
 
@@ -1316,8 +1355,13 @@ document.getElementById('temporal-close').addEventListener('click',()=>{
 });
 
 // Nearest-neighbor button
-document.getElementById('nearest-run').addEventListener('click',()=>{
-  computeNNAnalysis();
+document.getElementById('nearest-run').addEventListener('click',async ()=>{
+  try{await computeNNAnalysis()}
+  catch(e){
+    console.error('NN analysis failed:',e);
+    document.getElementById('nearest-results').innerHTML='<div style="color:var(--pink)">Analysis failed. Try adjusting filters.</div>';
+    document.getElementById('nearest-results').style.display='block';
+  }
 });
 
 // Attraction zones toggle
@@ -1374,7 +1418,9 @@ document.getElementById('search-box').addEventListener('keydown',e=>{
 
 // Sidebar toggle
 document.getElementById('sidebar-toggle').addEventListener('click',()=>{
-  document.getElementById('sidebar').classList.toggle('collapsed');
+  const sidebar=document.getElementById('sidebar');
+  sidebar.classList.toggle('collapsed');
+  document.getElementById('sidebar-toggle').setAttribute('aria-expanded',!sidebar.classList.contains('collapsed'));
 });
 
 // Timeline toggle
@@ -1445,6 +1491,21 @@ async function init(){
   }
 
   allData=json.data;
+  if(!Array.isArray(allData)||!allData.length){
+    setProgress(0,'Invalid or empty data');
+    return;
+  }
+  // Filter out records with invalid coordinates or category
+  allData=allData.filter(r=>
+    Array.isArray(r)&&r.length>=7&&
+    typeof r[F.LAT]==='number'&&!isNaN(r[F.LAT])&&
+    typeof r[F.LON]==='number'&&!isNaN(r[F.LON])&&
+    r[F.CAT]>=0&&r[F.CAT]<3
+  );
+  if(!allData.length){
+    setProgress(0,'No valid records found in data');
+    return;
+  }
   setProgress(40,`Processing ${allData.length.toLocaleString()} records...`);
 
   // Sort into categories
@@ -1455,8 +1516,7 @@ async function init(){
       const end=Math.min(idx+batch,allData.length);
       for(;idx<end;idx++){
         const r=allData[idx];
-        const cat=r[F.CAT];
-        if(cat>=0&&cat<3)catArrays[cat].push(r);
+        catArrays[r[F.CAT]].push(r);
       }
       if(idx<allData.length){
         setProgress(40+Math.round(idx/allData.length*30),
