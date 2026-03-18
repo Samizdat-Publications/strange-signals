@@ -814,6 +814,10 @@ async function computeNNAnalysis(){
 
   for(let a=0;a<3;a++){
     results[a]={};
+    if(!filteredCat[a].length){
+      for(let b=0;b<3;b++) if(a!==b){results[a][b]=null;step++}
+      continue;
+    }
     const sampledA=sampleArray(filteredCat[a],sampleSize);
     for(let b=0;b<3;b++){
       if(a===b)continue;
@@ -828,8 +832,8 @@ async function computeNNAnalysis(){
       const distances=sampledA.map(r=>nearestNeighborDist(r[F.LAT],r[F.LON],gridB,filteredCat[b],cellDeg));
 
       results[a][b]={
-        meanDist:d3.mean(distances),medianDist:d3.median(distances),
-        stdDev:d3.deviation(distances)||0,sampleN:sampledA.length
+        meanDist:d3.mean(distances)??null,medianDist:d3.median(distances)??null,
+        stdDev:d3.deviation(distances)??0,sampleN:sampledA.length
       };
       allDistances[a+'_'+b]={pts:sampledA,dists:distances};
       step++;
@@ -856,7 +860,7 @@ function renderNNResults(results){
     for(let b=0;b<3;b++){
       if(a===b){html+='<td style="color:var(--text-dim)">--</td>';continue}
       const r=results[a]?.[b];
-      if(!r){html+='<td>N/A</td>';continue}
+      if(!r||r.meanDist===null){html+='<td>N/A</td>';continue}
       const color=r.meanDist<50?'var(--green)':r.meanDist<100?'var(--cyan)':'var(--text)';
       html+=`<td><div class="nn-dist" style="color:${color}">${r.meanDist.toFixed(1)}km</div>`+
         `<div class="nn-stddev">&plusmn;${r.stdDev.toFixed(1)}</div></td>`;
