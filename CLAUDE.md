@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**STRANGE SIGNALS** — An interactive paranormal sightings correlation map visualizing 184K+ geocoded records across three categories: UFO/UAP, Bigfoot/Sasquatch, and Haunted Places. Features five analysis modes plus an advanced correlation suite.
+**STRANGE SIGNALS** — An interactive paranormal sightings correlation map visualizing 258K+ geocoded records across three categories: UFO/UAP, Bigfoot/Sasquatch, and Haunted Places. Features five analysis modes plus an advanced correlation suite with SIGNAL AI assistant.
 
 ## How to Run
 

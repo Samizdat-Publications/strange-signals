@@ -147,6 +147,25 @@ def load_haunted_kaggle():
     return df
 
 
+def load_ufo_wlouie1():
+    """wlouie1 NUFORC geocoded (~80K, includes ~3.6K Canadian sightings)."""
+    path = os.path.join(RAW, "ufo_wlouie1.csv")
+    if not os.path.exists(path):
+        print("  [8/8] UFO wlouie1 - file not found, skipping")
+        return None
+    print("  [8/8] UFO Sightings wlouie1 (NUFORC geocoded, ~80K)...")
+    df = pd.read_csv(path, low_memory=False)
+    # Columns: datetime, city, state_province, ufo_shape, duration_described, description, latitude, longitude
+    df = df.rename(columns={
+        "state_province": "state",
+        "ufo_shape": "shape",
+    })
+    before = len(df)
+    df = clean_coords(df)
+    print(f"         {len(df):,} / {before:,} with valid coordinates")
+    return df
+
+
 def truncate(val, maxlen=500):
     if pd.isna(val):
         return ""
@@ -154,8 +173,17 @@ def truncate(val, maxlen=500):
     return s[:maxlen] + "..." if len(s) > maxlen else s
 
 
+def clean_for_excel(df):
+    """Remove illegal characters that openpyxl cannot handle."""
+    import re
+    ILLEGAL_RE = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f]')
+    for col in df.select_dtypes(include=['object']).columns:
+        df[col] = df[col].apply(lambda x: ILLEGAL_RE.sub('', str(x)) if pd.notna(x) else x)
+    return df
+
+
 def build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
-                   ufo_corgis=None, haunted_kaggle=None):
+                   ufo_corgis=None, haunted_kaggle=None, ufo_wlouie1=None):
     """Build a single normalized dataset for mapping overlays."""
     print("\n  Building Combined_All...")
     frames = []
@@ -274,6 +302,27 @@ def build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
             "source": "Kaggle Haunted Places",
         }))
 
+    # UFO wlouie1 (includes Canadian sightings)
+    if ufo_wlouie1 is not None and len(ufo_wlouie1) > 0:
+        df = ufo_wlouie1.copy()
+        # Map Canadian province codes to country
+        canadian_provinces = {'ab','bc','mb','nb','nf','ns','nt','on','pe','pq','qc','sa','sk','yk','yt'}
+        states = df.get("state", pd.Series(dtype=str)).fillna("").str.strip().str.lower()
+        country = states.apply(lambda s: "CA" if s in canadian_provinces else "US")
+        frames.append(pd.DataFrame({
+            "category": "UFO/UAP",
+            "subcategory": df.get("shape", ""),
+            "date": df["datetime"].apply(lambda x: str(x)[:10] if pd.notna(x) else ""),
+            "time": df["datetime"].apply(lambda x: str(x)[11:16] if pd.notna(x) and len(str(x)) > 11 else ""),
+            "latitude": df["latitude"],
+            "longitude": df["longitude"],
+            "city": df.get("city", ""),
+            "state": df.get("state", ""),
+            "country": country,
+            "description": df.get("description", "").apply(lambda x: truncate(x)),
+            "source": "NUFORC (wlouie1 geocoded)",
+        }))
+
     combined = pd.concat(frames, ignore_index=True)
     print(f"         {len(combined):,} total records")
 
@@ -335,9 +384,11 @@ def main():
     haunted = load_haunted_places()
     ufo_corgis = load_ufo_corgis()
     haunted_kaggle = load_haunted_kaggle()
+    ufo_wlouie1 = load_ufo_wlouie1()
 
     combined = build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
-                              ufo_corgis=ufo_corgis, haunted_kaggle=haunted_kaggle)
+                              ufo_corgis=ufo_corgis, haunted_kaggle=haunted_kaggle,
+                              ufo_wlouie1=ufo_wlouie1)
 
     datasets = {
         "UFO_NUFORC_97K": ufo_nuforc,
@@ -351,6 +402,12 @@ def main():
         datasets["UFO_CORGIS_80K"] = ufo_corgis
     if haunted_kaggle is not None and len(haunted_kaggle) > 0:
         datasets["Haunted_Kaggle"] = haunted_kaggle
+    if ufo_wlouie1 is not None and len(ufo_wlouie1) > 0:
+        # Truncate descriptions for Excel (wlouie1 has very long descriptions)
+        wl = ufo_wlouie1.copy()
+        if "description" in wl.columns:
+            wl["description"] = wl["description"].apply(lambda x: truncate(x, 2000))
+        datasets["UFO_Wlouie1_80K"] = wl
 
     summary = build_summary(datasets)
     datasets["Summary"] = summary
@@ -380,7 +437,7 @@ def main():
                 continue
             safe = name[:31]
             print(f"  Writing '{safe}' ({len(df):,} rows)...")
-            df.to_excel(writer, sheet_name=safe, index=False)
+            clean_for_excel(df).to_excel(writer, sheet_name=safe, index=False)
 
     size_mb = os.path.getsize(output_path) / (1024 * 1024)
     print(f"\nDone! Output: {output_path}")
