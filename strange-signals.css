@@ -256,3 +256,8 @@ button:disabled,input:disabled,select:disabled{opacity:0.5;cursor:not-allowed}
   .header-nav{display:none}
   #search-box{width:120px}
 }
+
+/* ========== OVERLAY MARKERS ========== */
+.overlay-marker{text-align:center;line-height:12px;background:transparent!important;border:none!important}
+.parks-marker{color:#22cc66;font-size:14px;text-shadow:0 0 6px #22cc66,0 0 2px #000}
+.historic-marker{color:#ffaa22;font-size:12px;text-shadow:0 0 6px #ffaa22,0 0 2px #000}

@@ -37,6 +37,12 @@ let perCapitaMode=false;
 let militaryData=null; // {fields, data}
 let militaryLayer=null;
 let showMilitaryBases=false;
+let parksData=null;
+let parksLayer=null;
+let showParks=false;
+let historicData=null;
+let historicLayer=null;
+let showHistoric=false;
 
 /* ========== MAP INIT ========== */
 const map=L.map('map',{center:[39.5,-98.35],zoom:4,preferCanvas:true,maxZoom:18,zoomControl:false});
@@ -1463,6 +1469,64 @@ if(milToggleEl){
     showMilitaryBases=e.target.checked;
     if(showMilitaryBases)renderMilitaryBases();
     else removeMilitaryBases();
+  });
+}
+
+// National Parks overlay
+const parksToggleEl=document.getElementById('parks-toggle');
+if(parksToggleEl){
+  parksToggleEl.addEventListener('change',async function(){
+    showParks=this.checked;
+    if(showParks&&!parksData){
+      try{
+        const resp=await fetch('data/national_parks.json');
+        parksData=await resp.json();
+        document.getElementById('count-parks').textContent=parksData.data.length;
+      }catch(e){console.warn('Parks data not found');this.checked=false;showParks=false;return}
+    }
+    if(showParks&&parksData){
+      if(!parksLayer){
+        parksLayer=L.layerGroup();
+        parksData.data.forEach(p=>{
+          const icon=L.divIcon({className:'overlay-marker parks-marker',html:'&#9830;',iconSize:[12,12]});
+          const marker=L.marker([p[0],p[1]],{icon});
+          marker.bindPopup('<b style="color:#22cc66">&#9830; '+p[2]+'</b><br>'+p[3]+'<br>'+p[4]+' km&sup2;');
+          parksLayer.addLayer(marker);
+        });
+      }
+      parksLayer.addTo(map);
+    } else if(parksLayer){
+      map.removeLayer(parksLayer);
+    }
+  });
+}
+
+// Historic Sites overlay
+const histToggleEl=document.getElementById('historic-toggle');
+if(histToggleEl){
+  histToggleEl.addEventListener('change',async function(){
+    showHistoric=this.checked;
+    if(showHistoric&&!historicData){
+      try{
+        const resp=await fetch('data/historic_sites.json');
+        historicData=await resp.json();
+        document.getElementById('count-historic').textContent=historicData.data.length;
+      }catch(e){console.warn('Historic data not found');this.checked=false;showHistoric=false;return}
+    }
+    if(showHistoric&&historicData){
+      if(!historicLayer){
+        historicLayer=L.layerGroup();
+        historicData.data.forEach(s=>{
+          const icon=L.divIcon({className:'overlay-marker historic-marker',html:'&#9632;',iconSize:[10,10]});
+          const marker=L.marker([s[0],s[1]],{icon});
+          marker.bindPopup('<b style="color:#ffaa22">&#9632; '+s[2]+'</b><br>'+s[3]+'<br>Listed: '+s[4]);
+          historicLayer.addLayer(marker);
+        });
+      }
+      historicLayer.addTo(map);
+    } else if(historicLayer){
+      map.removeLayer(historicLayer);
+    }
   });
 }
 

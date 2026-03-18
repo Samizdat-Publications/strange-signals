@@ -74,6 +74,10 @@ echo "--- Building population density grid ---"
 python3 build_population_grid.py
 
 echo ""
+echo "--- Building overlay datasets ---"
+python3 build_overlay_data.py
+
+echo ""
 echo "================================================================="
 echo "  SETUP COMPLETE!"
 echo "================================================================="
@@ -83,6 +87,8 @@ echo "  data/paranormal_sightings_consolidated.xlsx  - All datasets in one workb
 echo "  data/sightings_map_data.json                 - Combined data for interactive map"
 echo "  data/us_population_density.json              - Population density grid for per-capita mode"
 echo "  data/military_bases.json                     - US military/DOE installation locations"
+echo "  data/national_parks.json                     - National parks overlay"
+echo "  data/historic_sites.json                     - Historic sites (NRHP) overlay"
 echo ""
 echo "Tabs in the workbook:"
 echo "  Summary             - Dataset metadata"
@@ -93,7 +99,7 @@ echo "  Bigfoot_Locations   - BFRO report locations (~4.2K)"
 echo "  Haunted_Places      - Shadowlands haunted places (~9.7K)"
 echo "  UFO_CORGIS_80K      - CORGIS UFO sightings with nested columns (~80K)"
 echo "  Haunted_Kaggle      - Kaggle Haunted Places expanded (~10K)"
-echo "  Combined_All        - Union of all datasets, normalized for mapping (~197K)"
+echo "  Combined_All        - Union of all datasets, normalized for mapping (~242K)"
 echo ""
 echo "Open sightings_map.html in a browser to view the interactive map."
 echo "(Must serve via HTTP: python3 -m http.server 8000)"
