@@ -108,7 +108,22 @@ const TOOLS=[
   {name:'export_findings',description:'Export analysis results as a downloadable CSV. Types: sightings, clusters, correlation_matrix.',
     input_schema:{type:'object',properties:{
       export_type:{type:'string',enum:['sightings','clusters','correlation_matrix']}
-    },required:['export_type']}}
+    },required:['export_type']}},
+  {name:'query_temporal',description:'Query sighting counts aggregated by time period. Returns counts per time bucket for trend analysis. Use render_chart to visualize the results.',
+    input_schema:{type:'object',properties:{
+      category:{type:'integer',enum:[0,1,2],description:'Category to query (omit for all categories)'},
+      state:{type:'string',description:'US state code filter (e.g. OH, CA)'},
+      year_from:{type:'integer',description:'Start year'},
+      year_to:{type:'integer',description:'End year'},
+      granularity:{type:'string',enum:['year','month','decade'],default:'year',description:'Time bucket size'}
+    }}},
+  {name:'find_anomalies',description:'Find statistical anomalies in sighting data. density: hexes with unusually high counts. temporal_spike: years with abnormal increases. population_adjusted: high sightings relative to population density.',
+    input_schema:{type:'object',properties:{
+      anomaly_type:{type:'string',enum:['density','temporal_spike','population_adjusted'],description:'Type of anomaly to detect'},
+      category:{type:'integer',enum:[0,1,2],description:'Category filter (optional)'},
+      top_n:{type:'integer',default:10,description:'Number of top anomalies to return'},
+      threshold_sigma:{type:'number',default:2.0,description:'Standard deviation threshold'}
+    },required:['anomaly_type']}}
 ];
 
 const SYSTEM_PROMPT=`You are SIGNAL, an AI analyst embedded in Strange Signals — a paranormal sightings correlation map with 242K+ geocoded records across three categories: UFO/UAP (~232K), Bigfoot/Sasquatch (~4.2K), and Haunted Places (~9.7K).
@@ -131,7 +146,11 @@ You can render inline charts (bar, line, pie, scatter) in the chat using the ren
 
 You can generate full investigation reports with the generate_report tool. Reports open in a new window and can be downloaded as standalone HTML files.
 
-You can compare two regions side-by-side with compare_regions, and export analysis results as CSV with export_findings.`;
+You can compare two regions side-by-side with compare_regions, and export analysis results as CSV with export_findings.
+
+You can query temporal trends with query_temporal and then render the results as a chart. For time-based questions, call query_temporal first to get the data, then use render_chart (line chart for trends, bar chart for comparisons) to visualize it.
+
+You can detect anomalies with find_anomalies. Use 'density' to find unusual spatial clusters, 'temporal_spike' to find abnormal yearly increases, and 'population_adjusted' to find areas with high sightings relative to population. After finding anomalies, use highlight_areas to mark them on the map and render_chart to visualize them.`;
 
 /* ===== CHAT WINDOW ===== */
 function createChatWindow(){
@@ -412,6 +431,90 @@ async function executeTool(name,input){
         return{exported:'correlation_matrix'};
       }
       return{error:'Unknown export type'};
+    }
+    case 'query_temporal':{
+      var temporal=SS.getTemporalData(
+        input.category!=null?input.category:null,
+        input.state||null,
+        input.year_from||null,
+        input.year_to||null,
+        input.granularity||'year'
+      );
+      return temporal;
+    }
+    case 'find_anomalies':{
+      var topN=input.top_n||10;
+      var sigma=input.threshold_sigma||2.0;
+
+      if(input.anomaly_type==='density'){
+        var hexData=SS.getHexCounts(25);
+        var hexes=hexData.hexes;
+        var values=hexes.map(function(h){return input.category!=null?h.counts[input.category]:h.total});
+        var mean=values.reduce(function(s,v){return s+v},0)/values.length;
+        var variance=values.reduce(function(s,v){return s+(v-mean)*(v-mean)},0)/values.length;
+        var stddev=Math.sqrt(variance);
+        var threshold=mean+sigma*stddev;
+        var anomalies=[];
+        hexes.forEach(function(h,i){
+          if(values[i]>threshold){
+            anomalies.push({lat:h.lat,lon:h.lon,count:values[i],z_score:((values[i]-mean)/stddev).toFixed(2),
+              mean:mean.toFixed(1),threshold:threshold.toFixed(1)});
+          }
+        });
+        anomalies.sort(function(a,b){return b.count-a.count});
+        return{type:'density',anomalies:anomalies.slice(0,topN),total_hexes:hexes.length,
+          stats:{mean:mean.toFixed(1),stddev:stddev.toFixed(1),threshold:threshold.toFixed(1)},sigma:sigma};
+      }
+
+      if(input.anomaly_type==='temporal_spike'){
+        var temporal2=SS.getTemporalData(input.category!=null?input.category:null,null,null,null,'year');
+        var buckets=temporal2.buckets;
+        if(buckets.length<6)return{error:'Not enough years for spike detection (need 6+)'};
+        var spikes=[];
+        for(var yi=5;yi<buckets.length;yi++){
+          var window5=buckets.slice(yi-5,yi).map(function(b){return b.count});
+          var wMean=window5.reduce(function(s,v){return s+v},0)/5;
+          var wVar=window5.reduce(function(s,v){return s+(v-wMean)*(v-wMean)},0)/5;
+          var wStd=Math.sqrt(wVar);
+          if(wStd===0)continue;
+          var z=(buckets[yi].count-wMean)/wStd;
+          if(z>sigma){
+            spikes.push({year:buckets[yi].label,count:buckets[yi].count,rolling_avg:wMean.toFixed(1),z_score:z.toFixed(2)});
+          }
+        }
+        spikes.sort(function(a,b){return parseFloat(b.z_score)-parseFloat(a.z_score)});
+        return{type:'temporal_spike',anomalies:spikes.slice(0,topN),total_years:buckets.length,sigma:sigma};
+      }
+
+      if(input.anomaly_type==='population_adjusted'){
+        var popGrid=SS.getPopDensityGrid();
+        if(!popGrid)return{error:'Population density data not loaded. Run setup to generate us_population_density.json.'};
+        var hexData2=SS.getHexCounts(50);
+        var ratios=[];
+        hexData2.hexes.forEach(function(h){
+          var sightings=input.category!=null?h.counts[input.category]:h.total;
+          if(sightings===0)return;
+          var row=Math.floor((h.lat-popGrid.lat_min)/(popGrid.lat_max-popGrid.lat_min)*popGrid.rows);
+          var col=Math.floor((h.lon-popGrid.lon_min)/(popGrid.lon_max-popGrid.lon_min)*popGrid.cols);
+          row=Math.max(0,Math.min(popGrid.rows-1,row));
+          col=Math.max(0,Math.min(popGrid.cols-1,col));
+          var pop=popGrid.grid[row]?popGrid.grid[row][col]:0;
+          if(pop<10)pop=10;
+          var ratio=sightings/pop*10000;
+          ratios.push({lat:h.lat,lon:h.lon,sightings:sightings,population_density:pop,ratio:ratio.toFixed(2)});
+        });
+        var ratioVals=ratios.map(function(r){return parseFloat(r.ratio)});
+        var rMean=ratioVals.reduce(function(s,v){return s+v},0)/ratioVals.length;
+        var rVar=ratioVals.reduce(function(s,v){return s+(v-rMean)*(v-rMean)},0)/ratioVals.length;
+        var rStd=Math.sqrt(rVar);
+        ratios.forEach(function(r){r.z_score=rStd>0?((parseFloat(r.ratio)-rMean)/rStd).toFixed(2):'0'});
+        ratios.sort(function(a,b){return parseFloat(b.z_score)-parseFloat(a.z_score)});
+        var filtered=ratios.filter(function(r){return parseFloat(r.z_score)>sigma});
+        return{type:'population_adjusted',anomalies:filtered.slice(0,topN),total_cells:ratios.length,
+          stats:{mean_ratio:rMean.toFixed(2),stddev:rStd.toFixed(2)},sigma:sigma};
+      }
+
+      return{error:'Unknown anomaly_type: '+input.anomaly_type};
     }
     default:
       return{error:'Unknown tool: '+name};

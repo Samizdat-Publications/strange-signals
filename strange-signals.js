@@ -1728,6 +1728,50 @@ window.StrangeSignals={
     return{total:results.length,showing:limited.length,countsByCategory,sightings:limited};
   },
 
+  // Temporal data aggregation
+  getTemporalData:(category,state,yearFrom,yearTo,granularity)=>{
+    granularity=granularity||'year';
+    const buckets={};
+    const cats=category!=null?[category]:[0,1,2];
+    const stateUpper=state?state.toUpperCase():null;
+    for(const cat of cats){
+      for(const r of filteredCat[cat]){
+        if(!r[F.DATE])continue;
+        const dateStr=r[F.DATE];
+        const year=parseInt(dateStr.substring(0,4));
+        if(isNaN(year))continue;
+        if(yearFrom&&year<yearFrom)continue;
+        if(yearTo&&year>yearTo)continue;
+        if(stateUpper){
+          const loc=r[F.LOC]||'';
+          if(!loc.toUpperCase().includes(stateUpper))continue;
+        }
+        let key;
+        if(granularity==='decade')key=Math.floor(year/10)*10+'s';
+        else if(granularity==='month')key=dateStr.substring(0,7);
+        else key=String(year);
+        buckets[key]=(buckets[key]||0)+1;
+      }
+    }
+    const result=Object.entries(buckets).map(([label,count])=>({label,count}));
+    result.sort((a,b)=>a.label.localeCompare(b.label));
+    return{buckets:result,total:result.reduce((s,b)=>s+b.count,0),
+      filters:{category:category!=null?CAT_NAMES[category]:'all',state:state||'all',yearFrom,yearTo,granularity}};
+  },
+
+  // Hex data access (for anomaly detection)
+  getHexCounts:(cellSide)=>{
+    cellSide=cellSide||25;
+    const data=getOrBuildHexData(cellSide);
+    return{hexes:data.grid.features.map((f,i)=>({
+      lat:turf.centroid(f).geometry.coordinates[1],
+      lon:turf.centroid(f).geometry.coordinates[0],
+      counts:data.counts[i],
+      total:data.counts[i][0]+data.counts[i][1]+data.counts[i][2]
+    })),cellSide};
+  },
+  getPopDensityGrid:()=>popDensityGrid,
+
   // Constants
   F,CAT_NAMES,CAT_COLORS
 };
