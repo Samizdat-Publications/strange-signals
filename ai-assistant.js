@@ -419,6 +419,25 @@ async function executeTool(name,input){
 }
 
 /* ===== API CALL WITH STREAMING ===== */
+function formatApiError(err,response){
+  if(!response){return{msg:'Unable to reach the API. Check your internet connection.',details:err.message}}
+  if(response.status===401){return{msg:'API key not set or invalid. Click the gear icon to configure.',details:'HTTP 401'}}
+  if(response.status===429){return{msg:'Rate limited. Please wait a moment and try again.',details:'HTTP 429'}}
+  return{msg:'Something went wrong.',details:err.message||'HTTP '+response.status}
+}
+
+function showError(errInfo){
+  var typing=document.getElementById('signal-typing');
+  if(typing)typing.remove();
+  var div=document.createElement('div');
+  div.className='signal-error';
+  div.innerHTML=errInfo.msg+' <span class="signal-error-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'block\'?\'none\':\'block\'">Show details</span>'
+    +'<div class="signal-error-details">'+errInfo.details+'</div>';
+  document.getElementById('signal-messages').appendChild(div);
+  document.getElementById('signal-messages').scrollTop=document.getElementById('signal-messages').scrollHeight;
+  isStreaming=false;
+}
+
 async function sendMessage(){
   var inputEl=document.getElementById('signal-input');
   var text=inputEl.value.trim();
@@ -438,6 +457,14 @@ async function sendMessage(){
   inputEl.value='';
   inputEl.style.height='auto';
 
+  // Add typing indicator
+  var typingDiv=document.createElement('div');
+  typingDiv.className='signal-typing';
+  typingDiv.id='signal-typing';
+  typingDiv.innerHTML='<div class="signal-typing-dots"><span></span><span></span><span></span></div> SIGNAL is analyzing...';
+  document.getElementById('signal-messages').appendChild(typingDiv);
+  document.getElementById('signal-messages').scrollTop=document.getElementById('signal-messages').scrollHeight;
+
   if(messages.length>20)messages=messages.slice(-20);
 
   isStreaming=true;
@@ -447,7 +474,7 @@ async function sendMessage(){
     await runConversationLoop();
   }catch(e){
     console.error('SIGNAL error:',e);
-    appendMessage('assistant','Error: '+(e.message||'Unknown error')+'. Check your API key and try again.');
+    showError(formatApiError(e,e.response||null));
   }finally{
     isStreaming=false;
     document.getElementById('signal-send').disabled=false;
@@ -480,8 +507,8 @@ async function runConversationLoop(){
     });
 
     if(!resp.ok){
-      var err=await resp.text();
-      throw new Error('API '+resp.status+': '+err.substring(0,200));
+      var errText=await resp.text();
+      throw Object.assign(new Error('API '+resp.status+': '+errText.substring(0,200)),{response:resp});
     }
 
     var result=await parseStream(resp);
@@ -543,6 +570,8 @@ async function parseStream(resp){
             currentBlock=event.content_block;
             if(currentBlock.type==='text'){
               currentText='';
+              var typing=document.getElementById('signal-typing');
+              if(typing)typing.remove();
               msgDiv=appendMessage('assistant','');
             } else if(currentBlock.type==='tool_use'){
               toolInput='';
