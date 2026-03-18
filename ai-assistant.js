@@ -8,6 +8,33 @@ let messages=[];
 let isStreaming=false;
 let settingsVisible=false;
 
+var STORAGE_KEY='signal-conversation';
+var MAX_STORED_MESSAGES=40;
+
+function saveConversation(){
+  try{
+    var saveable=messages.filter(function(m){
+      return typeof m.content==='string'||
+        (Array.isArray(m.content)&&m.content.some(function(b){return b.type==='text'}));
+    });
+    if(saveable.length>MAX_STORED_MESSAGES)saveable=saveable.slice(-MAX_STORED_MESSAGES);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(saveable));
+  }catch(e){console.warn('Failed to save conversation',e)}
+}
+
+function loadConversation(){
+  try{
+    var stored=localStorage.getItem(STORAGE_KEY);
+    if(!stored)return[];
+    return JSON.parse(stored);
+  }catch(e){return[]}
+}
+
+function clearConversation(){
+  messages=[];
+  localStorage.removeItem(STORAGE_KEY);
+}
+
 /* ===== US STATE CENTROIDS ===== */
 const STATE_CENTROIDS={
   AL:[32.8,-86.8],AK:[64.2,-152.5],AZ:[34.3,-111.7],AR:[34.8,-92.2],CA:[36.8,-119.4],
@@ -223,7 +250,7 @@ function createChatWindow(){
     document.getElementById('signal-settings').style.display='none';
   });
   document.getElementById('signal-clear-history').addEventListener('click',()=>{
-    messages=[];
+    clearConversation();
     document.getElementById('signal-messages').innerHTML='';
     addGreeting();
   });
@@ -236,7 +263,25 @@ function createChatWindow(){
     this.style.height=Math.min(this.scrollHeight,120)+'px';
   });
 
-  addGreeting();
+  var restored=loadConversation();
+  if(restored.length>0){
+    messages=restored;
+    restored.forEach(function(m){
+      if(m.role==='user'&&typeof m.content==='string'){
+        appendMessage('user',m.content);
+      } else if(m.role==='assistant'){
+        if(typeof m.content==='string'){
+          appendMessage('assistant',m.content);
+        } else if(Array.isArray(m.content)){
+          m.content.forEach(function(b){
+            if(b.type==='text')appendMessage('assistant',b.text);
+          });
+        }
+      }
+    });
+  } else {
+    addGreeting();
+  }
   return chatWindow;
 }
 
@@ -592,6 +637,7 @@ async function sendMessage(){
 
   appendMessage('user',text);
   messages.push({role:'user',content:text});
+  saveConversation();
   inputEl.value='';
   inputEl.style.height='auto';
 
@@ -653,6 +699,7 @@ async function runConversationLoop(){
     var hasToolUse=result.content.some(function(b){return b.type==='tool_use'});
 
     messages.push({role:'assistant',content:result.content});
+    saveConversation();
 
     if(!hasToolUse)break;
 
@@ -673,6 +720,7 @@ async function runConversationLoop(){
     }
 
     messages.push({role:'user',content:toolResults});
+    saveConversation();
   }
 }
 
