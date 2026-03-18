@@ -38,7 +38,7 @@ def clean_coords(df, lat_col="latitude", lon_col="longitude"):
 
 def load_ufo_nuforc():
     """NUFORC 2023 TidyTuesday (~97K) merged with places for lat/lon."""
-    print("  [1/5] UFO NUFORC (TidyTuesday 2023)...")
+    print("  [1/7] UFO NUFORC (TidyTuesday 2023)...")
     sightings = pd.read_csv(os.path.join(RAW, "ufo_sightings_tidytuesday.csv"), low_memory=False)
     places = pd.read_csv(os.path.join(RAW, "ufo_places_tidytuesday.csv"), low_memory=False)
 
@@ -58,7 +58,7 @@ def load_ufo_nuforc():
 
 def load_ufo_planetsig():
     """planetsig NUFORC geocoded+time-standardized (~80K)."""
-    print("  [2/5] UFO planetsig (80K geocoded)...")
+    print("  [2/7] UFO planetsig (80K geocoded)...")
     cols = [
         "datetime", "city", "state", "country", "shape", "duration_seconds",
         "duration_text", "description", "date_posted", "latitude", "longitude"
@@ -72,7 +72,7 @@ def load_ufo_planetsig():
 
 def load_bigfoot_detailed():
     """BFRO via TidyTuesday (~5K, detailed with weather/moon)."""
-    print("  [3/5] Bigfoot BFRO detailed (TidyTuesday)...")
+    print("  [3/7] Bigfoot BFRO detailed (TidyTuesday)...")
     df = pd.read_csv(os.path.join(RAW, "bigfoot_tidytuesday.csv"), low_memory=False)
     before = len(df)
     df = clean_coords(df)
@@ -82,7 +82,7 @@ def load_bigfoot_detailed():
 
 def load_bigfoot_locations():
     """BFRO report locations (~4.2K lightweight)."""
-    print("  [4/5] Bigfoot BFRO locations...")
+    print("  [4/7] Bigfoot BFRO locations...")
     df = pd.read_csv(os.path.join(RAW, "bigfoot_bfro.csv"), low_memory=False)
     before = len(df)
     df = clean_coords(df)
@@ -92,8 +92,51 @@ def load_bigfoot_locations():
 
 def load_haunted_places():
     """Shadowlands Haunted Places (~11K US)."""
-    print("  [5/5] Haunted Places (Shadowlands)...")
+    print("  [5/7] Haunted Places (Shadowlands)...")
     df = pd.read_csv(os.path.join(RAW, "haunted_places.csv"), low_memory=False)
+    before = len(df)
+    df = clean_coords(df)
+    print(f"         {len(df):,} / {before:,} geocoded")
+    return df
+
+
+def load_ufo_corgis():
+    """CORGIS UFO sightings (~80K with nested column names)."""
+    path = os.path.join(RAW, "ufo_corgis.csv")
+    if not os.path.exists(path):
+        print("  [6/7] UFO CORGIS - file not found, skipping")
+        return pd.DataFrame()
+    print("  [6/7] UFO CORGIS (80K nested columns)...")
+    df = pd.read_csv(path, low_memory=False)
+    df = df.rename(columns={
+        "Location.Coordinates.Latitude": "latitude",
+        "Location.Coordinates.Longitude": "longitude",
+        "Location.City": "city",
+        "Location.State": "state",
+        "Location.Country": "country",
+        "Data.Shape": "shape",
+        "Data.Description excerpt": "description",
+    })
+    # Reconstruct date from year/month/day columns
+    df["date"] = pd.to_datetime({
+        "year": df["Dates.Sighted.Year"],
+        "month": df["Dates.Sighted.Month"].clip(1, 12),
+        "day": df["Dates.Sighted.Day"].clip(1, 31)
+    }, errors="coerce").dt.strftime("%Y-%m-%d")
+    before = len(df)
+    df = clean_coords(df)
+    print(f"         {len(df):,} / {before:,} with valid coordinates")
+    return df
+
+
+def load_haunted_kaggle():
+    """Kaggle Haunted Places expanded (~10K)."""
+    path = os.path.join(RAW, "haunted_kaggle.csv")
+    if not os.path.exists(path):
+        print("  [7/7] Haunted Kaggle - file not found, skipping")
+        return pd.DataFrame()
+    print("  [7/7] Haunted Places Kaggle (expanded)...")
+    df = pd.read_csv(path, low_memory=False)
     before = len(df)
     df = clean_coords(df)
     print(f"         {len(df):,} / {before:,} geocoded")
@@ -107,7 +150,8 @@ def truncate(val, maxlen=500):
     return s[:maxlen] + "..." if len(s) > maxlen else s
 
 
-def build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted):
+def build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
+                   ufo_corgis=None, haunted_kaggle=None):
     """Build a single normalized dataset for mapping overlays."""
     print("\n  Building Combined_All...")
     frames = []
@@ -192,6 +236,40 @@ def build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted)
         "source": "Shadowlands Haunted Places",
     }))
 
+    # UFO CORGIS
+    if ufo_corgis is not None and len(ufo_corgis) > 0:
+        df = ufo_corgis.copy()
+        frames.append(pd.DataFrame({
+            "category": "UFO/UAP",
+            "subcategory": df.get("shape", ""),
+            "date": df.get("date", ""),
+            "time": "",
+            "latitude": df["latitude"],
+            "longitude": df["longitude"],
+            "city": df.get("city", ""),
+            "state": df.get("state", ""),
+            "country": df.get("country", ""),
+            "description": df.get("description", "").apply(lambda x: truncate(x)),
+            "source": "CORGIS UFO Sightings",
+        }))
+
+    # Haunted Kaggle
+    if haunted_kaggle is not None and len(haunted_kaggle) > 0:
+        df = haunted_kaggle.copy()
+        frames.append(pd.DataFrame({
+            "category": "Haunted Place",
+            "subcategory": "Ghost/Haunting",
+            "date": "",
+            "time": "",
+            "latitude": df["latitude"],
+            "longitude": df["longitude"],
+            "city": df.get("city", ""),
+            "state": df.get("state_abbrev", df.get("state", "")),
+            "country": df.get("country", "United States"),
+            "description": df.get("description", "").apply(lambda x: truncate(x)),
+            "source": "Kaggle Haunted Places",
+        }))
+
     combined = pd.concat(frames, ignore_index=True)
     print(f"         {len(combined):,} total records")
 
@@ -251,8 +329,11 @@ def main():
     bigfoot_det = load_bigfoot_detailed()
     bigfoot_loc = load_bigfoot_locations()
     haunted = load_haunted_places()
+    ufo_corgis = load_ufo_corgis()
+    haunted_kaggle = load_haunted_kaggle()
 
-    combined = build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted)
+    combined = build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
+                              ufo_corgis=ufo_corgis, haunted_kaggle=haunted_kaggle)
 
     datasets = {
         "UFO_NUFORC_97K": ufo_nuforc,
@@ -262,6 +343,10 @@ def main():
         "Haunted_Places": haunted,
         "Combined_All": combined,
     }
+    if ufo_corgis is not None and len(ufo_corgis) > 0:
+        datasets["UFO_CORGIS_80K"] = ufo_corgis
+    if haunted_kaggle is not None and len(haunted_kaggle) > 0:
+        datasets["Haunted_Kaggle"] = haunted_kaggle
 
     summary = build_summary(datasets)
     datasets["Summary"] = summary
