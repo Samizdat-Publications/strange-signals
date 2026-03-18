@@ -68,3 +68,7 @@
 .signal-cursor{display:inline-block;width:6px;height:14px;background:var(--green);
   animation:cursor-blink 0.8s step-end infinite;vertical-align:text-bottom;margin-left:2px}
 @keyframes cursor-blink{50%{opacity:0}}
+
+/* Chart containers */
+.signal-msg.chart{padding:8px;background:rgba(0,255,136,0.02);border:1px solid var(--border);border-radius:4px;margin:6px 0}
+.signal-msg.chart svg{display:block}
