@@ -77,6 +77,8 @@ def load_ufo_corgis():
     return df
 ```
 
+**Note on date handling:** Clipping month to 1-12 and day to 1-31 can produce invalid dates (e.g., Feb 31). The `errors="coerce"` converts these to NaT, resulting in empty date strings. This is acceptable — those records will not dedup against dated records from other sources, and empty dates are already common in the Haunted Places category.
+
 ### JSON File Size Assessment
 
 Current `sightings_map_data.json` size: ~22MB for 183K records (~120 bytes/record average).
@@ -111,7 +113,10 @@ Bigfoot_Detailed          4,586    4,586
 Bigfoot_Locations          4,207    4,207
 Haunted_Places            8,773    8,773
 Haunted_Kaggle            10,000   ~2,500 (overlap with Shadowlands)
-TOTAL (combined)          ~284K    ~209K (after dedup)
+TOTAL (combined)          ~284K    ~197K+ (after dedup)
+
+Note: The ~87K reduction from raw to deduped is expected — NUFORC data
+appears in all 3 UFO sources with heavy overlap.
 ```
 
 ### Expected Results
@@ -188,6 +193,8 @@ Each chart type has a specific data shape:
   }
 }
 ```
+
+**Validation:** The schema does not enforce per-type required properties (bar needs label+value, scatter needs x+y). Validation is handled at render time in `signal-charts.js` — missing properties result in the data point being skipped with no crash.
 
 #### Rendering Flow
 
@@ -266,7 +273,12 @@ The report opens as a WindowManager window containing:
 - `ai-assistant.js` — add `render_chart` and `generate_report` tools to TOOLS array and `executeTool()` switch
 - `ai-assistant.css` — add `.signal-chart` container styles (max-width, margin, border-radius)
 - `index.html` — add `<script>` refs for new files (before ai-assistant.js)
-- SIGNAL system prompt — mention chart and report capabilities
+- SIGNAL system prompt — append these lines:
+  ```
+  You can render inline charts (bar, line, pie, scatter) in the chat using the render_chart tool. Use charts to visualize data patterns when they'd be clearer than text.
+  You can generate full investigation reports with the generate_report tool. Reports open in a new window and can be downloaded as standalone HTML files.
+  You can compare two regions side-by-side with compare_regions, and export analysis results as CSV with export_findings.
+  ```
 
 ---
 
@@ -277,7 +289,17 @@ The report opens as a WindowManager window containing:
 **File:** `strange-signals.js` lines 830-862
 **Bug:** `d3.mean(distances)` and `d3.deviation(distances)` return `undefined` when the distances array is empty or all-Infinity. This crashes `.toFixed(1)` on line 861 and the comparison `r.meanDist<50` on line 860.
 
-**Fix:** Guard in `computeNNAnalysis()` when building results:
+**Fix:** Guard in `computeNNAnalysis()`:
+
+1. Add source category empty check (alongside the existing target check):
+```js
+if(!filteredCat[a].length){
+  for(let b=0;b<3;b++) if(a!==b){results[a][b]=null;step++}
+  continue;
+}
+```
+
+2. Guard when building results:
 ```js
 results[a][b] = {
   meanDist: d3.mean(distances) ?? null,
@@ -287,7 +309,7 @@ results[a][b] = {
 };
 ```
 
-And in `renderNNResults()`:
+3. Guard in `renderNNResults()`:
 ```js
 const r = results[a]?.[b];
 if (!r || r.meanDist === null) { html += '<td>N/A</td>'; continue }
@@ -326,7 +348,7 @@ if (!r || r.meanDist === null) { html += '<td>N/A</td>'; continue }
 }
 ```
 
-Implementation: query `getSightingsInArea()` for each region, return counts and top subcategories. Also calls `render_chart` with a grouped bar comparison.
+**Resolution order:** If `state` is provided, use its centroid from `STATE_CENTROIDS` as lat/lon with default `radius_km=100`. Explicit `lat`/`lon` overrides `state`. Then query `StrangeSignals.getSightingsInArea()` for each region, return counts and top subcategories, and call `render_chart` with a grouped bar comparison.
 
 **2. `export_findings`** — Export data as a downloadable CSV.
 
