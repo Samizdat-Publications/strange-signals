@@ -128,15 +128,7 @@ select option{background:var(--surface-solid);color:var(--text)}
 .cluster-cat-badge{font-size:9px;padding:1px 5px;border-radius:2px}
 
 /* Temporal overlay */
-.temporal-overlay{position:absolute;bottom:calc(var(--timeline-h) + 8px);left:50%;transform:translateX(-50%);
-  width:min(720px,calc(100% - 40px));background:var(--surface-solid);border:1px solid var(--border);
-  border-radius:6px;z-index:1060;box-shadow:0 8px 32px rgba(0,0,0,0.5)}
-.temporal-header{display:flex;justify-content:space-between;align-items:center;
-  padding:10px 14px;border-bottom:1px solid var(--border)}
-.temporal-close{background:rgba(255,51,102,0.15);border:1px solid rgba(255,51,102,0.3);color:#ff3366;
-  font-size:22px;width:32px;height:32px;border-radius:4px;cursor:pointer;transition:all .15s;
-  display:flex;align-items:center;justify-content:center;line-height:1}
-.temporal-close:hover{background:rgba(255,51,102,0.3);color:#fff}
+/* temporal-overlay positioning now handled by WindowManager */
 .temporal-content{padding:12px}
 .temporal-chart-row{margin-bottom:10px}
 .temporal-chart-label{font-family:var(--font-display);font-size:8px;letter-spacing:1.5px;

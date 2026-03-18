@@ -252,6 +252,64 @@ function getOrBuildHexData(cellSide){
   return{grid,counts};
 }
 
+/* ========== ASYNC HEX DATA (WEB WORKER) ========== */
+let hexWorker=null;
+function getOrBuildHexDataAsync(cellSide){
+  return new Promise((resolve,reject)=>{
+    const bounds=map.getBounds();
+    const bKey=bounds.toBBoxString();
+    // Fast path: return cache
+    if(cachedHexGrid&&cachedHexSize===cellSide&&cachedBoundsKey===bKey){
+      return resolve({grid:cachedHexGrid,counts:cachedHexCounts});
+    }
+
+    // Show progress UI
+    const progressEl=document.getElementById('hex-progress');
+    const fillEl=document.getElementById('hex-progress-fill');
+    const statusEl=document.getElementById('hex-status');
+    if(progressEl){progressEl.style.display='block';fillEl.style.width='0%';statusEl.textContent='Initializing worker...'}
+
+    // Build flat array of points: [lat, lon, cat, lat, lon, cat, ...]
+    const totalPts=filteredCat[0].length+filteredCat[1].length+filteredCat[2].length;
+    const points=new Float64Array(totalPts*3);
+    let idx=0;
+    for(let cat=0;cat<3;cat++){
+      for(const r of filteredCat[cat]){
+        points[idx++]=r[F.LAT];
+        points[idx++]=r[F.LON];
+        points[idx++]=cat;
+      }
+    }
+
+    // Create/reuse worker
+    if(hexWorker){hexWorker.terminate()}
+    hexWorker=new Worker('hex-worker.js');
+    const bbox=[bounds.getWest(),bounds.getSouth(),bounds.getEast(),bounds.getNorth()];
+
+    hexWorker.onmessage=function(e){
+      const msg=e.data;
+      if(msg.type==='progress'){
+        if(fillEl)fillEl.style.width=msg.pct+'%';
+        if(statusEl)statusEl.textContent=msg.stage;
+      } else if(msg.type==='result'){
+        if(progressEl)progressEl.style.display='none';
+        const grid=JSON.parse(msg.gridJSON);
+        cachedHexGrid=grid;cachedHexCounts=msg.counts;cachedHexSize=cellSide;cachedBoundsKey=bKey;
+        hexWorker.terminate();hexWorker=null;
+        resolve({grid,counts:msg.counts});
+      }
+    };
+    hexWorker.onerror=function(err){
+      if(progressEl)progressEl.style.display='none';
+      hexWorker.terminate();hexWorker=null;
+      // Fallback to sync
+      resolve(getOrBuildHexData(cellSide));
+    };
+
+    hexWorker.postMessage({bbox,cellSide,points,nCats:3},[points.buffer]);
+  });
+}
+
 function interpretR(r){
   if(isNaN(r))return'Insufficient data for correlation';
   if(r>0.7)return'Strong positive — cluster together';
@@ -274,15 +332,15 @@ function setCorrSubMode(mode){
   });
   // Hide temporal overlay when switching away
   if(mode!=='temporal'){
-    document.getElementById('temporal-overlay').style.display='none';
+    if(typeof temporalWindow!=='undefined'&&temporalWindow)temporalWindow.hide();
     temporalOverlayVisible=false;
   }
 }
 
 /* ========== PHASE 1: MATRIX CORRELATION ========== */
-function runMatrixCorrelation(){
+async function runMatrixCorrelation(){
   const cellSide=parseFloat(document.getElementById('corr-hex-size').value);
-  const{grid,counts}=getOrBuildHexData(cellSide);
+  const{grid,counts}=await getOrBuildHexDataAsync(cellSide);
   const hexes=grid.features;
 
   // Compute 3x3 Pearson r matrix with p-values
@@ -473,10 +531,10 @@ function labelCluster(hexes,indices,centroids){
 
 const CLUSTER_COLORS=['#00ffcc','#ff9944','#9966ff','#ff4488','#44bbff','#ffcc00','#66ff66','#ff66aa'];
 
-function runClusterDetection(){
+async function runClusterDetection(){
   const cellSide=parseFloat(document.getElementById('corr-hex-size').value);
   const threshold=parseInt(document.getElementById('cluster-threshold').value);
-  const{grid,counts}=getOrBuildHexData(cellSide);
+  const{grid,counts}=await getOrBuildHexDataAsync(cellSide);
   const hexes=grid.features;
   const{adj,centroids}=buildHexAdjacency(hexes,cellSide);
   const rawClusters=findConnectedClusters(hexes,counts,adj,threshold);
@@ -915,7 +973,7 @@ function clearAllLayers(){
 
 function renderCurrentView(){
   clearAllLayers();
-  document.getElementById('temporal-overlay').style.display='none';
+  if(typeof temporalWindow!=='undefined'&&temporalWindow)temporalWindow.hide();
   temporalOverlayVisible=false;
   if(currentView==='markers')renderMarkers();
   else if(currentView==='heatmap')renderHeatmap();
@@ -1027,24 +1085,24 @@ function renderHexbin(){
   }).addTo(map);
 }
 
-function renderCorrelation(){
+async function renderCorrelation(){
   // Clear old analysis layers
   if(clusterLayer){map.removeLayer(clusterLayer);clusterLayer=null}
   // Dispatch based on sub-mode; only spatial auto-renders on view switch
   if(corrSubMode==='spatial'){
     const catA=parseInt(document.getElementById('corr-a').value);
     const catB=parseInt(document.getElementById('corr-b').value);
-    runCorrelation(catA,catB);
+    await runCorrelation(catA,catB);
   }
   // Other sub-modes require manual button click
 }
 
 /* ========== CORRELATION ENGINE ========== */
-function runCorrelation(catA,catB){
+async function runCorrelation(catA,catB){
   if(corrLayer){map.removeLayer(corrLayer);corrLayer=null}
 
   const cellSide=parseFloat(document.getElementById('corr-hex-size').value);
-  const{grid,counts}=getOrBuildHexData(cellSide);
+  const{grid,counts}=await getOrBuildHexDataAsync(cellSide);
   const hexFeatures=grid.features;
 
   // Extract per-category counts from shared spatial-indexed hex data
@@ -1343,15 +1401,25 @@ document.getElementById('cluster-threshold').addEventListener('input',e=>{
   document.getElementById('cluster-threshold-label').textContent=e.target.value;
 });
 
-// Temporal button + close
+// Temporal button (now uses WindowManager)
+let temporalWindow=null;
 document.getElementById('temporal-run').addEventListener('click',()=>{
-  document.getElementById('temporal-overlay').style.display='block';
-  temporalOverlayVisible=true;
+  if(!temporalWindow){
+    const content=document.getElementById('temporal-content-inner');
+    if(content)content.style.display='block';
+    temporalWindow=WindowManager.create({
+      id:'temporal',
+      title:'<span class="icon">&#9202;</span> TEMPORAL CORRELATION',
+      content:content,
+      defaultPos:{right:20,bottom:220},
+      defaultSize:{width:720,height:400},
+      minSize:{width:400,height:250},
+      onClose:()=>{temporalOverlayVisible=false}
+    });
+  }
   renderTemporalCharts();
-});
-document.getElementById('temporal-close').addEventListener('click',()=>{
-  document.getElementById('temporal-overlay').style.display='none';
-  temporalOverlayVisible=false;
+  temporalWindow.show();
+  temporalOverlayVisible=true;
 });
 
 // Nearest-neighbor button
@@ -1553,5 +1621,111 @@ async function init(){
 }
 
 init();
+
+/* ========== PUBLIC API (for AI assistant) ========== */
+window.StrangeSignals={
+  // Map
+  getMap:()=>map,
+  setView:setView,
+
+  // Filters
+  applyFilters:applyFilters,
+  resetFilters:()=>{
+    document.getElementById('year-from').value='';
+    document.getElementById('year-to').value='';
+    document.getElementById('state-filter').value='';
+    document.getElementById('sub-filter').value='';
+    [0,1,2].forEach(i=>{document.querySelector(`[data-cat="${i}"]`).checked=true});
+    brushRange=null;
+    applyFilters();
+  },
+  setFilterValues:(opts)=>{
+    if(opts.yearFrom!=null)document.getElementById('year-from').value=opts.yearFrom;
+    if(opts.yearTo!=null)document.getElementById('year-to').value=opts.yearTo;
+    if(opts.state!=null)document.getElementById('state-filter').value=opts.state;
+    if(opts.sub!=null)document.getElementById('sub-filter').value=opts.sub;
+    if(opts.categories){
+      [0,1,2].forEach(i=>{
+        document.querySelector(`[data-cat="${i}"]`).checked=opts.categories.includes(i);
+      });
+    }
+  },
+
+  // Analysis
+  runCorrelation:runCorrelation,
+  runMatrixCorrelation:async()=>{
+    corrSubMode='matrix';
+    document.querySelectorAll('.corr-sub-btn').forEach(b=>b.classList.toggle('active',b.dataset.submode==='matrix'));
+    document.querySelectorAll('.corr-subpanel').forEach(p=>p.style.display='none');
+    document.getElementById('matrix-panel').style.display='block';
+    await runMatrixCorrelation();
+    return corrMatrix?{matrix:corrMatrix}:{computed:true};
+  },
+  detectClusters:()=>{
+    corrSubMode='clusters';
+    document.querySelectorAll('.corr-sub-btn').forEach(b=>b.classList.toggle('active',b.dataset.submode==='clusters'));
+    document.querySelectorAll('.corr-subpanel').forEach(p=>p.style.display='none');
+    document.getElementById('cluster-panel').style.display='block';
+    document.getElementById('cluster-run').click();
+    return{clusters:detectedClusters.map(c=>({
+      centroid:{lat:c.centroid.lat,lon:c.centroid.lon,label:c.centroid.label},
+      total:c.total,
+      categories:{ufo:c.stats[0],bigfoot:c.stats[1],haunted:c.stats[2]},
+      catCount:c.catCount
+    }))};
+  },
+  runTemporalAnalysis:()=>{
+    corrSubMode='temporal';
+    document.querySelectorAll('.corr-sub-btn').forEach(b=>b.classList.toggle('active',b.dataset.submode==='temporal'));
+    document.querySelectorAll('.corr-subpanel').forEach(p=>p.style.display='none');
+    document.getElementById('temporal-panel').style.display='block';
+    document.getElementById('temporal-run').click();
+  },
+
+  // Data access
+  getStats:()=>{
+    const vis=filteredCat.reduce((s,a)=>s+a.length,0);
+    return{
+      total:allData.length,visible:vis,
+      categories:[catArrays[0].length,catArrays[1].length,catArrays[2].length],
+      filtered:[filteredCat[0].length,filteredCat[1].length,filteredCat[2].length],
+      zoom:map.getZoom(),
+      bounds:{south:map.getBounds().getSouth(),north:map.getBounds().getNorth(),
+              west:map.getBounds().getWest(),east:map.getBounds().getEast()},
+      activeFilters:{
+        yearFrom:document.getElementById('year-from').value||null,
+        yearTo:document.getElementById('year-to').value||null,
+        state:document.getElementById('state-filter').value||null,
+        sub:document.getElementById('sub-filter').value||null
+      }
+    };
+  },
+  getSightingsInArea:(lat,lon,radiusKm,category,limit)=>{
+    limit=limit||20;
+    const radiusDeg=radiusKm/111;
+    const results=[];
+    const cats=category!=null?[category]:[0,1,2];
+    for(const cat of cats){
+      for(const r of filteredCat[cat]){
+        const dlat=r[F.LAT]-lat,dlon=r[F.LON]-lon;
+        if(Math.abs(dlat)>radiusDeg||Math.abs(dlon)>radiusDeg)continue;
+        const dist=Math.sqrt(dlat*dlat+dlon*dlon)*111;
+        if(dist<=radiusKm){
+          results.push({cat:cat,catName:CAT_NAMES[cat],lat:r[F.LAT],lon:r[F.LON],
+            date:r[F.DATE],location:r[F.LOC],sub:r[F.SUB],
+            description:(r[F.DESC]||'').substring(0,200),distKm:Math.round(dist*10)/10});
+        }
+      }
+    }
+    results.sort((a,b)=>a.distKm-b.distKm);
+    const limited=results.slice(0,limit);
+    const countsByCategory={};
+    for(const r of results){countsByCategory[r.catName]=(countsByCategory[r.catName]||0)+1}
+    return{total:results.length,showing:limited.length,countsByCategory,sightings:limited};
+  },
+
+  // Constants
+  F,CAT_NAMES,CAT_COLORS
+};
 
 })();

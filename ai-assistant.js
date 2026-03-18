@@ -1,0 +1,473 @@
+/* ========== AI ASSISTANT ("SIGNAL") ========== */
+(function(){
+'use strict';
+
+/* ===== STATE ===== */
+let chatWindow=null;
+let messages=[];
+let isStreaming=false;
+let settingsVisible=false;
+
+/* ===== US STATE CENTROIDS ===== */
+const STATE_CENTROIDS={
+  AL:[32.8,-86.8],AK:[64.2,-152.5],AZ:[34.3,-111.7],AR:[34.8,-92.2],CA:[36.8,-119.4],
+  CO:[39.0,-105.5],CT:[41.6,-72.7],DE:[39.0,-75.5],FL:[28.6,-82.4],GA:[32.7,-83.5],
+  HI:[20.5,-157.5],ID:[44.1,-114.7],IL:[40.0,-89.0],IN:[39.9,-86.3],IA:[42.0,-93.5],
+  KS:[38.5,-98.3],KY:[37.5,-85.3],LA:[31.0,-92.0],ME:[45.3,-69.0],MD:[39.0,-76.8],
+  MA:[42.2,-71.5],MI:[44.2,-84.5],MN:[46.0,-94.3],MS:[32.7,-89.7],MO:[38.3,-92.5],
+  MT:[47.0,-109.6],NE:[41.5,-99.8],NV:[39.5,-116.9],NH:[43.7,-71.5],NJ:[40.1,-74.5],
+  NM:[34.5,-106.0],NY:[43.0,-75.5],NC:[35.5,-79.4],ND:[47.4,-100.5],OH:[40.4,-82.8],
+  OK:[35.5,-97.5],OR:[44.0,-120.5],PA:[41.0,-77.5],RI:[41.7,-71.5],SC:[34.0,-81.0],
+  SD:[44.4,-100.2],TN:[35.9,-86.4],TX:[31.5,-99.3],UT:[39.3,-111.7],VT:[44.1,-72.6],
+  VA:[37.5,-78.9],WA:[47.4,-120.7],WV:[38.6,-80.6],WI:[44.5,-89.8],WY:[43.0,-107.6],
+  DC:[38.9,-77.0]
+};
+
+/* ===== TOOL DEFINITIONS ===== */
+const TOOLS=[
+  {name:'zoom_to_region',description:'Pan and zoom the map to a US state, city, or coordinates.',
+    input_schema:{type:'object',properties:{
+      state:{type:'string',description:'US state code (e.g. OH, CA)'},
+      city:{type:'string',description:'City name for geocoding'},
+      lat:{type:'number'},lon:{type:'number'},
+      zoom:{type:'integer',minimum:3,maximum:18}
+    }}},
+  {name:'set_filters',description:'Apply data filters: year range, state, subcategory, category visibility. Categories: 0=UFO/UAP, 1=Bigfoot/Sasquatch, 2=Haunted Places.',
+    input_schema:{type:'object',properties:{
+      year_from:{type:'integer'},year_to:{type:'integer'},
+      state:{type:'string'},subcategory:{type:'string'},
+      categories:{type:'array',items:{type:'integer',enum:[0,1,2]},description:'Which categories to show'}
+    }}},
+  {name:'set_view_mode',description:'Switch map visualization mode.',
+    input_schema:{type:'object',properties:{
+      mode:{type:'string',enum:['markers','heatmap','hexbin','correlation']}
+    },required:['mode']}},
+  {name:'run_spatial_correlation',description:'Compute Pearson spatial correlation between two categories using hex binning. Returns r, p-value, interpretation.',
+    input_schema:{type:'object',properties:{
+      category_a:{type:'integer',enum:[0,1,2]},
+      category_b:{type:'integer',enum:[0,1,2]},
+      hex_size_km:{type:'number'}
+    },required:['category_a','category_b']}},
+  {name:'run_matrix_correlation',description:'Compute all-pairs 3x3 correlation matrix with p-values.',
+    input_schema:{type:'object',properties:{hex_size_km:{type:'number'}}}},
+  {name:'detect_clusters',description:'Find dense multi-category hotspot regions via BFS clustering. Returns cluster locations and compositions.',
+    input_schema:{type:'object',properties:{
+      min_sightings:{type:'integer',default:30},
+      hex_size_km:{type:'number'}
+    }}},
+  {name:'run_temporal_analysis',description:'Open temporal correlation dashboard showing rolling correlation and seasonal patterns.',
+    input_schema:{type:'object',properties:{}}},
+  {name:'highlight_areas',description:'Highlight areas on the map with pulsing radar-ping animations that settle into labeled spotlights.',
+    input_schema:{type:'object',properties:{
+      areas:{type:'array',items:{type:'object',properties:{
+        lat:{type:'number'},lon:{type:'number'},
+        radius_km:{type:'number',default:50},
+        label:{type:'string'},color:{type:'string',default:'#00ff88'}
+      },required:['lat','lon','label']}}
+    },required:['areas']}},
+  {name:'get_statistics',description:'Get current dataset statistics: counts per category, active filters, zoom, bounds.',
+    input_schema:{type:'object',properties:{}}},
+  {name:'get_sightings_in_area',description:'Query sightings within a radius of a point. Returns counts and sample records.',
+    input_schema:{type:'object',properties:{
+      lat:{type:'number'},lon:{type:'number'},
+      radius_km:{type:'number',default:50},
+      category:{type:'integer',enum:[0,1,2]},
+      limit:{type:'integer',default:20,maximum:100}
+    },required:['lat','lon']}}
+];
+
+const SYSTEM_PROMPT=`You are SIGNAL, an AI analyst embedded in Strange Signals — a paranormal sightings correlation map with 183K+ geocoded records across three categories: UFO/UAP (~170K), Bigfoot/Sasquatch (~4.2K), and Haunted Places (~8.8K).
+
+You help users investigate spatial and temporal patterns in paranormal sighting data. You can control the map, run statistical analyses, highlight areas of interest, and explain findings in plain language.
+
+When the user asks about patterns, correlations, or specific regions:
+1. Use your tools to filter, analyze, and visualize the data
+2. Explain what you found and what it means statistically
+3. Highlight relevant areas on the map so the user can see them
+
+Always note statistical significance. A correlation of r=0.3 with p>0.05 is not meaningful — say so. Be honest about the limitations of the data.
+
+Available data spans from ~1900 to 2023. Geographic coverage is US-centric.
+Categories: 0=UFO/UAP, 1=Bigfoot/Sasquatch, 2=Haunted Places.
+
+Keep responses concise but informative. Use the highlight_areas tool to visually call out important findings on the map.`;
+
+/* ===== CHAT WINDOW ===== */
+function createChatWindow(){
+  if(chatWindow)return chatWindow;
+
+  const container=document.createElement('div');
+  container.style.cssText='display:flex;flex-direction:column;height:100%;position:relative';
+  container.innerHTML=
+    '<button class="signal-gear" id="signal-gear" title="Settings">&#9881;</button>'+
+    '<div class="signal-settings" id="signal-settings" style="display:none">'+
+      '<label>API KEY</label>'+
+      '<input type="password" id="signal-api-key" placeholder="sk-ant-..." value="'+(localStorage.getItem('signal-api-key')||'')+'">'+
+      '<label>MODEL</label>'+
+      '<select id="signal-model">'+
+        '<option value="claude-sonnet-4-6"'+(getModel()==='claude-sonnet-4-6'?' selected':'')+'>Claude Sonnet 4.6 (fast)</option>'+
+        '<option value="claude-haiku-4-5-20251001"'+(getModel()==='claude-haiku-4-5-20251001'?' selected':'')+'>Claude Haiku 4.5 (fastest)</option>'+
+        '<option value="claude-opus-4-6"'+(getModel()==='claude-opus-4-6'?' selected':'')+'>Claude Opus 4.6 (best)</option>'+
+      '</select>'+
+      '<div class="signal-settings-actions">'+
+        '<button class="btn-sm" id="signal-clear-history">CLEAR HISTORY</button>'+
+        '<button class="btn-sm primary" id="signal-save-settings">SAVE & CLOSE</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="signal-messages" id="signal-messages"></div>'+
+    '<div class="signal-input-bar">'+
+      '<textarea class="signal-input" id="signal-input" placeholder="Ask about patterns, correlations, or regions..." rows="1"></textarea>'+
+      '<button class="signal-send" id="signal-send">SEND</button>'+
+    '</div>';
+
+  chatWindow=WindowManager.create({
+    id:'signal',
+    title:'<span class="icon" style="color:var(--purple)">&#9678;</span> SIGNAL // AI ANALYST',
+    content:container,
+    defaultPos:{right:20,bottom:220},
+    defaultSize:{width:420,height:500},
+    minSize:{width:320,height:300}
+  });
+
+  // Event listeners
+  document.getElementById('signal-gear').addEventListener('click',()=>{
+    settingsVisible=!settingsVisible;
+    document.getElementById('signal-settings').style.display=settingsVisible?'flex':'none';
+  });
+  document.getElementById('signal-save-settings').addEventListener('click',()=>{
+    localStorage.setItem('signal-api-key',document.getElementById('signal-api-key').value);
+    localStorage.setItem('signal-model',document.getElementById('signal-model').value);
+    settingsVisible=false;
+    document.getElementById('signal-settings').style.display='none';
+  });
+  document.getElementById('signal-clear-history').addEventListener('click',()=>{
+    messages=[];
+    document.getElementById('signal-messages').innerHTML='';
+    addGreeting();
+  });
+  document.getElementById('signal-send').addEventListener('click',sendMessage);
+  document.getElementById('signal-input').addEventListener('keydown',(e)=>{
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}
+  });
+  document.getElementById('signal-input').addEventListener('input',function(){
+    this.style.height='auto';
+    this.style.height=Math.min(this.scrollHeight,120)+'px';
+  });
+
+  addGreeting();
+  return chatWindow;
+}
+
+function getModel(){return localStorage.getItem('signal-model')||'claude-sonnet-4-6'}
+function getApiKey(){return localStorage.getItem('signal-api-key')||''}
+
+/* ===== MESSAGE RENDERING ===== */
+function addGreeting(){
+  appendMessage('assistant','**SIGNAL online.** I\'m your AI analyst for Strange Signals.\n\nI can search the dataset, run correlation analyses, detect clusters, and highlight findings on the map. Try:\n\n- "Show me UFO hotspots in the Pacific Northwest"\n- "Are Bigfoot sightings correlated with UFO activity?"\n- "Find areas where all three categories overlap"\n- "What are the seasonal patterns?"');
+}
+
+function appendMessage(role,text){
+  const el=document.getElementById('signal-messages');
+  const msgDiv=document.createElement('div');
+  msgDiv.className='signal-msg '+role;
+  const roleLabel=role==='assistant'?'SIGNAL':'YOU';
+  msgDiv.innerHTML='<div class="msg-role">'+roleLabel+'</div><div class="msg-text">'+renderMarkdown(text)+'</div>';
+  el.appendChild(msgDiv);
+  el.scrollTop=el.scrollHeight;
+  return msgDiv;
+}
+
+function appendToolIndicator(name){
+  const el=document.getElementById('signal-messages');
+  const toolDiv=document.createElement('div');
+  toolDiv.className='signal-tool';
+  const label=name.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});
+  toolDiv.innerHTML='<span class="signal-tool-icon">&#9678;</span> '+label;
+  el.appendChild(toolDiv);
+  el.scrollTop=el.scrollHeight;
+  return toolDiv;
+}
+
+function updateToolIndicator(div){
+  div.className='signal-tool done';
+  div.querySelector('.signal-tool-icon').innerHTML='&#10003;';
+}
+
+function renderMarkdown(text){
+  return text
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/^- (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
+    .replace(/\n/g,'<br>');
+}
+
+/* ===== TOOL EXECUTION ===== */
+async function executeTool(name,input){
+  var SS=window.StrangeSignals;
+  if(!SS)return{error:'App not ready'};
+
+  switch(name){
+    case 'zoom_to_region':{
+      var lat,lon,zoom=input.zoom||7;
+      if(input.state){
+        var code=input.state.toUpperCase();
+        var coords=STATE_CENTROIDS[code];
+        if(coords){lat=coords[0];lon=coords[1]}
+        else return{error:'Unknown state: '+input.state};
+      } else if(input.city){
+        try{
+          var resp=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(input.city)+'&limit=1');
+          var data=await resp.json();
+          if(data.length){lat=parseFloat(data[0].lat);lon=parseFloat(data[0].lon)}
+          else return{error:'Could not find: '+input.city};
+        }catch(e){return{error:'Geocoding failed'}}
+      } else if(input.lat!=null&&input.lon!=null){
+        lat=input.lat;lon=input.lon;
+      } else {
+        return{error:'Provide state, city, or lat/lon'};
+      }
+      SS.getMap().flyTo([lat,lon],zoom,{duration:1.5});
+      return{success:true,lat:lat,lon:lon,zoom:zoom};
+    }
+    case 'set_filters':{
+      SS.setFilterValues({
+        yearFrom:input.year_from,yearTo:input.year_to,
+        state:input.state,sub:input.subcategory,
+        categories:input.categories
+      });
+      SS.applyFilters();
+      return SS.getStats();
+    }
+    case 'set_view_mode':{
+      SS.setView(input.mode);
+      return{mode:input.mode};
+    }
+    case 'run_spatial_correlation':{
+      if(input.hex_size_km)document.getElementById('corr-hex-size').value=input.hex_size_km;
+      SS.setView('correlation');
+      var result=await SS.runCorrelation(input.category_a,input.category_b);
+      return result||{error:'Correlation computation failed'};
+    }
+    case 'run_matrix_correlation':{
+      if(input.hex_size_km)document.getElementById('corr-hex-size').value=input.hex_size_km;
+      SS.setView('correlation');
+      var matResult=await SS.runMatrixCorrelation();
+      return matResult||{computed:true};
+    }
+    case 'detect_clusters':{
+      if(input.hex_size_km)document.getElementById('corr-hex-size').value=input.hex_size_km;
+      if(input.min_sightings)document.getElementById('cluster-threshold').value=input.min_sightings;
+      SS.setView('correlation');
+      return SS.detectClusters();
+    }
+    case 'run_temporal_analysis':{
+      SS.setView('correlation');
+      SS.runTemporalAnalysis();
+      return{opened:true};
+    }
+    case 'highlight_areas':{
+      var map=SS.getMap();
+      HighlightLayer.addMultiple(map,input.areas.map(function(a){
+        return{lat:a.lat,lon:a.lon,radiusKm:a.radius_km||50,label:a.label,color:a.color||'#00ff88'};
+      }));
+      return{highlighted:input.areas.length};
+    }
+    case 'get_statistics':{
+      return SS.getStats();
+    }
+    case 'get_sightings_in_area':{
+      return SS.getSightingsInArea(input.lat,input.lon,input.radius_km||50,input.category,input.limit||20);
+    }
+    default:
+      return{error:'Unknown tool: '+name};
+  }
+}
+
+/* ===== API CALL WITH STREAMING ===== */
+async function sendMessage(){
+  var inputEl=document.getElementById('signal-input');
+  var text=inputEl.value.trim();
+  if(!text||isStreaming)return;
+
+  var apiKey=getApiKey();
+  if(!apiKey){
+    appendMessage('assistant','Please set your Anthropic API key in settings (gear icon).');
+    return;
+  }
+
+  // Clear highlights on new query
+  if(window.HighlightLayer)HighlightLayer.clear();
+
+  appendMessage('user',text);
+  messages.push({role:'user',content:text});
+  inputEl.value='';
+  inputEl.style.height='auto';
+
+  if(messages.length>20)messages=messages.slice(-20);
+
+  isStreaming=true;
+  document.getElementById('signal-send').disabled=true;
+
+  try{
+    await runConversationLoop();
+  }catch(e){
+    console.error('SIGNAL error:',e);
+    appendMessage('assistant','Error: '+(e.message||'Unknown error')+'. Check your API key and try again.');
+  }finally{
+    isStreaming=false;
+    document.getElementById('signal-send').disabled=false;
+  }
+}
+
+async function runConversationLoop(){
+  var apiKey=getApiKey();
+  var model=getModel();
+
+  for(var turn=0;turn<10;turn++){
+    var body={
+      model:model,
+      max_tokens:4096,
+      system:SYSTEM_PROMPT,
+      tools:TOOLS,
+      messages:messages,
+      stream:true
+    };
+
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify(body)
+    });
+
+    if(!resp.ok){
+      var err=await resp.text();
+      throw new Error('API '+resp.status+': '+err.substring(0,200));
+    }
+
+    var result=await parseStream(resp);
+    var hasToolUse=result.content.some(function(b){return b.type==='tool_use'});
+
+    messages.push({role:'assistant',content:result.content});
+
+    if(!hasToolUse)break;
+
+    // Execute tool calls
+    var toolResults=[];
+    for(var i=0;i<result.content.length;i++){
+      var block=result.content[i];
+      if(block.type!=='tool_use')continue;
+      var indicator=appendToolIndicator(block.name);
+      try{
+        var toolResult=await executeTool(block.name,block.input);
+        updateToolIndicator(indicator);
+        toolResults.push({type:'tool_result',tool_use_id:block.id,content:JSON.stringify(toolResult)});
+      }catch(e){
+        updateToolIndicator(indicator);
+        toolResults.push({type:'tool_result',tool_use_id:block.id,content:JSON.stringify({error:e.message}),is_error:true});
+      }
+    }
+
+    messages.push({role:'user',content:toolResults});
+  }
+}
+
+async function parseStream(resp){
+  var reader=resp.body.getReader();
+  var decoder=new TextDecoder();
+  var buffer='';
+  var currentText='';
+  var msgDiv=null;
+  var content=[];
+  var currentBlock=null;
+  var toolInput='';
+
+  while(true){
+    var chunk=await reader.read();
+    if(chunk.done)break;
+    buffer+=decoder.decode(chunk.value,{stream:true});
+
+    var lines=buffer.split('\n');
+    buffer=lines.pop()||'';
+
+    for(var li=0;li<lines.length;li++){
+      var line=lines[li];
+      if(!line.startsWith('data: '))continue;
+      var data=line.slice(6);
+      if(data==='[DONE]')continue;
+
+      try{
+        var event=JSON.parse(data);
+
+        switch(event.type){
+          case 'content_block_start':
+            currentBlock=event.content_block;
+            if(currentBlock.type==='text'){
+              currentText='';
+              msgDiv=appendMessage('assistant','');
+            } else if(currentBlock.type==='tool_use'){
+              toolInput='';
+            }
+            break;
+
+          case 'content_block_delta':
+            if(event.delta.type==='text_delta'){
+              currentText+=event.delta.text;
+              if(msgDiv){
+                msgDiv.querySelector('.msg-text').innerHTML=renderMarkdown(currentText)+'<span class="signal-cursor"></span>';
+                document.getElementById('signal-messages').scrollTop=document.getElementById('signal-messages').scrollHeight;
+              }
+            } else if(event.delta.type==='input_json_delta'){
+              toolInput+=event.delta.partial_json;
+            }
+            break;
+
+          case 'content_block_stop':
+            if(currentBlock&&currentBlock.type==='text'){
+              if(msgDiv){
+                msgDiv.querySelector('.msg-text').innerHTML=renderMarkdown(currentText);
+              }
+              content.push({type:'text',text:currentText});
+            } else if(currentBlock&&currentBlock.type==='tool_use'){
+              var parsedInput={};
+              try{parsedInput=JSON.parse(toolInput)}catch(e){}
+              content.push({type:'tool_use',id:currentBlock.id,name:currentBlock.name,input:parsedInput});
+            }
+            currentBlock=null;
+            break;
+        }
+      }catch(e){/* skip malformed events */}
+    }
+  }
+
+  return{content:content};
+}
+
+/* ===== TOGGLE & KEYBOARD ===== */
+function toggleAssistant(){
+  var win=createChatWindow();
+  win.toggle();
+  var btn=document.getElementById('ai-toggle');
+  if(btn)btn.classList.toggle('active',!win._hidden&&!win._minimized);
+}
+
+// Toggle button
+var aiBtn=document.getElementById('ai-toggle');
+if(aiBtn)aiBtn.addEventListener('click',toggleAssistant);
+
+// Keyboard shortcut: I
+document.addEventListener('keydown',function(e){
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
+  if(e.key==='i'||e.key==='I'){
+    e.preventDefault();
+    toggleAssistant();
+  }
+});
+
+})();

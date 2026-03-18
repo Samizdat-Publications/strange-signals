@@ -1,0 +1,52 @@
+/* ========== WINDOW MANAGER ========== */
+.ss-window{position:absolute;z-index:1200;background:var(--surface-solid);border:1px solid var(--border);
+  border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:flex;flex-direction:column;
+  min-width:300px;min-height:200px;overflow:hidden}
+.ss-window.focused{border-color:var(--border-bright);box-shadow:0 8px 32px rgba(0,255,136,0.15)}
+.ss-window.minimized{display:none}
+
+.ss-window-titlebar{display:flex;justify-content:space-between;align-items:center;
+  padding:8px 12px;border-bottom:1px solid var(--border);cursor:move;user-select:none;
+  background:rgba(0,255,136,0.03);flex-shrink:0}
+.ss-window-title{font-family:var(--font-display);font-size:10px;letter-spacing:1.5px;
+  color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ss-window-controls{display:flex;gap:4px;flex-shrink:0}
+.ss-win-btn{width:24px;height:24px;border:1px solid var(--border);border-radius:3px;
+  background:rgba(255,255,255,0.03);color:var(--text-dim);cursor:pointer;
+  font-size:14px;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;line-height:1;padding:0}
+.ss-win-btn:hover{color:var(--text);border-color:var(--border-bright)}
+.ss-win-btn.close:hover{background:rgba(255,51,102,0.15);border-color:rgba(255,51,102,0.3);color:#ff3366}
+
+.ss-window-body{flex:1;overflow:auto;min-height:0}
+
+.ss-window-resize{position:absolute;bottom:0;right:0;width:16px;height:16px;cursor:nwse-resize}
+.ss-window-resize::after{content:'';position:absolute;bottom:3px;right:3px;
+  width:8px;height:8px;border-right:2px solid var(--border-bright);
+  border-bottom:2px solid var(--border-bright)}
+
+/* Minimized dock */
+.ss-dock{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  display:flex;gap:6px;z-index:1199}
+.ss-dock-btn{padding:4px 12px;background:var(--surface-solid);border:1px solid var(--border);
+  border-radius:3px;color:var(--text-dim);font-family:var(--font-display);font-size:8px;
+  letter-spacing:1px;cursor:pointer;transition:all .15s}
+.ss-dock-btn:hover{color:var(--text);border-color:var(--border-bright)}
+
+/* ========== HIGHLIGHT ANIMATIONS ========== */
+@keyframes highlight-ping{
+  0%{stroke-opacity:0.8;stroke-width:3;fill-opacity:0.15}
+  100%{stroke-opacity:0;stroke-width:1;fill-opacity:0}
+}
+@keyframes spotlight-pulse{
+  0%,100%{fill-opacity:0.12;stroke-opacity:0.6}
+  50%{fill-opacity:0.06;stroke-opacity:0.3}
+}
+.highlight-spotlight{animation:spotlight-pulse 3s ease-in-out infinite}
+.highlight-label{background:none!important;border:none!important}
+.highlight-label-inner{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:12px;font-weight:700;
+  background:rgba(5,6,15,0.8);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+  text-shadow:0 0 8px currentColor}

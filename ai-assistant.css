@@ -1,0 +1,70 @@
+/* ========== AI ASSISTANT ========== */
+
+/* Chat messages */
+.signal-messages{padding:12px;display:flex;flex-direction:column;gap:10px;
+  overflow-y:auto;flex:1;min-height:0}
+.signal-msg{max-width:90%;padding:10px 12px;border-radius:6px;font-size:11px;line-height:1.6}
+.signal-msg.assistant{background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.15);
+  align-self:flex-start;color:var(--text)}
+.signal-msg.user{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);
+  align-self:flex-end;color:var(--text)}
+.signal-msg .msg-role{font-family:var(--font-display);font-size:8px;letter-spacing:1.5px;
+  color:var(--text-dim);margin-bottom:4px}
+.signal-msg.assistant .msg-role{color:var(--green)}
+.signal-msg.user .msg-role{color:var(--cyan)}
+
+/* Markdown in messages */
+.signal-msg strong{color:var(--text-bright)}
+.signal-msg code{background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:2px;font-size:10px}
+.signal-msg ul,.signal-msg ol{margin:4px 0;padding-left:16px}
+.signal-msg li{margin:2px 0}
+
+/* Tool call indicators */
+.signal-tool{display:flex;align-items:center;gap:6px;padding:4px 8px;margin:4px 0;
+  background:rgba(170,68,255,0.06);border:1px solid rgba(170,68,255,0.15);
+  border-radius:4px;font-size:10px;color:var(--purple)}
+.signal-tool.done{border-color:rgba(0,255,136,0.15);color:var(--green)}
+.signal-tool-icon{font-size:12px;animation:tool-spin 1s linear infinite}
+.signal-tool.done .signal-tool-icon{animation:none}
+@keyframes tool-spin{to{transform:rotate(360deg)}}
+
+/* Input bar */
+.signal-input-bar{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--border);flex-shrink:0}
+.signal-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:4px;color:var(--text);padding:8px 10px;outline:none;resize:none;
+  font-family:var(--font-mono);font-size:11px;min-height:36px;max-height:120px}
+.signal-input:focus{border-color:var(--green)}
+.signal-input::placeholder{color:var(--text-dim)}
+.signal-send{padding:8px 14px;background:rgba(0,255,136,0.1);border:1px solid var(--green);
+  border-radius:4px;color:var(--green);cursor:pointer;font-family:var(--font-display);
+  font-size:10px;letter-spacing:1px;transition:all .15s;flex-shrink:0}
+.signal-send:hover{background:rgba(0,255,136,0.2)}
+.signal-send:disabled{opacity:0.4;cursor:not-allowed}
+
+/* Settings */
+.signal-settings{padding:12px;display:flex;flex-direction:column;gap:8px}
+.signal-settings label{font-family:var(--font-display);font-size:9px;letter-spacing:1px;color:var(--text-dim)}
+.signal-settings input,.signal-settings select{width:100%;background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);border-radius:3px;color:var(--text);padding:6px 8px;outline:none}
+.signal-settings input:focus,.signal-settings select:focus{border-color:var(--green)}
+.signal-settings-actions{display:flex;gap:6px;margin-top:4px}
+
+/* Settings gear button */
+.signal-gear{position:absolute;top:8px;right:8px;width:24px;height:24px;
+  background:none;border:1px solid var(--border);border-radius:3px;color:var(--text-dim);
+  cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;z-index:1}
+.signal-gear:hover{color:var(--text);border-color:var(--border-bright)}
+
+/* AI toggle button in header */
+#ai-toggle{padding:4px 12px;border:1px solid var(--purple);border-radius:3px;
+  background:rgba(170,68,255,0.1);color:var(--purple);cursor:pointer;
+  font-family:var(--font-display);font-size:10px;letter-spacing:1px;
+  transition:all .15s;margin-left:auto}
+#ai-toggle:hover{background:rgba(170,68,255,0.2)}
+#ai-toggle.active{background:rgba(170,68,255,0.25);border-color:rgba(170,68,255,0.6)}
+
+/* Streaming cursor */
+.signal-cursor{display:inline-block;width:6px;height:14px;background:var(--green);
+  animation:cursor-blink 0.8s step-end infinite;vertical-align:text-bottom;margin-left:2px}
+@keyframes cursor-blink{50%{opacity:0}}
