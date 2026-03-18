@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 <link rel="stylesheet" href="window-manager.css">
 <link rel="stylesheet" href="ai-assistant.css">
+<link rel="stylesheet" href="annotations.css">
 <link rel="stylesheet" href="strange-signals.css">
 </head>
 <body>
@@ -48,6 +49,7 @@
     <input type="text" id="search-box" placeholder="Search location..." aria-label="Search location">
     <span class="kbd-hint">/ to search</span>
     <button id="ai-toggle" title="Toggle AI Assistant (I)">SIGNAL</button>
+    <button id="snapshot-btn" title="Export snapshot (P)">&#128247; SNAP</button>
   </div>
 </header>
 
@@ -262,9 +264,11 @@
         <b style="color:var(--text)">X</b> Hex &nbsp;
         <b style="color:var(--text)">C</b> Corr<br>
         <b style="color:var(--text)">/</b> Search &nbsp;
-        <b style="color:var(--text)">Esc</b> Reset &nbsp;
+        <b style="color:var(--text)">Esc</b> Close &nbsp;
         <b style="color:var(--text)">S</b> Sidebar<br>
-        <b style="color:var(--purple)">I</b> Signal AI
+        <b style="color:var(--purple)">I</b> Signal AI &nbsp;
+        <b style="color:var(--text)">T</b> Timeline &nbsp;
+        <b style="color:var(--text)">?</b> All shortcuts
       </div>
     </div>
   </aside>
@@ -277,6 +281,14 @@
       <!-- PER CAPITA INDICATOR -->
       <div id="percapita-indicator" style="display:none">
         <span>&#9878; PER CAPITA</span> &mdash; normalized by population density
+      </div>
+      <!-- ANNOTATION TOOLBAR -->
+      <div class="annotation-toolbar" id="annotation-toolbar">
+        <button class="anno-btn" id="anno-toggle" title="Add annotation (A)">&#128204;</button>
+        <button class="anno-btn" id="anno-export" title="Export annotations">&#128190;</button>
+        <button class="anno-btn" id="anno-import" title="Import annotations">&#128194;</button>
+        <button class="anno-btn" id="anno-clear" title="Clear all">&#128465;</button>
+        <span class="anno-count-badge"><span id="anno-count">0</span></span>
       </div>
       <!-- TEMPORAL OVERLAY (managed by WindowManager) -->
       <div id="temporal-content-inner" style="display:none">
@@ -302,12 +314,54 @@
   </main>
 </div>
 
+<!-- KEYBOARD SHORTCUTS HELP OVERLAY -->
+<div id="shortcuts-overlay" class="shortcuts-overlay" style="display:none">
+  <div class="shortcuts-panel">
+    <div class="shortcuts-header">
+      <h2>KEYBOARD SHORTCUTS</h2>
+      <button id="shortcuts-close" class="shortcuts-close">&times;</button>
+    </div>
+    <div class="shortcuts-grid">
+      <div class="shortcut-group">
+        <h3>LAYERS</h3>
+        <div class="shortcut-row"><kbd>1</kbd> Toggle UFO/UAP</div>
+        <div class="shortcut-row"><kbd>2</kbd> Toggle Bigfoot</div>
+        <div class="shortcut-row"><kbd>3</kbd> Toggle Haunted</div>
+      </div>
+      <div class="shortcut-group">
+        <h3>VIEWS</h3>
+        <div class="shortcut-row"><kbd>M</kbd> Markers view</div>
+        <div class="shortcut-row"><kbd>H</kbd> Heatmap view</div>
+        <div class="shortcut-row"><kbd>X</kbd> Hex density</div>
+        <div class="shortcut-row"><kbd>C</kbd> Correlation</div>
+      </div>
+      <div class="shortcut-group">
+        <h3>PANELS</h3>
+        <div class="shortcut-row"><kbd>S</kbd> Toggle sidebar</div>
+        <div class="shortcut-row"><kbd>I</kbd> Toggle SIGNAL AI</div>
+        <div class="shortcut-row"><kbd>T</kbd> Toggle timeline</div>
+        <div class="shortcut-row"><kbd>/</kbd> Focus search</div>
+      </div>
+      <div class="shortcut-group">
+        <h3>GENERAL</h3>
+        <div class="shortcut-row"><kbd>?</kbd> This help</div>
+        <div class="shortcut-row"><kbd>Esc</kbd> Close panel / Reset</div>
+        <div class="shortcut-row"><kbd>F</kbd> Fullscreen map</div>
+        <div class="shortcut-row"><kbd>R</kbd> Reset view</div>
+        <div class="shortcut-row"><kbd>A</kbd> Annotation mode</div>
+        <div class="shortcut-row"><kbd>P</kbd> Snapshot export</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- CDN Libraries -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <script src="https://unpkg.com/@turf/turf@7/turf.min.js"></script>
 <script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <!-- App Logic -->
 <script src="highlight-layer.js"></script>
 <script src="window-manager.js"></script>
@@ -315,5 +369,6 @@
 <script src="signal-charts.js"></script>
 <script src="signal-reports.js"></script>
 <script src="ai-assistant.js"></script>
+<script src="annotations.js"></script>
 </body>
 </html>
