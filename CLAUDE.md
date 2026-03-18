@@ -4,14 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**STRANGE SIGNALS** — An interactive paranormal sightings correlation map visualizing 276K+ geocoded records across three categories: UFO/UAP, Bigfoot/Sasquatch, and Haunted Places. Features five analysis modes plus an advanced correlation suite with SIGNAL AI assistant. Includes historical data back to 593 BC and worldwide coverage.
+**STRANGE SIGNALS** — An interactive paranormal sightings correlation map visualizing 385K+ geocoded records across three categories: UFO/UAP, Bigfoot/Sasquatch, and Haunted Places. Features five analysis modes plus an advanced correlation suite with Signal Analyst AI assistant. Includes historical data back to 593 BC and worldwide coverage.
 
 ## How to Run
 
 ### First-time setup (data pipeline)
 ```bash
 pip install -r requirements.txt
-bash setup_sightings.sh            # Downloads 10 datasets + builds JSON (~276K records)
+bash setup_sightings.sh            # Downloads 10 datasets + builds JSON (~385K records)
+python geocode_nuforc_hf.py --run  # Geocode HuggingFace NUFORC (optional, adds ~109K)
 ```
 
 ### Development
@@ -29,9 +30,9 @@ strange-signals.js         Main app logic — IIFE-wrapped
 parse-worker.js            Web Worker: off-main-thread JSON parsing
 hex-worker.js              Web Worker: hex-grid correlation computation
 data-worker.js             Web Worker: async JSON load + parse + validation (large datasets)
-ai-assistant.js            SIGNAL AI assistant (Anthropic API, tool use)
+ai-assistant.js            Signal Analyst AI assistant (Anthropic API, tool use)
 signal-charts.js           Correlation chart rendering (D3)
-signal-reports.js          Report generation for SIGNAL AI
+signal-reports.js          Report generation for Signal Analyst
 annotations.js             User-drawn map annotations layer
 highlight-layer.js         Map highlighting layer
 window-manager.js          Floating window / panel manager
@@ -59,7 +60,7 @@ DATA PIPELINE (Python 3)
     cryptid_sightings.json   105 non-Bigfoot cryptid locations (committed)
     missing411.json          71 Missing 411 disappearance cases (committed)
     geomagnetic_storms.json  92 G3+ geomagnetic storms 1950-2026 (committed)
-    sightings_map_data.json  Generated: 276K records loaded by the map (git-ignored)
+    sightings_map_data.json  Generated: 385K records loaded by the map (git-ignored)
     raw/                     Downloaded CSVs (git-ignored)
     *.xlsx                   Generated Excel (git-ignored)
 
@@ -121,7 +122,7 @@ Everything is wrapped in an IIFE `(function(){ 'use strict'; ... })();`
 | D3.js | 7 | Timeline, correlation charts |
 | html2canvas | 1.4.1 | Snapshot export (P key) |
 
-### Core Datasets (sources combined; totals after dedup)
+### Core Datasets (11 sources, ~385K unique records after dedup)
 1. **UFO NUFORC** (TidyTuesday 2023) — ~96K sightings
 2. **UFO planetsig** — ~80K geocoded NUFORC reports
 3. **Bigfoot BFRO detailed** — ~5K reports with weather/terrain data
@@ -130,6 +131,7 @@ Everything is wrapped in an IIFE `(function(){ 'use strict'; ... })();`
 6. **UFO CORGIS** — ~60K NUFORC with nested columns
 7. **UFO wlouie1** — ~80K geocoded (includes ~3.6K Canadian)
 8. **Larry Hatch *U* Database** (RR0) — ~18K historical worldwide UFO cases (593 BC–2003)
+9. **HuggingFace NUFORC** (kcimc, Jan 2024) — ~116K geocoded via Census/GeoNames gazetteers
 
 ### Overlay Datasets (7 additional sources)
 6. **Restricted Airspace** — 105 FAA zones (Restricted, MOA, Warning, Prohibited, Alert)

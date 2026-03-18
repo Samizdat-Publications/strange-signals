@@ -213,6 +213,30 @@ def load_larry_hatch():
     return df
 
 
+def load_nuforc_hf():
+    """HuggingFace NUFORC geocoded (~116K after geocoding, ~50K net new after dedup)."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "data", "nuforc_hf_geocoded.csv")
+    if not os.path.exists(path):
+        print("  [10/10] HuggingFace NUFORC - file not found, skipping")
+        print("          Run: python geocode_nuforc_hf.py --run")
+        return None
+    print("  [10/10] HuggingFace NUFORC geocoded (~116K)...")
+    df = pd.read_csv(path, low_memory=False)
+    before = len(df)
+    # Filter to only geocoded rows
+    df = df.dropna(subset=["lat", "lon"])
+    df = df.rename(columns={"lat": "latitude", "lon": "longitude"})
+    df = clean_coords(df)
+    print(f"         {len(df):,} / {before:,} with valid coordinates")
+    # Parse date from date_time column (e.g., "2014-09-21 13:00:00")
+    df["date"] = df["date_time"].apply(
+        lambda x: str(x)[:10] if pd.notna(x) and len(str(x)) >= 10 else "")
+    df["time"] = df["date_time"].apply(
+        lambda x: str(x)[11:16] if pd.notna(x) and len(str(x)) > 11 else "")
+    return df
+
+
 def truncate(val, maxlen=500):
     if pd.isna(val):
         return ""
@@ -231,7 +255,7 @@ def clean_for_excel(df):
 
 def build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
                    ufo_corgis=None, haunted_kaggle=None, ufo_wlouie1=None,
-                   larry_hatch=None):
+                   larry_hatch=None, nuforc_hf=None):
     """Build a single normalized dataset for mapping overlays."""
     print("\n  Building Combined_All...")
     frames = []
@@ -367,6 +391,23 @@ def build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
             "source": "Larry Hatch *U* Database (RR0)",
         }))
 
+    # HuggingFace NUFORC (geocoded via gazetteer + Nominatim)
+    if nuforc_hf is not None and len(nuforc_hf) > 0:
+        df = nuforc_hf.copy()
+        frames.append(pd.DataFrame({
+            "category": "UFO/UAP",
+            "subcategory": df.get("shape", ""),
+            "date": df.get("date", ""),
+            "time": df.get("time", ""),
+            "latitude": df["latitude"],
+            "longitude": df["longitude"],
+            "city": df.get("city", ""),
+            "state": df.get("state", ""),
+            "country": df.get("country", ""),
+            "description": df.get("summary", "").apply(lambda x: truncate(x)),
+            "source": "HuggingFace NUFORC (kcimc, geocoded)",
+        }))
+
     # UFO wlouie1 (includes Canadian sightings)
     if ufo_wlouie1 is not None and len(ufo_wlouie1) > 0:
         df = ufo_wlouie1.copy()
@@ -462,10 +503,12 @@ def main():
     haunted_kaggle = safe_load("Haunted Kaggle", load_haunted_kaggle)
     ufo_wlouie1 = safe_load("UFO wlouie1", load_ufo_wlouie1)
     larry_hatch = safe_load("Larry Hatch", load_larry_hatch)
+    nuforc_hf = safe_load("NUFORC HF", load_nuforc_hf)
 
     combined = build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
                               ufo_corgis=ufo_corgis, haunted_kaggle=haunted_kaggle,
-                              ufo_wlouie1=ufo_wlouie1, larry_hatch=larry_hatch)
+                              ufo_wlouie1=ufo_wlouie1, larry_hatch=larry_hatch,
+                              nuforc_hf=nuforc_hf)
 
     datasets = {
         "UFO_NUFORC_97K": ufo_nuforc,
@@ -490,6 +533,11 @@ def main():
         if "description" in lh.columns:
             lh["description"] = lh["description"].apply(lambda x: truncate(x, 2000))
         datasets["UFO_LarryHatch_18K"] = lh
+    if nuforc_hf is not None and len(nuforc_hf) > 0:
+        hf = nuforc_hf.copy()
+        if "summary" in hf.columns:
+            hf["summary"] = hf["summary"].apply(lambda x: truncate(x, 2000))
+        datasets["UFO_HF_NUFORC_116K"] = hf
 
     summary = build_summary(datasets)
     datasets["Summary"] = summary

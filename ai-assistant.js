@@ -1,4 +1,4 @@
-/* ========== AI ASSISTANT ("SIGNAL") ========== */
+/* ========== SIGNAL ANALYST — AI ASSISTANT ========== */
 (function(){
 'use strict';
 
@@ -205,7 +205,7 @@ const TOOLS=[
     input_schema:{type:'object',properties:{}}}
 ];
 
-const SYSTEM_PROMPT=`You are SIGNAL, an AI analyst embedded in Strange Signals — a paranormal sightings correlation map with 276K+ geocoded records across three categories: UFO/UAP (~263K, including worldwide coverage), Bigfoot/Sasquatch (~4.2K), and Haunted Places (~8.8K).
+const SYSTEM_PROMPT=`You are the Signal Analyst, an AI analyst embedded in Strange Signals — a paranormal sightings correlation map with 385K+ geocoded records across three categories: UFO/UAP (~372K, including worldwide coverage), Bigfoot/Sasquatch (~4.2K), and Haunted Places (~8.8K).
 
 You help users investigate spatial and temporal patterns in paranormal sighting data. You can control the map, run statistical analyses, highlight areas of interest, and explain findings in plain language.
 
@@ -216,7 +216,7 @@ When the user asks about patterns, correlations, or specific regions:
 
 Always note statistical significance. A correlation of r=0.3 with p>0.05 is not meaningful — say so. Be honest about the limitations of the data.
 
-Available data spans from 593 BC to 2023. The Larry Hatch *U* Database contributes ~18K historical records dating back millennia with worldwide coverage (USA, France, UK, Canada, Australia, Brazil, Italy, Scandinavia, etc). Modern NUFORC data covers ~1900-2023 and is primarily US with ~3.6K Canadian sightings. About 25K records are outside continental US bounds.
+Available data spans from 593 BC to 2024. The Larry Hatch *U* Database contributes ~18K historical records dating back millennia with worldwide coverage (USA, France, UK, Canada, Australia, Brazil, Italy, Scandinavia, etc). Modern NUFORC data covers ~1900-2024 with 10 source datasets including the 2024 HuggingFace NUFORC scrape (147K records, ~116K geocoded). About 26K records are outside continental US bounds.
 Categories: 0=UFO/UAP, 1=Bigfoot/Sasquatch, 2=Haunted Places.
 
 Keep responses concise but informative. Use the highlight_areas tool to visually call out important findings on the map.
@@ -331,7 +331,7 @@ function createChatWindow(){
 
   chatWindow=WindowManager.create({
     id:'signal',
-    title:'<span class="icon" style="color:var(--purple)">&#9678;</span> SIGNAL // AI ANALYST',
+    title:'<span class="icon" style="color:var(--purple)">&#9678;</span> SIGNAL ANALYST',
     content:container,
     defaultPos:{right:20,bottom:220},
     defaultSize:{width:420,height:500},
@@ -391,7 +391,7 @@ function getApiKey(){return localStorage.getItem('signal-api-key')||''}
 /* ===== MESSAGE RENDERING ===== */
 function addGreeting(){
   var hasKey=!!getApiKey();
-  var greeting='**SIGNAL online.** I\'m your AI analyst for Strange Signals.\n\n';
+  var greeting='**Signal Analyst online.** I\'m your AI analyst for Strange Signals.\n\n';
   if(!hasKey){
     greeting+='To get started, click the **gear icon** above and add your Anthropic API key. Your key stays in your browser and is only sent to Anthropic.\n\n';
     greeting+='**All map features work without a key** — markers, heatmap, hex density, correlation, timeline, and overlays. The AI analyst just needs a key to answer questions.\n\n';
@@ -405,7 +405,7 @@ function appendMessage(role,text){
   const el=document.getElementById('signal-messages');
   const msgDiv=document.createElement('div');
   msgDiv.className='signal-msg '+role;
-  const roleLabel=role==='assistant'?'SIGNAL':'YOU';
+  const roleLabel=role==='assistant'?'SIGNAL ANALYST':'YOU';
   msgDiv.innerHTML='<div class="msg-role">'+roleLabel+'</div><div class="msg-text">'+renderMarkdown(text)+'</div>';
   el.appendChild(msgDiv);
   el.scrollTop=el.scrollHeight;
@@ -877,7 +877,7 @@ async function sendMessage(){
   var typingDiv=document.createElement('div');
   typingDiv.className='signal-typing';
   typingDiv.id='signal-typing';
-  typingDiv.innerHTML='<div class="signal-typing-dots"><span></span><span></span><span></span></div> SIGNAL is analyzing...';
+  typingDiv.innerHTML='<div class="signal-typing-dots"><span></span><span></span><span></span></div> Signal Analyst is analyzing...';
   document.getElementById('signal-messages').appendChild(typingDiv);
   document.getElementById('signal-messages').scrollTop=document.getElementById('signal-messages').scrollHeight;
 
@@ -889,7 +889,7 @@ async function sendMessage(){
   try{
     await runConversationLoop();
   }catch(e){
-    console.error('SIGNAL error:',e);
+    console.error('Signal Analyst error:',e);
     showError(formatApiError(e,e.response||null));
   }finally{
     isStreaming=false;
