@@ -261,6 +261,35 @@ class SSWindow{
     }catch(e){}
   }
 
+  _clampToViewport(){
+    const container=this.el.parentElement;
+    if(!container)return;
+    const cw=container.clientWidth,ch=container.clientHeight;
+    const rect=this.el.getBoundingClientRect();
+    const parentRect=container.getBoundingClientRect();
+    let left=rect.left-parentRect.left;
+    let top=rect.top-parentRect.top;
+    let w=this.el.offsetWidth;
+    let h=this.el.offsetHeight;
+    let changed=false;
+    // Clamp height to fit within container (leave 10px margin)
+    if(h>ch-10){this.el.style.height=(ch-10)+'px';h=ch-10;changed=true}
+    // Convert to top/left positioning for reliable clamping
+    if(top<0||top+h>ch){
+      top=clamp(top,0,Math.max(0,ch-h));
+      this.el.style.top=top+'px';
+      this.el.style.bottom='auto';
+      changed=true;
+    }
+    if(left<-w+100||left>cw-100){
+      left=clamp(left,-w+100,cw-100);
+      this.el.style.left=left+'px';
+      this.el.style.right='auto';
+      changed=true;
+    }
+    if(changed)this._savePosition();
+  }
+
   focus(){
     Object.values(windows).forEach(w=>w.el.classList.remove('focused'));
     this.el.classList.add('focused');
@@ -273,6 +302,8 @@ class SSWindow{
     this.el.style.display='flex';
     this.el.classList.remove('minimized');
     this.focus();
+    // Clamp after display:flex takes effect (need layout to measure)
+    requestAnimationFrame(()=>this._clampToViewport());
     this._updateDock();
   }
 
