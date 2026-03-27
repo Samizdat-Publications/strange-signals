@@ -136,8 +136,8 @@ def load_ufo_corgis():
 def load_haunted_kaggle():
     """Kaggle Haunted Places expanded (~10K)."""
     path = os.path.join(RAW, "haunted_kaggle.csv")
-    if not os.path.exists(path):
-        print("  [7/7] Haunted Kaggle - file not found, skipping")
+    if not os.path.exists(path) or os.path.getsize(path) < 100:
+        print("  [7/7] Haunted Kaggle - file not found or invalid, skipping")
         return pd.DataFrame()
     print("  [7/7] Haunted Places Kaggle (expanded)...")
     df = pd.read_csv(path, low_memory=False)

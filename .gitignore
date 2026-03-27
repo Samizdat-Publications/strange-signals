@@ -10,4 +10,8 @@ __pycache__/
 data/raw/
 data/*.xlsx
 
-# Keep committed data files (sightings_map_data.json, us_population_density.json, military_bases.json)
+# Generated data files (rebuilt by pipeline — too large for git)
+data/sightings_map_data.json
+data/sightings_descriptions.json
+
+# Keep committed: us_population_density.json, military_bases.json
