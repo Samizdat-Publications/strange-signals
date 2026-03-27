@@ -877,10 +877,11 @@ function renderNNResults(results){
     for(let b=0;b<3;b++){
       if(a===b){html+='<td style="color:var(--text-dim)">--</td>';continue}
       const r=results[a]?.[b];
-      if(!r||r.meanDist===null){html+='<td>N/A</td>';continue}
+      if(!r||r.meanDist===null||!isFinite(r.meanDist)){html+='<td style="color:var(--text-dim)">N/A</td>';continue}
       const color=r.meanDist<50?'var(--green)':r.meanDist<100?'var(--cyan)':'var(--text)';
+      const stdStr=isFinite(r.stdDev)?r.stdDev.toFixed(1):'--';
       html+=`<td><div class="nn-dist" style="color:${color}">${r.meanDist.toFixed(1)}km</div>`+
-        `<div class="nn-stddev">&plusmn;${r.stdDev.toFixed(1)}</div></td>`;
+        `<div class="nn-stddev">&plusmn;${stdStr}</div></td>`;
     }
     html+='</tr>';
   }

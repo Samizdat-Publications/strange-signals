@@ -26,3 +26,6 @@ data/sightings_descriptions.json
 
 # Node (shouldn't exist but just in case)
 node_modules/
+
+# Claude Code local settings
+.claude/settings.local.json
