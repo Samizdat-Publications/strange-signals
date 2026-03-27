@@ -10,11 +10,10 @@ __pycache__/
 data/raw/
 data/*.xlsx
 
-# Generated data files (rebuilt by pipeline — too large for git)
-data/sightings_map_data.json
+# Descriptions file (lazy-loaded, not yet implemented)
 data/sightings_descriptions.json
 
-# Keep committed: us_population_density.json, military_bases.json, national_parks.json, historic_sites.json
+# Keep committed: sightings_map_data.json, us_population_density.json, military_bases.json, national_parks.json, historic_sites.json
 
 # Claude Code worktrees (ephemeral)
 .claude/worktrees/

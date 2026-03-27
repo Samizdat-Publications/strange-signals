@@ -280,12 +280,19 @@ function createChatWindow(){
     '<div class="signal-settings" id="signal-settings" style="display:none">'+
       '<label>API KEY</label>'+
       '<input type="password" id="signal-api-key" placeholder="sk-ant-..." value="'+(localStorage.getItem('signal-api-key')||'')+'">'+
+      '<div style="font-size:9px;color:var(--text-dim);margin:-4px 0 8px;line-height:1.5">'+
+        'Your key stays in your browser (localStorage). Never sent anywhere except Anthropic. '+
+        '<a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style="color:var(--cyan)">Get a key &rarr;</a>'+
+      '</div>'+
       '<label>MODEL</label>'+
       '<select id="signal-model">'+
         '<option value="claude-sonnet-4-6"'+(getModel()==='claude-sonnet-4-6'?' selected':'')+'>Claude Sonnet 4.6 (fast)</option>'+
-        '<option value="claude-haiku-4-5-20251001"'+(getModel()==='claude-haiku-4-5-20251001'?' selected':'')+'>Claude Haiku 4.5 (fastest)</option>'+
+        '<option value="claude-haiku-4-5-20251001"'+(getModel()==='claude-haiku-4-5-20251001'?' selected':'')+'>Claude Haiku 4.5 (fastest, cheapest)</option>'+
         '<option value="claude-opus-4-6"'+(getModel()==='claude-opus-4-6'?' selected':'')+'>Claude Opus 4.6 (best)</option>'+
       '</select>'+
+      '<div style="font-size:9px;color:var(--text-dim);margin:-4px 0 8px;line-height:1.5">'+
+        'Haiku: ~$0.001/query &middot; Sonnet: ~$0.01 &middot; Opus: ~$0.05'+
+      '</div>'+
       '<div class="signal-settings-actions">'+
         '<button class="btn-sm" id="signal-clear-history">CLEAR HISTORY</button>'+
         '<button class="btn-sm primary" id="signal-save-settings">SAVE & CLOSE</button>'+
@@ -358,7 +365,15 @@ function getApiKey(){return localStorage.getItem('signal-api-key')||''}
 
 /* ===== MESSAGE RENDERING ===== */
 function addGreeting(){
-  appendMessage('assistant','**SIGNAL online.** I\'m your AI analyst for Strange Signals.\n\nI can search the dataset, run correlation analyses, detect clusters, and highlight findings on the map. Try:\n\n- "Show me UFO hotspots in the Pacific Northwest"\n- "Are Bigfoot sightings correlated with UFO activity?"\n- "Find areas where all three categories overlap"\n- "What are the seasonal patterns?"');
+  var hasKey=!!getApiKey();
+  var greeting='**SIGNAL online.** I\'m your AI analyst for Strange Signals.\n\n';
+  if(!hasKey){
+    greeting+='To get started, click the **gear icon** above and add your Anthropic API key. Your key stays in your browser and is only sent to Anthropic.\n\n';
+    greeting+='**All map features work without a key** — markers, heatmap, hex density, correlation, timeline, and overlays. The AI analyst just needs a key to answer questions.\n\n';
+  }
+  greeting+='I can search the dataset, run correlation analyses, detect clusters, render charts, and highlight findings on the map. Try:\n\n- "Show me UFO hotspots in the Pacific Northwest"\n- "Are Bigfoot sightings correlated with UFO activity?"\n- "Compare Ohio vs California sightings"\n- "What are the seasonal patterns?"';
+  if(hasKey) greeting+='\n- "Analyze the sightings in my selected hex" *(click a hex first)*';
+  appendMessage('assistant',greeting);
 }
 
 function appendMessage(role,text){
@@ -755,7 +770,7 @@ async function sendMessage(){
 
   var apiKey=getApiKey();
   if(!apiKey){
-    appendMessage('assistant','Please set your Anthropic API key in settings (gear icon).');
+    appendMessage('assistant','**API key required.** Click the gear icon (top-right of this panel) to add your Anthropic API key.\n\nDon\'t have one? [Get a free key at console.anthropic.com](https://console.anthropic.com/settings/keys)\n\nYour key stays in your browser and is never stored on any server.');
     return;
   }
 
