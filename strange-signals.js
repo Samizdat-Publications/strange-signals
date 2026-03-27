@@ -1363,11 +1363,25 @@ function exportCSV(){
       rows.push(vals.join(','));
     });
   }
-  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  const blob=new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;a.download='sightings_export.csv';a.click();
   URL.revokeObjectURL(url);
+}
+
+/* ========== STATS HELPER ========== */
+function getStats(){
+  const vis=filteredCat.reduce((s,a)=>s+a.length,0);
+  return{
+    total:allData.length,visible:vis,
+    categories:{'UFO/UAP':filteredCat[0].length,'Bigfoot/Sasquatch':filteredCat[1].length,'Haunted Place':filteredCat[2].length},
+    filters:{
+      yearFrom:document.getElementById('year-from').value||null,
+      yearTo:document.getElementById('year-to').value||null,
+      state:document.getElementById('state-filter').value||null
+    }
+  };
 }
 
 /* ========== SNAPSHOT EXPORT ========== */
@@ -1571,7 +1585,7 @@ if(parksToggleEl){
         parksData.data.forEach(p=>{
           const icon=L.divIcon({className:'overlay-marker parks-marker',html:'&#9830;',iconSize:[12,12]});
           const marker=L.marker([p[0],p[1]],{icon});
-          marker.bindPopup('<b style="color:#22cc66">&#9830; '+p[2]+'</b><br>'+p[3]+'<br>'+p[4]+' km&sup2;');
+          marker.bindPopup('<b style="color:#22cc66">&#9830; '+esc(p[2])+'</b><br>'+esc(p[3])+'<br>'+p[4]+' km&sup2;');
           parksLayer.addLayer(marker);
         });
       }
@@ -1600,7 +1614,7 @@ if(histToggleEl){
         historicData.data.forEach(s=>{
           const icon=L.divIcon({className:'overlay-marker historic-marker',html:'&#9632;',iconSize:[10,10]});
           const marker=L.marker([s[0],s[1]],{icon});
-          marker.bindPopup('<b style="color:#ffaa22">&#9632; '+s[2]+'</b><br>'+s[3]+'<br>Listed: '+s[4]);
+          marker.bindPopup('<b style="color:#ffaa22">&#9632; '+esc(s[2])+'</b><br>'+esc(s[3])+'<br>Listed: '+esc(String(s[4])));
           historicLayer.addLayer(marker);
         });
       }

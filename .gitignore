@@ -14,4 +14,15 @@ data/*.xlsx
 data/sightings_map_data.json
 data/sightings_descriptions.json
 
-# Keep committed: us_population_density.json, military_bases.json
+# Keep committed: us_population_density.json, military_bases.json, national_parks.json, historic_sites.json
+
+# Claude Code worktrees (ephemeral)
+.claude/worktrees/
+
+# Screenshots / large images
+*.png
+*.jpg
+*.jpeg
+
+# Node (shouldn't exist but just in case)
+node_modules/

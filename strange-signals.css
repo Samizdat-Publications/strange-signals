@@ -430,3 +430,24 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;z-index:999
 
 /* 15. Loading screen extra glow */
 #loading h1{text-shadow:0 0 20px rgba(0,255,136,0.4),0 0 60px rgba(0,255,136,0.15)}
+
+/* ========== ACCESSIBILITY: FOCUS VISIBLE ========== */
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+
+/* ========== REDUCED MOTION ========== */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
+  .radar-sweep,.radar-ring,.logo-icon .ring,.logo-icon .dot{animation:none!important}
+}
+
+/* ========== PRINT ========== */
+@media print{
+  body::before,#sidebar::after,.scanline-overlay{display:none!important}
+  #header,#sidebar,#timeline-panel,#loading,.shortcuts-overlay,
+  .annotation-toolbar,#percapita-indicator{display:none!important}
+  #app{position:static!important}
+  #main{position:static!important}
+  #map-container{position:static!important;height:600px!important}
+  #map{height:600px!important}
+}
