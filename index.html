@@ -34,6 +34,8 @@
   <h1>STRANGE SIGNALS</h1>
   <div id="loading-status">Initializing systems...</div>
   <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  <div id="loading-bytes"></div>
+  <div id="loading-flavor-wrap"><div id="loading-flavor"></div></div>
 </div>
 
 <!-- HEADER -->
@@ -97,7 +99,7 @@
         <span class="layer-count" id="count-military" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-percapita">
-        <input type="checkbox" id="percapita-toggle">
+        <input type="checkbox" id="percapita-toggle" checked>
         <span class="layer-dot" style="background:#ffffff"></span>
         <span class="layer-name">Per Capita Heatmap</span>
         <span class="layer-count" style="font-size:8px;color:var(--text-dim)">HEAT</span>
@@ -193,8 +195,8 @@
         <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">Detect dense multi-category hotspot regions</div>
         <div class="corr-row">
           <label style="width:auto;font-size:9px">MIN</label>
-          <input type="range" id="cluster-threshold" min="5" max="200" value="30" step="5" aria-label="Minimum cluster threshold">
-          <span id="cluster-threshold-label" style="font-size:10px;width:36px;text-align:right">30</span>
+          <input type="range" id="cluster-threshold" min="2" max="100" value="10" step="1" aria-label="Minimum cluster threshold">
+          <span id="cluster-threshold-label" style="font-size:10px;width:36px;text-align:right">10</span>
         </div>
         <button class="corr-btn" id="cluster-run">&#9672; DETECT CLUSTERS</button>
         <div id="cluster-list" class="cluster-list"></div>
@@ -290,6 +292,8 @@
       <div id="percapita-indicator" style="display:none">
         <span>&#9878; PER CAPITA</span> &mdash; normalized by population density
       </div>
+      <!-- MAP LEGEND -->
+      <div id="map-legend" style="display:none"></div>
       <!-- ANNOTATION TOOLBAR -->
       <div class="annotation-toolbar" id="annotation-toolbar">
         <button class="anno-btn" id="anno-toggle" title="Add annotation (A)">&#128204;</button>

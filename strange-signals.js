@@ -58,9 +58,70 @@ map.on('zoomend',()=>{
 });
 
 /* ========== PROGRESS ========== */
+const LOADING_VERBS=[
+  'Scanning frequencies','Triangulating signals','Cataloging anomalies',
+  'Decoding witness reports','Mapping coordinates','Correlating patterns',
+  'Probing the unknown','Tracing sightings','Parsing field data',
+  'Spelunking databases','Tabulating encounters','Geolocating phenomena',
+  'Indexing the unexplained','Surveying hotspots','Crunching coordinates',
+  'Analyzing waveforms','Calibrating sensors','Aggregating intel'
+];
+const LOADING_FACTS=[
+  'Earliest recorded sighting: 1910, Pacific Northwest',
+  'California leads all states with 15,000+ UFO reports',
+  'Washington state: highest Bigfoot sighting density in the US',
+  'Over 10,000 haunted locations documented nationwide',
+  'Peak UFO sighting hour: 9 PM local time',
+  'The Pacific Northwest is a triple-category paranormal hotspot',
+  '"Triangle" is the most commonly reported UFO shape',
+  'Dataset spans 258,000+ geocoded paranormal records',
+  'Bigfoot sightings spike in September and October',
+  'Most haunted state per capita: Louisiana',
+  '98 US military installations mapped for proximity analysis',
+  'Average UFO sighting lasts under 5 minutes',
+  'Ohio ranks #4 nationally for UFO sightings',
+  'BFRO has cataloged 5,000+ Bigfoot field reports',
+  'The "Skinwalker Ranch" region has all three sighting types',
+  'Reports increase 300% during summer months'
+];
+let _flavorIdx=0,_flavorTimer=null,_verbIdx=0;
 function setProgress(pct,msg){
-  document.getElementById('progress-fill').style.width=pct+'%';
+  // Progress bar is CSS-animated (decoupled from loading state)
+  // Only update status text
   document.getElementById('loading-status').textContent=msg;
+}
+function setBytes(loaded,total){
+  const el=document.getElementById('loading-bytes');
+  if(!el)return;
+  const fmt=n=>n<1e6?(n/1e3).toFixed(0)+'KB':(n/1e6).toFixed(1)+'MB';
+  el.textContent=total?`${fmt(loaded)} / ${fmt(total)}`:`${fmt(loaded)} downloaded`;
+}
+function nextVerb(){
+  _verbIdx=(_verbIdx+1)%LOADING_VERBS.length;
+  return LOADING_VERBS[_verbIdx];
+}
+function startFlavorRotation(){
+  const el=document.getElementById('loading-flavor');
+  if(!el)return;
+  _flavorIdx=Math.floor(Math.random()*LOADING_FACTS.length);
+  _verbIdx=Math.floor(Math.random()*LOADING_VERBS.length);
+  el.textContent=LOADING_FACTS[_flavorIdx];
+  el.classList.add('slide-in');
+  _flavorTimer=setInterval(()=>{
+    // Slide current fact up and out
+    el.classList.remove('slide-in');
+    el.classList.add('slide-up');
+    setTimeout(()=>{
+      _flavorIdx=(_flavorIdx+1)%LOADING_FACTS.length;
+      el.textContent=LOADING_FACTS[_flavorIdx];
+      // Slide new fact in from below
+      el.classList.remove('slide-up');
+      el.classList.add('slide-in');
+    },500);
+  },3000);
+}
+function stopFlavorRotation(){
+  if(_flavorTimer){clearInterval(_flavorTimer);_flavorTimer=null}
 }
 
 /* ========== ESCAPE HTML ========== */
@@ -72,10 +133,36 @@ function decodeEntities(s){
 function esc(s){return s?decodeEntities(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
 
 /* ========== CREATE MARKER ========== */
+const CAT_ICON_SVG=[
+  // UFO/UAP — classic saucer silhouette
+  (c)=>`<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12">
+    <ellipse cx="6" cy="6" rx="5.5" ry="2.5" fill="${c}" opacity="0.9"/>
+    <ellipse cx="6" cy="5" rx="3" ry="2" fill="${c}" opacity="0.7"/>
+    <ellipse cx="6" cy="6" rx="5.5" ry="2.5" stroke="rgba(255,255,255,0.4)" stroke-width="0.5" fill="none"/>
+  </svg>`,
+  // Bigfoot — footprint silhouette
+  (c)=>`<svg xmlns="http://www.w3.org/2000/svg" width="10" height="14" viewBox="0 0 10 14">
+    <ellipse cx="5" cy="9" rx="3.2" ry="4.5" fill="${c}" opacity="0.9"/>
+    <circle cx="2.2" cy="3.2" r="1.3" fill="${c}" opacity="0.85"/>
+    <circle cx="4" cy="2" r="1.2" fill="${c}" opacity="0.85"/>
+    <circle cx="6" cy="2" r="1.2" fill="${c}" opacity="0.85"/>
+    <circle cx="7.8" cy="3.2" r="1.3" fill="${c}" opacity="0.85"/>
+    <rect x="0" y="0" width="10" height="14" rx="1" stroke="rgba(255,255,255,0.3)" stroke-width="0.4" fill="none"/>
+  </svg>`,
+  // Haunted — ghost silhouette
+  (c)=>`<svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+    <path d="M5.5,1 C8,1 10,3.5 10,6 L10,11 Q9,10 8,11 Q7,12 6,11 Q5.5,10.5 5,11 Q4,12 3,11 Q2,10 1,11 L1,6 C1,3.5 3,1 5.5,1Z" fill="${c}" opacity="0.9" stroke="rgba(255,255,255,0.3)" stroke-width="0.4"/>
+    <circle cx="4" cy="5.5" r="1" fill="rgba(0,0,0,0.5)"/>
+    <circle cx="7" cy="5.5" r="1" fill="rgba(0,0,0,0.5)"/>
+  </svg>`
+];
 function makeIcon(catIdx){
   const c=CAT_COLORS[catIdx];
-  return L.divIcon({className:'',iconSize:[8,8],iconAnchor:[4,4],
-    html:`<div style="width:8px;height:8px;background:${c};border-radius:50%;border:1px solid rgba(255,255,255,0.3);opacity:0.85"></div>`});
+  const svg=CAT_ICON_SVG[catIdx](c);
+  const sizes=[[12,12],[10,14],[11,14]];
+  const anchors=[[6,6],[5,7],[5.5,7]];
+  return L.divIcon({className:'',iconSize:sizes[catIdx],iconAnchor:anchors[catIdx],
+    html:svg});
 }
 const icons=[makeIcon(0),makeIcon(1),makeIcon(2)];
 
@@ -612,6 +699,7 @@ async function runClusterDetection(){
           if(c[j])tip+=`<span style="color:${CAT_COLORS[j]}">${CAT_NAMES[j]}: ${c[j]}</span><br>`;
         }
         layer.bindTooltip(tip);
+        layer.on('click',()=>showHexDetail(feature));
       }
     }
   }).addTo(map);
@@ -626,6 +714,7 @@ async function runClusterDetection(){
 
   document.getElementById('stat-hotspots').textContent=detectedClusters.length;
   renderClusterList();
+  updateLegend();
 }
 
 function renderClusterList(){
@@ -1006,6 +1095,45 @@ function clearAllLayers(){
   clearProxCircle();
 }
 
+function updateLegend(){
+  const el=document.getElementById('map-legend');
+  if(!el)return;
+  let html='';
+  if(currentView==='hexbin'){
+    html=`<div class="legend-title">Sighting Density</div>
+      <div class="legend-gradient" style="background:linear-gradient(90deg,#440154,#31688e,#35b779,#fde725)"></div>
+      <div class="legend-labels"><span>Few</span><span>Many</span></div>`;
+  } else if(currentView==='heatmap'){
+    html=`<div class="legend-title">Heat Intensity</div>`;
+    for(let i=0;i<3;i++){
+      const cb=document.querySelector('[data-cat="'+i+'"]');
+      if(cb&&cb.checked){
+        html+=`<div class="legend-row"><div class="legend-dot" style="background:${CAT_COLORS[i]}"></div>${CAT_NAMES[i]}</div>`;
+      }
+    }
+    html+=`<div style="margin-top:4px;font-size:9px;color:var(--text-dim)">Brighter = higher concentration</div>`;
+  } else if(currentView==='correlation'){
+    if(corrSubMode==='spatial'){
+      html=`<div class="legend-title">Co-occurrence</div>
+        <div class="legend-gradient" style="background:linear-gradient(90deg,#a50026,#f46d43,#fee08b,#a6d96a,#1a9850)"></div>
+        <div class="legend-labels"><span>Low</span><span>High</span></div>
+        <div class="legend-row" style="margin-top:5px"><div class="legend-swatch legend-hotspot" style="background:rgba(26,152,80,0.7)"></div>Hotspot cell</div>`;
+    } else if(corrSubMode==='clusters'){
+      html=`<div class="legend-title">Cluster Detection</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:#00ffcc"></div>Cluster member</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:rgba(255,255,255,0.1)"></div>Background</div>`;
+    } else {
+      el.style.display='none';
+      return;
+    }
+  } else {
+    el.style.display='none';
+    return;
+  }
+  el.innerHTML=html;
+  el.style.display='';
+}
+
 function renderCurrentView(){
   clearAllLayers();
   if(typeof temporalWindow!=='undefined'&&temporalWindow)temporalWindow.hide();
@@ -1014,14 +1142,25 @@ function renderCurrentView(){
   else if(currentView==='heatmap')renderHeatmap();
   else if(currentView==='hexbin')renderHexbin();
   else if(currentView==='correlation')renderCorrelation();
+  updateLegend();
 }
 
 function renderMarkers(){
+  const BATCH=5000;
   for(let i=0;i<3;i++){
     if(!filteredCat[i].length)continue;
     const group=createCluster(i);
-    const markers=filteredCat[i].map(r=>createMarker(r));
-    group.addLayers(markers);
+    const data=filteredCat[i];
+    // Batch marker creation so the main thread can breathe between chunks
+    let idx=0;
+    function addBatch(){
+      const end=Math.min(idx+BATCH,data.length);
+      const batch=[];
+      for(;idx<end;idx++)batch.push(createMarker(data[idx]));
+      group.addLayers(batch);
+      if(idx<data.length)setTimeout(addBatch,0);
+    }
+    addBatch();
     group.addTo(map);
     clusterGroups[i]=group;
   }
@@ -1150,9 +1289,22 @@ function buildHexDetailHTML(feature,sightings){
   const catCounts=[0,0,0];
   sightings.forEach(r=>catCounts[r[F.CAT]]++);
 
-  // Find best location name (most common)
+  // Find best location name (most common) — normalize case to merge duplicates
   const locFreq={};
-  sightings.forEach(r=>{if(r[F.LOC]){locFreq[r[F.LOC]]=(locFreq[r[F.LOC]]||0)+1}});
+  const locDisplay={}; // keep a nicely formatted display name per normalized key
+  sightings.forEach(r=>{
+    if(!r[F.LOC])return;
+    // Normalize: trim, title-case city, uppercase state abbreviation
+    const raw=r[F.LOC].trim();
+    const parts=raw.split(',');
+    const norm=parts.map((p,i)=>{
+      p=p.trim();
+      if(i===parts.length-1&&p.length<=3)return p.toUpperCase(); // state abbrev
+      return p.replace(/\w\S*/g,w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase());
+    }).join(', ');
+    locFreq[norm]=(locFreq[norm]||0)+1;
+    if(!locDisplay[norm])locDisplay[norm]=norm;
+  });
   const topLocs=Object.entries(locFreq).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const bestLoc=topLocs.length?topLocs[0][0]:'Unknown';
 
@@ -1556,9 +1708,11 @@ async function runCorrelation(catA,catB){
         tip+=`<span style="color:${CAT_COLORS[catB]}">${CAT_NAMES[catB]}: ${b}</span>`;
         if(feature.properties.hotspot)tip+=`<br><b style="color:var(--green)">HOTSPOT</b>`;
         layer.bindTooltip(tip);
+        layer.on('click',()=>showHexDetail(feature));
       }
     }
   }).addTo(map);
+  updateLegend();
 }
 
 /* ========== TIMELINE (D3) ========== */
@@ -2099,23 +2253,106 @@ document.getElementById('shortcuts-close').addEventListener('click',()=>{
 });
 
 /* ========== DATA LOADING ========== */
+function yieldThread(){return new Promise(r=>setTimeout(r,0))}
+
+// Parse, validate, filter, and categorize in a Web Worker.
+// Worker sends results in small batches so structured clone never blocks >1-2s.
+function parseInWorker(buffer){
+  return new Promise((resolve,reject)=>{
+    const cats=[[],[],[]];
+    try{
+      const w=new Worker('parse-worker.js');
+      w.onmessage=function(e){
+        const msg=e.data;
+        if(msg.type==='batch'){
+          // Push batch into category array — small enough to not block
+          for(let i=0;i<msg.records.length;i++)cats[msg.cat].push(msg.records[i]);
+          setProgress(0,nextVerb()+'...');
+        } else if(msg.type==='done'){
+          w.terminate();
+          resolve({cats,total:msg.total});
+        } else if(msg.type==='error'){
+          w.terminate();
+          reject(new Error(msg.error));
+        }
+      };
+      w.onerror=function(err){
+        w.terminate();
+        // Fallback: parse on main thread
+        try{
+          const text=new TextDecoder().decode(buffer);
+          const json=JSON.parse(text);
+          const raw=json.data;
+          for(let i=0;i<raw.length;i++){
+            const r=raw[i];
+            if(Array.isArray(r)&&r.length>=7&&typeof r[0]==='number'&&!isNaN(r[0])&&
+              typeof r[1]==='number'&&!isNaN(r[1])&&r[2]>=0&&r[2]<=2)
+              cats[r[2]].push(r);
+          }
+          resolve({cats,total:cats[0].length+cats[1].length+cats[2].length});
+        }catch(e2){reject(e2)}
+      };
+      w.postMessage(buffer,[buffer]);
+    }catch(e){
+      try{
+        const text=new TextDecoder().decode(buffer);
+        const json=JSON.parse(text);
+        const raw=json.data;
+        for(let i=0;i<raw.length;i++){
+          const r=raw[i];
+          if(Array.isArray(r)&&r.length>=7&&typeof r[0]==='number'&&!isNaN(r[0])&&
+            typeof r[1]==='number'&&!isNaN(r[1])&&r[2]>=0&&r[2]<=2)
+            cats[r[2]].push(r);
+        }
+        resolve({cats,total:cats[0].length+cats[1].length+cats[2].length});
+      }catch(e2){reject(e2)}
+    }
+  });
+}
+
+async function fetchWithProgress(url,label){
+  const resp=await fetch(url);
+  if(!resp.ok)throw new Error(`${label}: HTTP ${resp.status}`);
+  const total=parseInt(resp.headers.get('Content-Length'))||0;
+  if(!resp.body||!total){
+    return resp.json();
+  }
+  const reader=resp.body.getReader();
+  const chunks=[];
+  let loaded=0;
+  while(true){
+    const{done,value}=await reader.read();
+    if(done)break;
+    chunks.push(value);
+    loaded+=value.length;
+    setBytes(loaded,total);
+  }
+  const buf=new Uint8Array(loaded);
+  let pos=0;
+  for(const chunk of chunks){buf.set(chunk,pos);pos+=chunk.length}
+  // Send raw buffer to worker — NO TextDecoder or JSON.parse on main thread
+  return parseInWorker(buf.buffer);
+}
+
 async function init(){
   loadState();
-  setProgress(5,'Fetching sighting data...');
+  setProgress(2,nextVerb()+'...');
+  startFlavorRotation();
 
-  // Load sightings + overlay data in parallel
-  let json;
+  // Phase 1: Fetch + parse in worker (main thread stays free)
+  let result;
   try{
-    const [sightResp,popResp,milResp]=await Promise.allSettled([
-      fetch('data/sightings_map_data.json').then(r=>r.json()),
+    const [sightResult,popResp,milResp]=await Promise.allSettled([
+      fetchWithProgress('data/sightings_map_data.json','Sightings'),
       fetch('data/us_population_density.json').then(r=>r.json()),
       fetch('data/military_bases.json').then(r=>r.json())
     ]);
-    if(sightResp.status==='rejected'){
-      setProgress(0,'Error loading data: '+sightResp.reason);
+    if(sightResult.status==='rejected'){
+      setProgress(0,'Error loading data: '+sightResult.reason);
+      stopFlavorRotation();
       return;
     }
-    json=sightResp.value;
+    result=sightResult.value;
     if(popResp.status==='fulfilled'){
       popDensityGrid=popResp.value;
       console.log('Population density grid loaded:',popResp.value.rows+'x'+popResp.value.cols);
@@ -2130,68 +2367,54 @@ async function init(){
     }
   }catch(err){
     setProgress(0,'Error loading data: '+err.message);
+    stopFlavorRotation();
     return;
   }
 
-  allData=json.data;
-  if(!Array.isArray(allData)||!allData.length){
-    setProgress(0,'Invalid or empty data');
-    return;
-  }
-  // Filter out records with invalid coordinates or category
-  allData=allData.filter(r=>
-    Array.isArray(r)&&r.length>=7&&
-    typeof r[F.LAT]==='number'&&!isNaN(r[F.LAT])&&
-    typeof r[F.LON]==='number'&&!isNaN(r[F.LON])&&
-    r[F.CAT]>=0&&r[F.CAT]<3
-  );
-  if(!allData.length){
+  if(!result.total){
     setProgress(0,'No valid records found in data');
+    stopFlavorRotation();
     return;
   }
-  setProgress(40,`Processing ${allData.length.toLocaleString()} records...`);
 
-  // Sort into categories
-  await new Promise(resolve=>{
-    let idx=0;
-    const batch=30000;
-    function process(){
-      const end=Math.min(idx+batch,allData.length);
-      for(;idx<end;idx++){
-        const r=allData[idx];
-        catArrays[r[F.CAT]].push(r);
-      }
-      if(idx<allData.length){
-        setProgress(40+Math.round(idx/allData.length*30),
-          `Indexing ${idx.toLocaleString()} of ${allData.length.toLocaleString()}...`);
-        requestAnimationFrame(process);
-      } else resolve();
-    }
-    requestAnimationFrame(process);
-  });
+  // Phase 2: Worker already parsed, filtered, and categorized.
+  // Just assign the results — no heavy main-thread processing.
+  catArrays[0]=result.cats[0];
+  catArrays[1]=result.cats[1];
+  catArrays[2]=result.cats[2];
+  allData=[...catArrays[0],...catArrays[1],...catArrays[2]];
 
-  document.getElementById('stat-total').textContent=allData.length.toLocaleString();
+  // Clear the download counter — it's stale now
+  const bytesEl=document.getElementById('loading-bytes');
+  if(bytesEl)bytesEl.textContent='';
+
+  console.log(`Loaded ${result.total.toLocaleString()} records: UFO=${catArrays[0].length}, Bigfoot=${catArrays[1].length}, Haunted=${catArrays[2].length}`);
+
+  document.getElementById('stat-total').textContent=result.total.toLocaleString();
   document.getElementById('stat-zoom').textContent=map.getZoom();
 
-  // Enable/disable per-capita toggle based on data availability
   const pcToggle=document.getElementById('percapita-toggle');
   if(pcToggle&&!popDensityGrid)pcToggle.disabled=true;
-  // Enable/disable military toggle based on data availability
   const milToggle=document.getElementById('military-toggle');
   if(milToggle&&!militaryData)milToggle.disabled=true;
 
-  setProgress(80,'Building map layers...');
-  // Set initial view from URL state
+  // Phase 3: Render — yield between each heavy step
+  setProgress(0,nextVerb()+'...');
+  await yieldThread();
   setView(currentView);
-  // applyFilters() is called inside setView
 
-  setProgress(90,'Building timeline...');
+  await yieldThread();
   buildTimeline();
 
+  stopFlavorRotation();
+  const flavorEl=document.getElementById('loading-flavor');
+  if(flavorEl)flavorEl.textContent='';
+  if(bytesEl)bytesEl.textContent='';
+  const pf=document.getElementById('progress-fill');
+  if(pf){pf.style.animation='none';pf.style.width='100%';pf.style.transition='width 0.3s'}
   setProgress(100,'Systems online');
-  setTimeout(()=>{document.getElementById('loading').style.display='none'},500);
+  setTimeout(()=>{document.getElementById('loading').style.display='none'},600);
 
-  // Save state after full load
   saveState();
 }
 
