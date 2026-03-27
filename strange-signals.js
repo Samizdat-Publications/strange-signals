@@ -97,7 +97,8 @@ function makePopup(rec){
   let proxHtml='';
   for(let i=0;i<3;i++){
     if(i===cat)continue;
-    if(!document.querySelector(`[data-cat="${i}"]`).checked)continue;
+    const cb=document.querySelector(`[data-cat="${i}"]`);
+    if(!cb||!cb.checked)continue;
     let count=0;
     filteredCat[i].forEach(r=>{
       const d=turf.distance(pt,turf.point([r[F.LON],r[F.LAT]]),{units:'kilometers'});
@@ -310,7 +311,13 @@ function getOrBuildHexDataAsync(cellSide){
         if(statusEl)statusEl.textContent=msg.stage;
       } else if(msg.type==='result'){
         if(progressEl)progressEl.style.display='none';
-        const grid=JSON.parse(msg.gridJSON);
+        let grid;
+        try{grid=JSON.parse(msg.gridJSON)}catch(e){
+          console.error('Worker JSON parse failed',e);
+          hexWorker.terminate();hexWorker=null;
+          resolve(getOrBuildHexData(cellSide));
+          return;
+        }
         cachedHexGrid=grid;cachedHexCounts=msg.counts;cachedHexSize=cellSide;cachedBoundsKey=bKey;
         hexWorker.terminate();hexWorker=null;
         resolve({grid,counts:msg.counts});
@@ -1459,6 +1466,7 @@ async function geocodeSearch(query){
   if(!query.trim())return;
   try{
     const resp=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+    if(!resp.ok)throw new Error('Geocode HTTP '+resp.status);
     const data=await resp.json();
     if(data.length){
       map.flyTo([parseFloat(data[0].lat),parseFloat(data[0].lon)],10,{duration:1.5});
