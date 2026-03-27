@@ -11,8 +11,11 @@
   --pink: #ff3366;
   --orange: #ff6622;
   --purple: #aa44ff;
+  --military: #4488ff;
+  --parks: #22cc66;
+  --historic: #ffaa22;
   --text: #c8d4e0;
-  --text-dim: #5a6a7a;
+  --text-dim: #7a8a9a;
   --text-bright: #e8f0f8;
   --font-display: 'Orbitron', sans-serif;
   --font-mono: 'Space Mono', monospace;
@@ -342,8 +345,8 @@ button:disabled,input:disabled,select:disabled{opacity:0.5;cursor:not-allowed}
 
 /* ========== OVERLAY MARKERS ========== */
 .overlay-marker{text-align:center;line-height:12px;background:transparent!important;border:none!important}
-.parks-marker{color:#22cc66;font-size:14px;text-shadow:0 0 6px #22cc66,0 0 2px #000}
-.historic-marker{color:#ffaa22;font-size:12px;text-shadow:0 0 6px #ffaa22,0 0 2px #000}
+.parks-marker{color:var(--parks);font-size:14px;text-shadow:0 0 6px var(--parks),0 0 2px #000}
+.historic-marker{color:var(--historic);font-size:12px;text-shadow:0 0 6px var(--historic),0 0 2px #000}
 
 /* ========== FRONTEND POLISH: DEEP SPACE COMMAND ========== */
 
