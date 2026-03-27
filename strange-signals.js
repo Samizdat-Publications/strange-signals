@@ -1285,6 +1285,26 @@ function showHexDetail(feature){
 
   const{html,yearBins,bestLoc,sorted,total,showLimit}=buildHexDetailHTML(feature,sightings);
 
+  // Expose selected hex data for SIGNAL AI access
+  const centroid=turf.centroid(feature);
+  const catCounts=[0,0,0];
+  sightings.forEach(r=>catCounts[r[F.CAT]]++);
+  const subFreq={};
+  sightings.forEach(r=>{const s=r[F.SUB];if(s&&s.trim()){subFreq[s]=(subFreq[s]||0)+1}});
+  const topSubs=Object.entries(subFreq).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  window._selectedHexData={
+    location:bestLoc,
+    lat:centroid.geometry.coordinates[1],
+    lon:centroid.geometry.coordinates[0],
+    total:total,
+    categories:{ufo:catCounts[0],bigfoot:catCounts[1],haunted:catCounts[2]},
+    topSubcategories:topSubs.map(([s,c])=>({name:s,count:c})),
+    sightings:sightings.slice(0,100).map(r=>({
+      category:CAT_NAMES[r[F.CAT]],date:r[F.DATE]||'',location:r[F.LOC]||'',
+      subcategory:r[F.SUB]||'',description:(r[F.DESC]||'').substring(0,300)
+    }))
+  };
+
   // Create or update window
   if(!hexDetailWindow){
     hexDetailWindow=WindowManager.create({
@@ -1355,8 +1375,22 @@ function showHexDetail(feature){
     if(zoomBtn){
       zoomBtn.addEventListener('click',()=>{
         const c=turf.centroid(feature).geometry.coordinates;
+        // Zoom and render only this hex's sightings as markers (avoids 258K full render freeze)
         map.flyTo([c[1],c[0]],12,{duration:1});
-        setTimeout(()=>setView('markers'),1200);
+        setTimeout(()=>{
+          clearAllLayers();
+          currentView='markers';
+          document.querySelectorAll('.nav-btn,.view-btn').forEach(b=>b.classList.toggle('active',b.dataset.view==='markers'));
+          // Only add markers for sightings within this hex
+          for(let i=0;i<3;i++){
+            const pts=sightings.filter(r=>r[F.CAT]===i);
+            if(!pts.length)continue;
+            const group=createCluster(i);
+            group.addLayers(pts.map(r=>createMarker(r)));
+            group.addTo(map);
+            clusterGroups[i]=group;
+          }
+        },1200);
       });
     }
   });

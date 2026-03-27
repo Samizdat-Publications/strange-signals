@@ -185,7 +185,11 @@ const TOOLS=[
   {name:'list_annotations',description:'List all current annotations on the map.',
     input_schema:{type:'object',properties:{}}},
   {name:'clear_annotations',description:'Remove all annotations from the map.',
-    input_schema:{type:'object',properties:{}}}
+    input_schema:{type:'object',properties:{}}},
+  {name:'get_hex_analysis',description:'Get detailed analysis data for the currently selected hex cell (from HEX DENSITY view). Returns location, category breakdown, top subcategories, and up to 100 sighting records with descriptions. User must click a hex first. Use this to analyze themes, patterns, and descriptions within a specific geographic cell.',
+    input_schema:{type:'object',properties:{
+      include_descriptions:{type:'boolean',default:true,description:'Include sighting descriptions (up to 300 chars each)'}
+    }}}
 ];
 
 const SYSTEM_PROMPT=`You are SIGNAL, an AI analyst embedded in Strange Signals — a paranormal sightings correlation map with 258K+ geocoded records across three categories: UFO/UAP (~244K, including ~3.6K Canadian), Bigfoot/Sasquatch (~4.2K), and Haunted Places (~9.7K).
@@ -213,6 +217,8 @@ You can compare two regions side-by-side with compare_regions, and export analys
 You can query temporal trends with query_temporal and then render the results as a chart. For time-based questions, call query_temporal first to get the data, then use render_chart (line chart for trends, bar chart for comparisons) to visualize it.
 
 You can detect anomalies with find_anomalies. Use 'density' to find unusual spatial clusters, 'temporal_spike' to find abnormal yearly increases, and 'population_adjusted' to find areas with high sightings relative to population. After finding anomalies, use highlight_areas to mark them on the map and render_chart to visualize them.
+
+When the user has a hex selected in HEX DENSITY view, you can use get_hex_analysis to retrieve detailed data for that specific geographic cell — including category breakdown, subcategories, and up to 100 sighting records with descriptions. Use this to analyze common themes, compile reports on patterns within a region, or find connections between sightings in the same area.
 
 For region comparisons, you can use these named hotspot regions: Pacific Northwest, Appalachia, Skinwalker Ranch, Area 51, Pine Barrens, Hudson Valley, Gulf Breeze, Bridgewater Triangle, San Luis Valley, Marfa, Great Lakes, Ozarks, Point Pleasant, Sedona, Roswell. You can also use US state codes or lat/lon coordinates.
 
@@ -695,6 +701,23 @@ async function executeTool(name,input){
       if(!window.Annotations)return{error:'Annotations module not loaded'};
       window.Annotations.clearAll();
       return{success:true,message:'All annotations cleared'};
+    }
+    case 'get_hex_analysis':{
+      var hexData=window._selectedHexData;
+      if(!hexData)return{error:'No hex selected. Switch to HEX DENSITY view and click a hex cell first.'};
+      var result={
+        location:hexData.location,
+        lat:hexData.lat,lon:hexData.lon,
+        total_sightings:hexData.total,
+        categories:hexData.categories,
+        top_subcategories:hexData.topSubcategories
+      };
+      if(input.include_descriptions!==false){
+        result.sightings=hexData.sightings;
+      } else {
+        result.sighting_count=hexData.sightings.length;
+      }
+      return result;
     }
     default:
       return{error:'Unknown tool: '+name};
