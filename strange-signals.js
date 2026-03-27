@@ -1110,9 +1110,293 @@ function renderHexbin(){
           if(breakdown[i])tip+=`<span style="color:${CAT_COLORS[i]}">${CAT_NAMES[i]}: ${breakdown[i]}</span><br>`;
         }
         layer.bindTooltip(tip);
+        layer.on('click',()=>showHexDetail(feature));
       }
     }
   }).addTo(map);
+}
+
+/* ========== HEX DETAIL PANEL ========== */
+// Note: All user-supplied strings are sanitized via esc() before insertion.
+// Category names, colors, and structure come from app constants (CAT_NAMES, CAT_COLORS).
+let hexDetailWindow=null;
+
+function collectSightingsInHex(hexFeature){
+  const poly=hexFeature;
+  const bb=turf.bbox(poly);
+  const results=[];
+  for(let cat=0;cat<3;cat++){
+    for(const r of filteredCat[cat]){
+      if(r[F.LAT]<bb[1]||r[F.LAT]>bb[3]||r[F.LON]<bb[0]||r[F.LON]>bb[2])continue;
+      if(turf.booleanPointInPolygon(turf.point([r[F.LON],r[F.LAT]]),poly)){
+        results.push(r);
+      }
+    }
+  }
+  return results;
+}
+
+function buildHexDetailHTML(feature,sightings){
+  const centroid=turf.centroid(feature);
+  const [cLon,cLat]=centroid.geometry.coordinates;
+  const total=sightings.length;
+
+  // Category breakdown
+  const catCounts=[0,0,0];
+  sightings.forEach(r=>catCounts[r[F.CAT]]++);
+
+  // Find best location name (most common)
+  const locFreq={};
+  sightings.forEach(r=>{if(r[F.LOC]){locFreq[r[F.LOC]]=(locFreq[r[F.LOC]]||0)+1}});
+  const topLocs=Object.entries(locFreq).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const bestLoc=topLocs.length?topLocs[0][0]:'Unknown';
+
+  // Date range
+  const dates=sightings.filter(r=>r[F.DATE]&&r[F.DATE].length>=4).map(r=>r[F.DATE]).sort();
+  const dateMin=dates.length?dates[0]:'N/A';
+  const dateMax=dates.length?dates[dates.length-1]:'N/A';
+
+  // Years for temporal chart
+  const yearBins={};
+  sightings.forEach(r=>{
+    if(!r[F.DATE]||r[F.DATE].length<4)return;
+    const y=parseInt(r[F.DATE].substring(0,4));
+    if(!isNaN(y)&&y>=1900&&y<=2030){
+      if(!yearBins[y])yearBins[y]=[0,0,0];
+      yearBins[y][r[F.CAT]]++;
+    }
+  });
+
+  // Top subcategories
+  const subFreq={};
+  sightings.forEach(r=>{const s=r[F.SUB];if(s&&s.trim()){subFreq[s]=(subFreq[s]||0)+1}});
+  const topSubs=Object.entries(subFreq).sort((a,b)=>b[1]-a[1]).slice(0,12);
+
+  // Nearest military base
+  let nearestMil=null;
+  if(militaryData){
+    const MF={LAT:0,LON:1,NAME:2,BRANCH:3};
+    let bestDist=Infinity;
+    militaryData.data.forEach(b=>{
+      const d=turf.distance(centroid,turf.point([b[MF.LON],b[MF.LAT]]),{units:'kilometers'});
+      if(d<bestDist){bestDist=d;nearestMil={name:b[MF.NAME],branch:b[MF.BRANCH],dist:d}}
+    });
+  }
+
+  // Derived stats
+  const area=turf.area(feature)/1e6;
+  const density=(total/area).toFixed(1);
+  const years=Object.keys(yearBins).map(Number);
+  const yearSpan=years.length>1?years[years.length-1]-years[0]+1:1;
+  const avgPerYear=(total/yearSpan).toFixed(1);
+
+  // Build HTML — all user data escaped via esc()
+  const parts=[];
+  parts.push('<div class="hex-detail">');
+
+  // Header
+  parts.push(`<div class="hex-detail-header"><div>
+    <div class="hex-detail-count">${total.toLocaleString()} sightings</div>
+    <div class="hex-detail-loc">${esc(bestLoc)} &mdash; ${cLat.toFixed(2)}&deg;N, ${Math.abs(cLon).toFixed(2)}&deg;W</div>
+  </div></div>`);
+
+  // Category bars
+  parts.push('<div class="hex-cat-bars">');
+  for(let i=0;i<3;i++){
+    if(catCounts[i]===0)continue;
+    const pct=total>0?Math.round(catCounts[i]/total*100):0;
+    // CAT_NAMES and CAT_COLORS are app constants, not user data
+    parts.push(`<div class="hex-cat-row">
+      <span class="hex-cat-label" style="color:${CAT_COLORS[i]}">${CAT_NAMES[i].split('/')[0]}</span>
+      <div class="hex-cat-bar-track"><div class="hex-cat-bar-fill" style="width:${pct}%;background:${CAT_COLORS[i]}"></div></div>
+      <span class="hex-cat-pct">${catCounts[i].toLocaleString()} (${pct}%)</span>
+    </div>`);
+  }
+  parts.push('</div>');
+
+  // Stat chips (all numeric/computed values)
+  parts.push(`<div class="hex-stat-row">
+    <div class="hex-stat-chip"><div class="hex-stat-chip-val">${dateMin.substring(0,4)}&ndash;${dateMax.substring(0,4)}</div><div class="hex-stat-chip-lbl">DATE RANGE</div></div>
+    <div class="hex-stat-chip"><div class="hex-stat-chip-val">${density}</div><div class="hex-stat-chip-lbl">PER KM&sup2;</div></div>
+    <div class="hex-stat-chip"><div class="hex-stat-chip-val">${avgPerYear}</div><div class="hex-stat-chip-lbl">PER YEAR</div></div>
+    <div class="hex-stat-chip"><div class="hex-stat-chip-val">${catCounts.filter(c=>c>0).length}/3</div><div class="hex-stat-chip-lbl">CATEGORIES</div></div>
+  </div>`);
+
+  // Temporal chart placeholder
+  parts.push('<div class="hex-section">TEMPORAL DISTRIBUTION</div>');
+  parts.push('<div class="hex-temporal-chart"><svg id="hex-temporal-svg" width="100%" height="90"></svg></div>');
+
+  // Top subcategories
+  if(topSubs.length){
+    parts.push('<div class="hex-section">TOP SUBCATEGORIES</div><div class="hex-tags">');
+    topSubs.forEach(([sub,ct])=>{
+      parts.push(`<span class="hex-tag">${esc(sub)}<span class="hex-tag-count">${ct}</span></span>`);
+    });
+    parts.push('</div>');
+  }
+
+  // Top locations
+  if(topLocs.length>1){
+    parts.push('<div class="hex-section">TOP LOCATIONS</div><div class="hex-locations">');
+    topLocs.forEach(([loc,ct])=>{
+      parts.push(`<div class="hex-loc-row"><span>${esc(loc)}</span><span>${ct}</span></div>`);
+    });
+    parts.push('</div>');
+  }
+
+  // Nearest military base
+  if(nearestMil){
+    parts.push(`<div class="hex-military"><b>${esc(nearestMil.name)}</b> (${esc(nearestMil.branch)}) &mdash; ${nearestMil.dist.toFixed(1)} km away</div>`);
+  }
+
+  // Sighting list header
+  const showLimit=50;
+  parts.push('<div class="hex-section">SIGHTING RECORDS</div><div class="hex-sighting-list">');
+  parts.push(`<button class="hex-sighting-toggle" id="hex-sighting-toggle-btn">Show ${Math.min(total,showLimit)} of ${total.toLocaleString()} sightings &#9660;</button>`);
+  parts.push('<div id="hex-sighting-items" style="display:none">');
+
+  const sorted=[...sightings].sort((a,b)=>(b[F.DATE]||'').localeCompare(a[F.DATE]||''));
+  sorted.slice(0,showLimit).forEach((r,idx)=>{
+    parts.push(`<div class="hex-sighting-item">
+      <div class="hex-sighting-item-head">
+        <span class="hex-sighting-cat" style="color:${CAT_COLORS[r[F.CAT]]}">${CAT_NAMES[r[F.CAT]]}</span>
+        ${r[F.DATE]?`<span class="hex-sighting-date">${esc(r[F.DATE])}</span>`:''}
+        ${r[F.SUB]?`<span class="hex-sighting-sub">${esc(r[F.SUB])}</span>`:''}
+      </div>
+      ${r[F.LOC]?`<div class="hex-sighting-loc">${esc(r[F.LOC])}</div>`:''}
+      ${r[F.DESC]?`<div class="hex-sighting-desc" data-idx="${idx}">${esc(r[F.DESC])}</div>`:''}
+    </div>`);
+  });
+  if(total>showLimit){
+    parts.push(`<div class="hex-sighting-more"><button id="hex-load-more-btn">Load ${Math.min(total-showLimit,100)} more...</button></div>`);
+  }
+  parts.push('</div></div>');
+
+  // Zoom button
+  parts.push('<button class="hex-zoom-btn" id="hex-zoom-btn">&#128269; ZOOM TO THIS AREA &amp; VIEW MARKERS</button>');
+  parts.push('</div>');
+
+  return{html:parts.join(''),yearBins,bestLoc,sorted,total,showLimit};
+}
+
+function showHexDetail(feature){
+  const sightings=collectSightingsInHex(feature);
+  if(!sightings.length)return;
+
+  const{html,yearBins,bestLoc,sorted,total,showLimit}=buildHexDetailHTML(feature,sightings);
+
+  // Create or update window
+  if(!hexDetailWindow){
+    hexDetailWindow=WindowManager.create({
+      id:'hex-detail',
+      title:'<span style="color:var(--cyan)">&#11042;</span> HEX ANALYSIS',
+      content:'',
+      defaultPos:{right:20,top:60},
+      defaultSize:{width:420,height:560},
+      minSize:{width:340,height:300}
+    });
+  }
+  // Safe: html built from esc()-sanitized user data + app constants
+  hexDetailWindow.bodyEl.innerHTML=html;
+  hexDetailWindow.setTitle(`<span style="color:var(--cyan)">&#11042;</span> HEX ANALYSIS &mdash; ${esc(bestLoc)}`);
+  hexDetailWindow.show();
+
+  // Wire up interactions after DOM render
+  requestAnimationFrame(()=>{
+    renderHexTemporalChart(yearBins);
+
+    // Sighting list toggle
+    const toggleBtn=document.getElementById('hex-sighting-toggle-btn');
+    const itemsEl=document.getElementById('hex-sighting-items');
+    if(toggleBtn&&itemsEl){
+      toggleBtn.addEventListener('click',()=>{
+        const open=itemsEl.style.display!=='none';
+        itemsEl.style.display=open?'none':'block';
+        toggleBtn.textContent=open
+          ?'Show '+Math.min(total,showLimit)+' of '+total.toLocaleString()+' sightings \u25BC'
+          :'Hide sighting list \u25B2';
+      });
+    }
+
+    // Description expand on click
+    document.querySelectorAll('.hex-sighting-desc').forEach(el=>{
+      el.addEventListener('click',()=>el.classList.toggle('expanded'));
+    });
+
+    // Load more sightings
+    const loadMoreBtn=document.getElementById('hex-load-more-btn');
+    if(loadMoreBtn){
+      loadMoreBtn.addEventListener('click',()=>{
+        const container=loadMoreBtn.parentElement.parentElement;
+        const next=sorted.slice(showLimit,showLimit+100);
+        next.forEach(r=>{
+          const item=document.createElement('div');
+          item.className='hex-sighting-item';
+          const head=document.createElement('div');
+          head.className='hex-sighting-item-head';
+          const catSpan=document.createElement('span');
+          catSpan.className='hex-sighting-cat';
+          catSpan.style.color=CAT_COLORS[r[F.CAT]];
+          catSpan.textContent=CAT_NAMES[r[F.CAT]];
+          head.appendChild(catSpan);
+          if(r[F.DATE]){const d=document.createElement('span');d.className='hex-sighting-date';d.textContent=r[F.DATE];head.appendChild(d)}
+          if(r[F.SUB]){const s=document.createElement('span');s.className='hex-sighting-sub';s.textContent=r[F.SUB];head.appendChild(s)}
+          item.appendChild(head);
+          if(r[F.LOC]){const loc=document.createElement('div');loc.className='hex-sighting-loc';loc.textContent=r[F.LOC];item.appendChild(loc)}
+          if(r[F.DESC]){const desc=document.createElement('div');desc.className='hex-sighting-desc';desc.textContent=r[F.DESC];desc.addEventListener('click',()=>desc.classList.toggle('expanded'));item.appendChild(desc)}
+          container.insertBefore(item,loadMoreBtn.parentElement);
+        });
+        loadMoreBtn.parentElement.remove();
+      });
+    }
+
+    // Zoom button
+    const zoomBtn=document.getElementById('hex-zoom-btn');
+    if(zoomBtn){
+      zoomBtn.addEventListener('click',()=>{
+        const c=turf.centroid(feature).geometry.coordinates;
+        map.flyTo([c[1],c[0]],12,{duration:1});
+        setTimeout(()=>setView('markers'),1200);
+      });
+    }
+  });
+}
+
+function renderHexTemporalChart(yearBins){
+  const svg=d3.select('#hex-temporal-svg');
+  if(!svg.node())return;
+  svg.selectAll('*').remove();
+
+  const years=Object.keys(yearBins).map(Number).sort((a,b)=>a-b);
+  if(years.length<2){svg.append('text').attr('x',10).attr('y',20).attr('fill','var(--text-dim)').attr('font-size',10).text('Insufficient temporal data');return}
+
+  const container=svg.node().parentElement;
+  const w=container.clientWidth||360;
+  const h=90;
+  const m={top:4,right:4,bottom:18,left:30};
+  svg.attr('width',w).attr('height',h);
+  const g=svg.append('g').attr('transform',`translate(${m.left},${m.top})`);
+  const iw=w-m.left-m.right,ih=h-m.top-m.bottom;
+
+  const stackData=years.map(y=>({year:y,0:yearBins[y][0],1:yearBins[y][1],2:yearBins[y][2]}));
+  const x=d3.scaleBand().domain(years).range([0,iw]).padding(0.15);
+  const stack=d3.stack().keys(['0','1','2']);
+  const series=stack(stackData);
+  const yMax=d3.max(series,s=>d3.max(s,d=>d[1]))||1;
+  const y=d3.scaleLinear().domain([0,yMax]).range([ih,0]);
+
+  series.forEach((s,i)=>{
+    g.selectAll('.hbar-'+i).data(s).join('rect')
+      .attr('x',d=>x(d.data.year)).attr('y',d=>y(d[1]))
+      .attr('width',x.bandwidth()).attr('height',d=>y(d[0])-y(d[1]))
+      .attr('fill',CAT_COLORS[i]).attr('opacity',0.8);
+  });
+
+  const xTicks=years.filter((_,i)=>i%(Math.ceil(years.length/6))===0);
+  g.append('g').attr('class','timeline-axis').attr('transform',`translate(0,${ih})`)
+    .call(d3.axisBottom(x).tickValues(xTicks).tickFormat(d3.format('d')));
+  g.append('g').attr('class','timeline-axis')
+    .call(d3.axisLeft(y).ticks(3).tickFormat(d3.format('~s')));
 }
 
 async function renderCorrelation(){
