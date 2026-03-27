@@ -64,7 +64,12 @@ function setProgress(pct,msg){
 }
 
 /* ========== ESCAPE HTML ========== */
-function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
+function decodeEntities(s){
+  // Decode HTML numeric entities (&#44; → , etc.) that exist in source data
+  return s.replace(/&#(\d+);?/g,(_,n)=>String.fromCharCode(parseInt(n)))
+          .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'");
+}
+function esc(s){return s?decodeEntities(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
 
 /* ========== CREATE MARKER ========== */
 function makeIcon(catIdx){
@@ -1279,6 +1284,22 @@ function buildHexDetailHTML(feature,sightings){
   return{html:parts.join(''),yearBins,bestLoc,sorted,total,showLimit};
 }
 
+function setupDescExpand(el){
+  // Check if text overflows the max-height after layout settles
+  if(el.scrollHeight>el.clientHeight+2){
+    el.classList.add('truncated');
+    const link=document.createElement('span');
+    link.className='hex-sighting-expand';
+    link.textContent='\u25BC expand';
+    link.addEventListener('click',(e)=>{
+      e.stopPropagation();
+      const isExpanded=el.classList.toggle('expanded');
+      link.textContent=isExpanded?'\u25B2 collapse':'\u25BC expand';
+    });
+    el.parentElement.insertBefore(link,el.nextSibling);
+  }
+}
+
 function showHexDetail(feature){
   const sightings=collectSightingsInHex(feature);
   if(!sightings.length)return;
@@ -1328,6 +1349,7 @@ function showHexDetail(feature){
     // Sighting list toggle
     const toggleBtn=document.getElementById('hex-sighting-toggle-btn');
     const itemsEl=document.getElementById('hex-sighting-items');
+    let expandSetup=false;
     if(toggleBtn&&itemsEl){
       toggleBtn.addEventListener('click',()=>{
         const open=itemsEl.style.display!=='none';
@@ -1335,13 +1357,17 @@ function showHexDetail(feature){
         toggleBtn.textContent=open
           ?'Show '+Math.min(total,showLimit)+' of '+total.toLocaleString()+' sightings \u25BC'
           :'Hide sighting list \u25B2';
+        // Setup expand links on first open (elements need to be visible for scrollHeight measurement)
+        if(!open&&!expandSetup){
+          expandSetup=true;
+          setTimeout(()=>{
+            itemsEl.querySelectorAll('.hex-sighting-desc').forEach(el=>setupDescExpand(el));
+          },50);
+        }
       });
     }
 
-    // Description expand on click
-    document.querySelectorAll('.hex-sighting-desc').forEach(el=>{
-      el.addEventListener('click',()=>el.classList.toggle('expanded'));
-    });
+    // Note: expand/collapse setup happens when sighting list is first opened (see toggle handler below)
 
     // Load more sightings
     const loadMoreBtn=document.getElementById('hex-load-more-btn');
@@ -1363,8 +1389,17 @@ function showHexDetail(feature){
           if(r[F.SUB]){const s=document.createElement('span');s.className='hex-sighting-sub';s.textContent=r[F.SUB];head.appendChild(s)}
           item.appendChild(head);
           if(r[F.LOC]){const loc=document.createElement('div');loc.className='hex-sighting-loc';loc.textContent=r[F.LOC];item.appendChild(loc)}
-          if(r[F.DESC]){const desc=document.createElement('div');desc.className='hex-sighting-desc';desc.textContent=r[F.DESC];desc.addEventListener('click',()=>desc.classList.toggle('expanded'));item.appendChild(desc)}
+          if(r[F.DESC]){
+            const desc=document.createElement('div');desc.className='hex-sighting-desc';
+            desc.textContent=decodeEntities(r[F.DESC]);
+            item.appendChild(desc);
+          }
           container.insertBefore(item,loadMoreBtn.parentElement);
+        });
+        // Add expand/collapse to new items
+        container.querySelectorAll('.hex-sighting-desc:not([data-wired])').forEach(el=>{
+          el.dataset.wired='1';
+          setupDescExpand(el);
         });
         loadMoreBtn.parentElement.remove();
       });
