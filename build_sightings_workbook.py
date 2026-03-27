@@ -377,14 +377,25 @@ def main():
     print()
     print("Loading datasets...")
 
-    ufo_nuforc = load_ufo_nuforc()
-    ufo_planetsig = load_ufo_planetsig()
-    bigfoot_det = load_bigfoot_detailed()
-    bigfoot_loc = load_bigfoot_locations()
-    haunted = load_haunted_places()
-    ufo_corgis = load_ufo_corgis()
-    haunted_kaggle = load_haunted_kaggle()
-    ufo_wlouie1 = load_ufo_wlouie1()
+    def safe_load(name, loader):
+        """Load a dataset, returning empty DataFrame on failure."""
+        try:
+            result = loader()
+            if result is None:
+                return pd.DataFrame()
+            return result
+        except Exception as e:
+            print(f"  WARNING: Failed to load {name}: {e}")
+            return pd.DataFrame()
+
+    ufo_nuforc = safe_load("UFO NUFORC", load_ufo_nuforc)
+    ufo_planetsig = safe_load("UFO planetsig", load_ufo_planetsig)
+    bigfoot_det = safe_load("Bigfoot detailed", load_bigfoot_detailed)
+    bigfoot_loc = safe_load("Bigfoot locations", load_bigfoot_locations)
+    haunted = safe_load("Haunted Places", load_haunted_places)
+    ufo_corgis = safe_load("UFO CORGIS", load_ufo_corgis)
+    haunted_kaggle = safe_load("Haunted Kaggle", load_haunted_kaggle)
+    ufo_wlouie1 = safe_load("UFO wlouie1", load_ufo_wlouie1)
 
     combined = build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
                               ufo_corgis=ufo_corgis, haunted_kaggle=haunted_kaggle,

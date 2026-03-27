@@ -28,12 +28,22 @@ MILITARY_URL = (
 MILITARY_OUTPUT = os.path.join(DATA_DIR, "military_bases.json")
 
 
-def download_json(url):
-    """Download JSON from a URL."""
+def download_json(url, retries=3):
+    """Download JSON from a URL with retry logic."""
+    import time
     print(f"  Fetching: {url[:80]}...")
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                return json.loads(resp.read().decode("utf-8"))
+        except Exception as e:
+            if attempt < retries - 1:
+                wait = 2 ** attempt  # 1s, 2s, 4s
+                print(f"  Retry {attempt+1}/{retries} after {wait}s: {e}")
+                time.sleep(wait)
+            else:
+                raise
 
 
 def build_military_bases():
