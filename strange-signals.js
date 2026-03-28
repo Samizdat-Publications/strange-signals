@@ -43,6 +43,14 @@ let showParks=false;
 let historicData=null;
 let historicLayer=null;
 let showHistoric=false;
+// New overlays
+let airspaceData=null,airspaceLayer=null,showAirspace=false;
+let earthquakeData=null,earthquakeLayer=null,showEarthquakes=false;
+let caveData=null,caveLayer=null,showCaves=false;
+let fireballData=null,fireballLayer=null,showFireballs=false;
+let cryptidData=null,cryptidLayer=null,showCryptids=false;
+let missing411Data=null,missing411Layer=null,showMissing411=false;
+let geomagData=null,showGeomagnetic=false,geomagBandsGroup=null;
 
 /* ========== MAP INIT ========== */
 const map=L.map('map',{center:[39.5,-98.35],zoom:4,preferCanvas:true,maxZoom:18,zoomControl:false});
@@ -261,6 +269,186 @@ function renderMilitaryBases(){
 
 function removeMilitaryBases(){
   if(militaryLayer){map.removeLayer(militaryLayer);militaryLayer=null}
+}
+
+/* ========== NEW OVERLAY RENDER FUNCTIONS ========== */
+const AIRSPACE_COLORS={Restricted:'#ff4466',MOA:'#ff8844',Warning:'#ffcc44',Prohibited:'#cc0022',Alert:'#4488ff'};
+function renderAirspace(){
+  if(airspaceLayer){map.removeLayer(airspaceLayer);airspaceLayer=null}
+  if(!showAirspace||!airspaceData)return;
+  airspaceLayer=L.layerGroup();
+  const AF={LAT:0,LON:1,NAME:2,TYPE:3,FLOOR:4,CEIL:5,AGENCY:6};
+  airspaceData.data.forEach(a=>{
+    const color=AIRSPACE_COLORS[a[AF.TYPE]]||'#ff4466';
+    const radius=a[AF.TYPE]==='Prohibited'?15000:a[AF.TYPE]==='MOA'?40000:25000;
+    const circle=L.circle([a[AF.LAT],a[AF.LON]],{radius,color,fillColor:color,
+      fillOpacity:0.08,weight:1.5,dashArray:'6 3',className:'airspace-circle'});
+    const floorStr=a[AF.FLOOR]!=null?a[AF.FLOOR]+'ft':'SFC';
+    const ceilStr=a[AF.CEIL]!=null?a[AF.CEIL]+'ft':'UNL';
+    circle.bindTooltip('<b style="color:'+color+'">'+esc(a[AF.NAME])+'</b><br>'+
+      '<span style="color:var(--text-dim)">'+a[AF.TYPE]+' Airspace</span><br>'+
+      'Floor: '+floorStr+' | Ceiling: '+ceilStr+'<br>'+
+      '<span style="color:var(--text-dim)">'+esc(a[AF.AGENCY]||'')+'</span>',{className:'mil-tooltip'});
+    circle.addTo(airspaceLayer);
+    const icon=L.divIcon({className:'overlay-marker airspace-marker',html:'&#9651;',iconSize:[12,12]});
+    L.marker([a[AF.LAT],a[AF.LON]],{icon}).addTo(airspaceLayer);
+  });
+  airspaceLayer.addTo(map);
+}
+function removeAirspace(){if(airspaceLayer){map.removeLayer(airspaceLayer);airspaceLayer=null}}
+
+function renderEarthquakes(){
+  if(earthquakeLayer){map.removeLayer(earthquakeLayer);earthquakeLayer=null}
+  if(!showEarthquakes||!earthquakeData)return;
+  const EF={LAT:0,LON:1,DATE:2,MAG:3,DEPTH:4,PLACE:5};
+  const pts=earthquakeData.data.map(e=>[e[EF.LAT],e[EF.LON],Math.pow(e[EF.MAG]-2,1.5)/10]);
+  earthquakeLayer=L.heatLayer(pts,{
+    radius:12,blur:10,maxZoom:map.getZoom(),minOpacity:0.15,
+    gradient:{0.0:'rgba(0,0,0,0)',0.2:'rgba(255,136,68,0.3)',0.5:'rgba(255,136,68,0.6)',
+      0.8:'rgba(255,200,100,0.85)',1.0:'rgba(255,255,200,1)'}
+  }).addTo(map);
+}
+function removeEarthquakes(){if(earthquakeLayer){map.removeLayer(earthquakeLayer);earthquakeLayer=null}}
+
+function renderCaves(){
+  if(caveLayer){map.removeLayer(caveLayer);caveLayer=null}
+  if(!showCaves||!caveData)return;
+  caveLayer=L.layerGroup();
+  const CF={LAT:0,LON:1,NAME:2,STATE:3,TYPE:4,LENGTH:5};
+  caveData.data.forEach(c=>{
+    const icon=L.divIcon({className:'overlay-marker cave-marker',html:'&#9673;',iconSize:[12,12]});
+    const marker=L.marker([c[CF.LAT],c[CF.LON]],{icon});
+    const lenStr=c[CF.LENGTH]?'Length: '+c[CF.LENGTH]+' mi':'';
+    marker.bindPopup('<b style="color:var(--cave)">&#9673; '+esc(c[CF.NAME])+'</b><br>'+
+      esc(c[CF.STATE])+' &mdash; '+esc(c[CF.TYPE])+'<br>'+lenStr);
+    caveLayer.addLayer(marker);
+  });
+  caveLayer.addTo(map);
+}
+function removeCaves(){if(caveLayer){map.removeLayer(caveLayer);caveLayer=null}}
+
+function renderFireballs(){
+  if(fireballLayer){map.removeLayer(fireballLayer);fireballLayer=null}
+  if(!showFireballs||!fireballData)return;
+  fireballLayer=L.layerGroup();
+  const FF={LAT:0,LON:1,DATE:2,ENERGY:3,VELOCITY:4,ALT:5};
+  fireballData.data.forEach(f=>{
+    const energy=f[FF.ENERGY]||1;
+    const sz=Math.max(10,Math.min(24,8+Math.sqrt(energy)*3));
+    const icon=L.divIcon({className:'overlay-marker fireball-marker',
+      html:'<span style="font-size:'+sz+'px">&#9788;</span>',iconSize:[sz,sz]});
+    const marker=L.marker([f[FF.LAT],f[FF.LON]],{icon});
+    const velStr=f[FF.VELOCITY]?'Velocity: '+f[FF.VELOCITY]+' km/s<br>':'';
+    const altStr=f[FF.ALT]?'Altitude: '+f[FF.ALT]+' km':'';
+    marker.bindPopup('<b style="color:var(--fireball)">&#9788; NASA Fireball</b><br>'+
+      'Date: '+esc(f[FF.DATE])+'<br>Energy: '+energy+' kt TNT<br>'+velStr+altStr);
+    fireballLayer.addLayer(marker);
+  });
+  fireballLayer.addTo(map);
+}
+function removeFireballs(){if(fireballLayer){map.removeLayer(fireballLayer);fireballLayer=null}}
+
+function renderCryptids(){
+  if(cryptidLayer){map.removeLayer(cryptidLayer);cryptidLayer=null}
+  if(!showCryptids||!cryptidData)return;
+  cryptidLayer=L.layerGroup();
+  const XF={LAT:0,LON:1,NAME:2,TYPE:3,STATE:4,DESC:5,YEAR:6};
+  cryptidData.data.forEach(c=>{
+    const icon=L.divIcon({className:'overlay-marker cryptid-marker',html:'&#10070;',iconSize:[12,12]});
+    const marker=L.marker([c[XF.LAT],c[XF.LON]],{icon});
+    const yearStr=c[XF.YEAR]?'Year: '+c[XF.YEAR]+'<br>':'';
+    marker.bindPopup('<b style="color:var(--cryptid)">&#10070; '+esc(c[XF.TYPE])+'</b><br>'+
+      '<span style="color:var(--text-dim)">'+esc(c[XF.NAME])+', '+esc(c[XF.STATE])+'</span><br>'+
+      yearStr+'<span style="font-size:10px">'+esc(c[XF.DESC]||'')+'</span>');
+    cryptidLayer.addLayer(marker);
+  });
+  cryptidLayer.addTo(map);
+}
+function removeCryptids(){if(cryptidLayer){map.removeLayer(cryptidLayer);cryptidLayer=null}}
+
+function renderMissing411(){
+  if(missing411Layer){map.removeLayer(missing411Layer);missing411Layer=null}
+  if(!showMissing411||!missing411Data)return;
+  missing411Layer=L.layerGroup();
+  const MF2={LAT:0,LON:1,NAME:2,PARK:3,STATE:4,YEAR:5,AGE:6,CIRC:7};
+  missing411Data.data.forEach(m=>{
+    const icon=L.divIcon({className:'overlay-marker missing411-marker',html:'&#9888;',iconSize:[12,12]});
+    const marker=L.marker([m[MF2.LAT],m[MF2.LON]],{icon});
+    const yearAge=(m[MF2.YEAR]?'Year: '+m[MF2.YEAR]:'')+(m[MF2.AGE]?' | Age: '+m[MF2.AGE]:'');
+    marker.bindPopup('<b style="color:var(--missing411)">&#9888; Missing 411</b><br>'+
+      '<b>'+esc(m[MF2.NAME])+'</b><br>'+
+      esc(m[MF2.PARK])+', '+esc(m[MF2.STATE])+'<br>'+
+      yearAge+'<br><span style="font-size:10px">'+esc(m[MF2.CIRC]||'')+'</span>');
+    missing411Layer.addLayer(marker);
+  });
+  missing411Layer.addTo(map);
+}
+function removeMissing411(){if(missing411Layer){map.removeLayer(missing411Layer);missing411Layer=null}}
+
+function renderGeomagBands(){
+  if(!geomagData||!showGeomagnetic||!timelineBuilt)return;
+  removeGeomagBands();
+  const svg=d3.select('#timeline-svg');
+  const g=svg.select('g');
+  if(g.empty())return;
+  const yearData2={};
+  allData.forEach(r=>{
+    if(!r[F.DATE])return;
+    const y=parseInt(r[F.DATE].substring(0,4));
+    if(isNaN(y)||y<1900||y>2030)return;
+    if(!yearData2[y])yearData2[y]=1;
+  });
+  const years=Object.keys(yearData2).map(Number).sort((a,b)=>a-b);
+  if(!years.length)return;
+  const container=document.getElementById('timeline-panel');
+  const w=container.clientWidth-32;
+  const h=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--timeline-h'))-36;
+  const margin={top:4,right:16,bottom:22,left:40};
+  const iw=w-margin.left-margin.right;
+  const ih=h-margin.top-margin.bottom;
+  const x=d3.scaleBand().domain(years).range([0,iw]).padding(0.15);
+  const stormColors={G3:'#ffcc00',G4:'#ff8800',G5:'#ff2200'};
+  const GF={DATE:0,KP:1,CLASS:2,NAME:3};
+  const bandsG=g.append('g').attr('class','geomag-bands-group');
+  geomagData.data.forEach(s=>{
+    const year=parseInt(s[GF.DATE].substring(0,4));
+    if(!x(year)&&x(year)!==0)return;
+    const color=stormColors[s[GF.CLASS]]||'#ffcc00';
+    const bw=Math.max(x.bandwidth(),3);
+    bandsG.append('rect')
+      .attr('class','geomag-band')
+      .attr('x',x(year))
+      .attr('y',0)
+      .attr('width',bw)
+      .attr('height',ih)
+      .attr('fill',color)
+      .attr('opacity',0.25);
+    bandsG.append('rect')
+      .attr('class','geomag-band-hover')
+      .attr('x',x(year))
+      .attr('y',0)
+      .attr('width',bw)
+      .attr('height',ih)
+      .attr('fill','transparent')
+      .style('pointer-events','all')
+      .on('mouseover',function(event){
+        d3.select(this.previousSibling).attr('opacity',0.5);
+        const tt=document.getElementById('timeline-tooltip');
+        tt.style.display='block';
+        tt.style.left=(event.offsetX+10)+'px';
+        tt.style.top=(event.offsetY-30)+'px';
+        tt.textContent=s[GF.CLASS]+' Storm — '+s[GF.DATE]+' (Kp '+s[GF.KP]+') '+esc(s[GF.NAME]||'');
+      })
+      .on('mouseout',function(){
+        d3.select(this.previousSibling).attr('opacity',0.25);
+        document.getElementById('timeline-tooltip').style.display='none';
+      });
+  });
+  geomagBandsGroup=bandsG;
+}
+function removeGeomagBands(){
+  if(geomagBandsGroup){geomagBandsGroup.remove();geomagBandsGroup=null}
+  d3.selectAll('.geomag-bands-group').remove();
 }
 
 /* ========== SHARED ANALYSIS INFRASTRUCTURE ========== */
@@ -1836,6 +2024,13 @@ function saveState(){
   if(currentView==='correlation')params.set('csm',corrSubMode);
   if(perCapitaMode)params.set('pc','1');
   if(showMilitaryBases)params.set('mil','1');
+  if(showAirspace)params.set('air','1');
+  if(showEarthquakes)params.set('eq','1');
+  if(showCaves)params.set('cav','1');
+  if(showFireballs)params.set('fb','1');
+  if(showCryptids)params.set('cry','1');
+  if(showMissing411)params.set('m411','1');
+  if(showGeomagnetic)params.set('geo','1');
   history.replaceState(null,'','#'+params.toString());
 }
 
@@ -1858,6 +2053,23 @@ function loadState(){
     if(params.has('csm'))corrSubMode=params.get('csm');
     if(params.get('pc')==='1'){perCapitaMode=true;const el=document.getElementById('percapita-toggle');if(el)el.checked=true}
     if(params.get('mil')==='1'){showMilitaryBases=true;const el=document.getElementById('military-toggle');if(el)el.checked=true}
+    // Restore new overlay toggles — actual data loading happens on first render via toggle handler
+    const overlayFlags=[
+      ['air','airspace-toggle',v=>{showAirspace=v}],
+      ['eq','earthquakes-toggle',v=>{showEarthquakes=v}],
+      ['cav','caves-toggle',v=>{showCaves=v}],
+      ['fb','fireballs-toggle',v=>{showFireballs=v}],
+      ['cry','cryptids-toggle',v=>{showCryptids=v}],
+      ['m411','missing411-toggle',v=>{showMissing411=v}],
+      ['geo','geomagnetic-toggle',v=>{showGeomagnetic=v}]
+    ];
+    overlayFlags.forEach(([key,toggleId,setter])=>{
+      if(params.get(key)==='1'){
+        setter(true);
+        const el2=document.getElementById(toggleId);
+        if(el2){el2.checked=true;el2.dispatchEvent(new Event('change'))}
+      }
+    })
   }catch(e){console.warn('Failed to load state from URL',e)}
 }
 
@@ -2140,6 +2352,69 @@ if(histToggleEl){
     }
   });
 }
+
+// --- New overlay toggle handlers (lazy-load pattern) ---
+function wireOverlayToggle(id,flagName,dataFile,countId,loadCb,renderCb,removeCb){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.addEventListener('change',async function(){
+    const checked=this.checked;
+    // Set flag via closure reference
+    loadCb.flag=checked;
+    if(checked){
+      let data=loadCb.cache;
+      if(!data){
+        try{
+          const resp=await fetch(dataFile);
+          data=await resp.json();
+          loadCb.cache=data;
+          if(countId){
+            const ce=document.getElementById(countId);
+            if(ce)ce.textContent=data.data?data.data.length:'';
+          }
+        }catch(e){console.warn(dataFile+' not found');this.checked=false;loadCb.flag=false;return}
+      }
+      renderCb(data);
+    } else {
+      removeCb();
+    }
+  });
+}
+// Airspace
+wireOverlayToggle('airspace-toggle','showAirspace','data/restricted_airspace.json','count-airspace',
+  {flag:false,cache:null},
+  function(data){airspaceData=data;showAirspace=true;renderAirspace()},
+  function(){showAirspace=false;removeAirspace()});
+// Earthquakes
+wireOverlayToggle('earthquakes-toggle','showEarthquakes','data/usgs_earthquakes.json','count-earthquakes',
+  {flag:false,cache:null},
+  function(data){earthquakeData=data;showEarthquakes=true;renderEarthquakes()},
+  function(){showEarthquakes=false;removeEarthquakes()});
+// Caves
+wireOverlayToggle('caves-toggle','showCaves','data/us_caves.json','count-caves',
+  {flag:false,cache:null},
+  function(data){caveData=data;showCaves=true;renderCaves()},
+  function(){showCaves=false;removeCaves()});
+// Fireballs
+wireOverlayToggle('fireballs-toggle','showFireballs','data/nasa_fireballs.json','count-fireballs',
+  {flag:false,cache:null},
+  function(data){fireballData=data;showFireballs=true;renderFireballs()},
+  function(){showFireballs=false;removeFireballs()});
+// Cryptids
+wireOverlayToggle('cryptids-toggle','showCryptids','data/cryptid_sightings.json','count-cryptids',
+  {flag:false,cache:null},
+  function(data){cryptidData=data;showCryptids=true;renderCryptids()},
+  function(){showCryptids=false;removeCryptids()});
+// Missing 411
+wireOverlayToggle('missing411-toggle','showMissing411','data/missing411.json','count-missing411',
+  {flag:false,cache:null},
+  function(data){missing411Data=data;showMissing411=true;renderMissing411()},
+  function(){showMissing411=false;removeMissing411()});
+// Geomagnetic storms (temporal)
+wireOverlayToggle('geomagnetic-toggle','showGeomagnetic','data/geomagnetic_storms.json','count-geomagnetic',
+  {flag:false,cache:null},
+  function(data){geomagData=data;showGeomagnetic=true;renderGeomagBands()},
+  function(){showGeomagnetic=false;removeGeomagBands()});
 
 // Filters
 document.getElementById('apply-filters').addEventListener('click',applyFilters);
@@ -2587,6 +2862,50 @@ window.StrangeSignals={
     })),cellSide};
   },
   getPopDensityGrid:()=>popDensityGrid,
+
+  // Overlay data access
+  getOverlayData:()=>({
+    airspace:airspaceData,earthquakes:earthquakeData,caves:caveData,
+    fireballs:fireballData,cryptids:cryptidData,missing411:missing411Data,
+    geomagnetic:geomagData,military:militaryData
+  }),
+  getActiveOverlays:()=>{
+    const active=[];
+    if(showMilitaryBases)active.push('military');
+    if(showAirspace)active.push('airspace');
+    if(showEarthquakes)active.push('earthquakes');
+    if(showCaves)active.push('caves');
+    if(showFireballs)active.push('fireballs');
+    if(showCryptids)active.push('cryptids');
+    if(showMissing411)active.push('missing411');
+    if(showGeomagnetic)active.push('geomagnetic');
+    return active;
+  },
+  getNearbyOverlays:(lat,lon,radiusKm)=>{
+    const results={};
+    const toRad=Math.PI/180;
+    function haversine(lat1,lon1,lat2,lon2){
+      const dLat=(lat2-lat1)*toRad,dLon=(lon2-lon1)*toRad;
+      const a=Math.sin(dLat/2)**2+Math.cos(lat1*toRad)*Math.cos(lat2*toRad)*Math.sin(dLon/2)**2;
+      return 6371*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+    }
+    const r=radiusKm||50;
+    if(airspaceData)results.airspace=airspaceData.data.filter(a=>haversine(lat,lon,a[0],a[1])<=r)
+      .map(a=>({name:a[2],type:a[3],dist:Math.round(haversine(lat,lon,a[0],a[1]))}));
+    if(caveData)results.caves=caveData.data.filter(c=>haversine(lat,lon,c[0],c[1])<=r)
+      .map(c=>({name:c[2],state:c[3],type:c[4],dist:Math.round(haversine(lat,lon,c[0],c[1]))}));
+    if(missing411Data)results.missing411=missing411Data.data.filter(m=>haversine(lat,lon,m[0],m[1])<=r)
+      .map(m=>({name:m[2],park:m[3],state:m[4],dist:Math.round(haversine(lat,lon,m[0],m[1]))}));
+    if(fireballData)results.fireballs=fireballData.data.filter(f=>haversine(lat,lon,f[0],f[1])<=r)
+      .map(f=>({date:f[2],energy:f[3],dist:Math.round(haversine(lat,lon,f[0],f[1]))}));
+    if(cryptidData)results.cryptids=cryptidData.data.filter(c=>haversine(lat,lon,c[0],c[1])<=r)
+      .map(c=>({name:c[2],type:c[3],state:c[4],dist:Math.round(haversine(lat,lon,c[0],c[1]))}));
+    if(militaryData)results.military=militaryData.data.filter(m=>haversine(lat,lon,m[0],m[1])<=r)
+      .map(m=>({name:m[2],branch:m[3],dist:Math.round(haversine(lat,lon,m[0],m[1]))}));
+    // Filter out empty arrays
+    Object.keys(results).forEach(k=>{if(!results[k].length)delete results[k]});
+    return results;
+  },
 
   // Constants
   F,CAT_NAMES,CAT_COLORS

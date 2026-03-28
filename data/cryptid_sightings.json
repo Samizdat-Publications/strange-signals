@@ -1,0 +1,958 @@
+{
+  "fields": [
+    "lat",
+    "lon",
+    "name",
+    "type",
+    "state",
+    "description",
+    "year"
+  ],
+  "data": [
+    [
+      38.5985,
+      -82.2369,
+      "Point Pleasant Bridge",
+      "Mothman",
+      "WV",
+      "Classic 1966-67 sightings at the Silver Bridge",
+      1966
+    ],
+    [
+      38.585,
+      -82.25,
+      "Point Pleasant TNT Plant",
+      "Mothman",
+      "WV",
+      "Former munitions plant near Point Pleasant",
+      1966
+    ],
+    [
+      38.595,
+      -82.245,
+      "Point Pleasant River",
+      "Mothman",
+      "WV",
+      "Ohio River sightings near Point Pleasant",
+      1966
+    ],
+    [
+      38.6,
+      -82.23,
+      "Point Pleasant Park",
+      "Mothman",
+      "WV",
+      "Riverside park frequent sighting location",
+      1966
+    ],
+    [
+      38.59,
+      -82.24,
+      "Point Pleasant Downtown",
+      "Mothman",
+      "WV",
+      "Downtown area sightings and reports",
+      1967
+    ],
+    [
+      41.8781,
+      -87.6298,
+      "Chicago Loop",
+      "Mothman",
+      "IL",
+      "Downtown Chicago sightings 2017-2018",
+      2017
+    ],
+    [
+      41.9506,
+      -87.6742,
+      "Chicago Marina",
+      "Mothman",
+      "IL",
+      "Marina district sightings",
+      2017
+    ],
+    [
+      41.8858,
+      -87.6181,
+      "Chicago Navy Pier",
+      "Mothman",
+      "IL",
+      "Lakefront sightings near Navy Pier",
+      2018
+    ],
+    [
+      39.8164,
+      -74.5612,
+      "Leeds Point",
+      "Jersey Devil",
+      "NJ",
+      "Original 1735 sighting location",
+      1735
+    ],
+    [
+      39.9,
+      -74.65,
+      "Pine Barrens North",
+      "Jersey Devil",
+      "NJ",
+      "Northern Pine Barrens sightings",
+      1850
+    ],
+    [
+      39.85,
+      -74.7,
+      "Wharton State Forest",
+      "Jersey Devil",
+      "NJ",
+      "Dense forest sighting area",
+      1900
+    ],
+    [
+      39.75,
+      -74.6,
+      "Batsto Village",
+      "Jersey Devil",
+      "NJ",
+      "Historic village near sightings",
+      1920
+    ],
+    [
+      39.83,
+      -74.58,
+      "Mullica River",
+      "Jersey Devil",
+      "NJ",
+      "River valley sightings",
+      1909
+    ],
+    [
+      39.92,
+      -74.72,
+      "Fort Dix Area",
+      "Jersey Devil",
+      "NJ",
+      "Military area encounters",
+      1930
+    ],
+    [
+      44.4684,
+      -73.2886,
+      "Lake Champlain Vermont",
+      "Champ",
+      "VT",
+      "Main Lake Champlain sighting area",
+      1817
+    ],
+    [
+      44.42,
+      -73.3,
+      "Shelburne Vermont",
+      "Champ",
+      "VT",
+      "Shelburne Bay sightings",
+      1870
+    ],
+    [
+      44.5,
+      -73.25,
+      "Charlotte Dock",
+      "Champ",
+      "VT",
+      "Ferry dock sightings",
+      1930
+    ],
+    [
+      44.38,
+      -73.27,
+      "South Lake Champlain",
+      "Champ",
+      "VT",
+      "Southern lake sightings",
+      1950
+    ],
+    [
+      44.55,
+      -73.32,
+      "North Lake Champlain",
+      "Champ",
+      "VT",
+      "Northern lake sightings",
+      1988
+    ],
+    [
+      44.45,
+      -73.35,
+      "Lake Champlain New York",
+      "Champ",
+      "NY",
+      "New York side sightings",
+      1975
+    ],
+    [
+      40.6331,
+      -75.3898,
+      "Allentown Pennsylvania",
+      "Thunderbird",
+      "PA",
+      "1926 Thunderbird sightings",
+      1926
+    ],
+    [
+      40.7408,
+      -75.0,
+      "Pennsylvania Dutch Country",
+      "Thunderbird",
+      "PA",
+      "Multiple sightings region",
+      1940
+    ],
+    [
+      40.5,
+      -75.5,
+      "Poconos Pennsylvania",
+      "Thunderbird",
+      "PA",
+      "Mountain area reports",
+      1950
+    ],
+    [
+      34.1899,
+      -111.031,
+      "Arizona Sonoran Desert",
+      "Thunderbird",
+      "AZ",
+      "Desert region sightings",
+      1890
+    ],
+    [
+      32.2226,
+      -111.0269,
+      "Southern Arizona",
+      "Thunderbird",
+      "AZ",
+      "Tucson area sightings",
+      1970
+    ],
+    [
+      41.7,
+      -88.2,
+      "Illinois Sightings",
+      "Thunderbird",
+      "IL",
+      "Chicago area reports",
+      2000
+    ],
+    [
+      26.3874,
+      -81.2585,
+      "Myakka River State Park",
+      "Skunk Ape",
+      "FL",
+      "Classic Myakka sighting location",
+      1976
+    ],
+    [
+      26.0,
+      -81.3,
+      "Everglades Core",
+      "Skunk Ape",
+      "FL",
+      "Deep swamp sightings",
+      1980
+    ],
+    [
+      26.5,
+      -81.5,
+      "Everglades East",
+      "Skunk Ape",
+      "FL",
+      "Eastern Everglades reports",
+      1970
+    ],
+    [
+      26.45,
+      -81.05,
+      "Lake Okeechobee South",
+      "Skunk Ape",
+      "FL",
+      "Lake region sightings",
+      1985
+    ],
+    [
+      26.35,
+      -81.3,
+      "Myakka North",
+      "Skunk Ape",
+      "FL",
+      "Northern park area",
+      2000
+    ],
+    [
+      25.9,
+      -81.2,
+      "Big Cypress Swamp",
+      "Skunk Ape",
+      "FL",
+      "Big Cypress sightings",
+      1990
+    ],
+    [
+      42.565,
+      -88.7483,
+      "Elkhorn Wisconsin",
+      "Dogman",
+      "WI",
+      "Beast of Bray Road sightings",
+      1988
+    ],
+    [
+      42.55,
+      -88.75,
+      "Bray Road",
+      "Dogman",
+      "WI",
+      "Original sighting location",
+      1989
+    ],
+    [
+      42.6,
+      -88.8,
+      "Walworth County",
+      "Dogman",
+      "WI",
+      "Surrounding county sightings",
+      1991
+    ],
+    [
+      42.58,
+      -88.9,
+      "Eastern Walworth",
+      "Dogman",
+      "WI",
+      "Rural sightings area",
+      1995
+    ],
+    [
+      45.0,
+      -87.0,
+      "Michigan Upper Peninsula",
+      "Dogman",
+      "MI",
+      "Michigan Dogman reports",
+      1987
+    ],
+    [
+      46.5,
+      -88.0,
+      "Michigan Iron Range",
+      "Dogman",
+      "MI",
+      "Northern Michigan sightings",
+      2000
+    ],
+    [
+      37.2089,
+      -93.2923,
+      "Ozark Mountains Missouri",
+      "Ozark Howler",
+      "MO",
+      "Missouri Ozark sightings",
+      1850
+    ],
+    [
+      37.0,
+      -93.5,
+      "Branson Missouri Area",
+      "Ozark Howler",
+      "MO",
+      "Branson region reports",
+      1900
+    ],
+    [
+      36.5,
+      -93.0,
+      "Arkansas Ozarks",
+      "Ozark Howler",
+      "AR",
+      "Northern Arkansas sightings",
+      1880
+    ],
+    [
+      36.0,
+      -93.5,
+      "Oklahoma Ozarks",
+      "Ozark Howler",
+      "OK",
+      "Oklahoma region howlings",
+      1920
+    ],
+    [
+      37.5,
+      -92.5,
+      "Missouri Cave Region",
+      "Ozark Howler",
+      "MO",
+      "Cave area encounters",
+      1970
+    ],
+    [
+      36.7469,
+      -119.7726,
+      "Fresno California",
+      "Fresno Nightcrawler",
+      "CA",
+      "1967 original sightings",
+      1967
+    ],
+    [
+      36.75,
+      -119.77,
+      "Fresno County",
+      "Fresno Nightcrawler",
+      "CA",
+      "County-wide sightings",
+      1970
+    ],
+    [
+      37.5,
+      -120.0,
+      "Yosemite Region",
+      "Fresno Nightcrawler",
+      "CA",
+      "Yosemite area reports",
+      1980
+    ],
+    [
+      36.5,
+      -119.5,
+      "Southern Fresno County",
+      "Fresno Nightcrawler",
+      "CA",
+      "Southern reports",
+      1990
+    ],
+    [
+      38.35,
+      -82.0,
+      "Flatwoods West Virginia",
+      "Flatwoods Monster",
+      "WV",
+      "1952 original sighting",
+      1952
+    ],
+    [
+      38.36,
+      -82.01,
+      "Flatwoods School",
+      "Flatwoods Monster",
+      "WV",
+      "Near school encounter",
+      1952
+    ],
+    [
+      38.34,
+      -81.99,
+      "Flatwoods Farmland",
+      "Flatwoods Monster",
+      "WV",
+      "Farm sightings",
+      1960
+    ],
+    [
+      39.2403,
+      -84.25,
+      "Loveland Ohio",
+      "Loveland Frogman",
+      "OH",
+      "Original 1955 encounter",
+      1955
+    ],
+    [
+      39.24,
+      -84.26,
+      "Loveland Bridge",
+      "Loveland Frogman",
+      "OH",
+      "Bridge sighting area",
+      1972
+    ],
+    [
+      39.23,
+      -84.24,
+      "Little Miami River",
+      "Loveland Frogman",
+      "OH",
+      "River sightings",
+      1988
+    ],
+    [
+      38.2008,
+      -85.85,
+      "Pope Lick Train Trestle",
+      "Pope Lick Monster",
+      "KY",
+      "Trestle sightings",
+      1880
+    ],
+    [
+      38.21,
+      -85.84,
+      "Louisville Area",
+      "Pope Lick Monster",
+      "KY",
+      "Louisville region reports",
+      1950
+    ],
+    [
+      33.65,
+      -93.8,
+      "Fouke Arkansas",
+      "Fouke Monster",
+      "AR",
+      "1971 original sightings",
+      1971
+    ],
+    [
+      33.64,
+      -93.81,
+      "Boggy Bayou",
+      "Fouke Monster",
+      "AR",
+      "Bayou sightings",
+      1972
+    ],
+    [
+      33.66,
+      -93.79,
+      "Fouke River Area",
+      "Fouke Monster",
+      "AR",
+      "River sightings",
+      1980
+    ],
+    [
+      33.89,
+      -80.6,
+      "Scape Ore Swamp South Carolina",
+      "Lizard Man",
+      "SC",
+      "1988 original sightings",
+      1988
+    ],
+    [
+      33.9,
+      -80.59,
+      "Bishopville South Carolina",
+      "Lizard Man",
+      "SC",
+      "Bishopville encounters",
+      1988
+    ],
+    [
+      33.88,
+      -80.61,
+      "Swamp Creatures",
+      "Lizard Man",
+      "SC",
+      "Deep swamp area",
+      2000
+    ],
+    [
+      27.5798,
+      -97.3964,
+      "Corpus Christi Texas",
+      "Chupacabra",
+      "TX",
+      "1995 Texas sightings",
+      1995
+    ],
+    [
+      30.2672,
+      -97.7431,
+      "Austin Texas",
+      "Chupacabra",
+      "TX",
+      "Central Texas reports",
+      2000
+    ],
+    [
+      25.7617,
+      -80.1918,
+      "Miami Florida",
+      "Chupacabra",
+      "FL",
+      "South Florida sightings",
+      2003
+    ],
+    [
+      29.7604,
+      -95.3698,
+      "Houston Texas",
+      "Chupacabra",
+      "TX",
+      "Houston area encounters",
+      2005
+    ],
+    [
+      35.0894,
+      -106.6055,
+      "Albuquerque New Mexico",
+      "Chupacabra",
+      "NM",
+      "Southwest sightings",
+      2008
+    ],
+    [
+      46.7296,
+      -94.6859,
+      "Superior Wisconsin",
+      "Wendigo",
+      "WI",
+      "Great Lakes region",
+      1890
+    ],
+    [
+      47.1429,
+      -89.25,
+      "Michigan Upper Peninsula",
+      "Wendigo",
+      "MI",
+      "Northern forest area",
+      1920
+    ],
+    [
+      46.0,
+      -92.0,
+      "Minnesota North Woods",
+      "Wendigo",
+      "MN",
+      "Northern Minnesota",
+      1950
+    ],
+    [
+      47.5,
+      -89.5,
+      "Iron Range",
+      "Wendigo",
+      "MN",
+      "Range country sightings",
+      1970
+    ],
+    [
+      46.1964,
+      -122.1897,
+      "Mount St. Helens Washington",
+      "Batsquatch",
+      "WA",
+      "1994 sighting",
+      1994
+    ],
+    [
+      46.2,
+      -122.2,
+      "Mount St. Helens Foothills",
+      "Batsquatch",
+      "WA",
+      "Surrounding area",
+      2000
+    ],
+    [
+      46.3,
+      -122.0,
+      "Cascade Range",
+      "Batsquatch",
+      "WA",
+      "Mountain region",
+      1995
+    ],
+    [
+      38.45,
+      -91.15,
+      "Louisiana Missouri",
+      "Momo",
+      "MO",
+      "1971 original sightings",
+      1971
+    ],
+    [
+      38.46,
+      -91.14,
+      "Momo Farmland",
+      "Momo",
+      "MO",
+      "Farm encounters",
+      1972
+    ],
+    [
+      38.44,
+      -91.16,
+      "Momo Town Area",
+      "Momo",
+      "MO",
+      "Town sightings",
+      1980
+    ],
+    [
+      38.55,
+      -82.2,
+      "Grafton West Virginia",
+      "Grafton Monster",
+      "WV",
+      "1964 sightings",
+      1964
+    ],
+    [
+      38.56,
+      -82.19,
+      "Grafton Tunnel",
+      "Grafton Monster",
+      "WV",
+      "Tunnel area encounters",
+      1964
+    ],
+    [
+      38.54,
+      -82.21,
+      "Grafton Industrial",
+      "Grafton Monster",
+      "WV",
+      "Industrial area",
+      1970
+    ],
+    [
+      39.3,
+      -77.5,
+      "Frederick County Maryland",
+      "Snallygaster",
+      "MD",
+      "1734 original sightings",
+      1734
+    ],
+    [
+      39.25,
+      -77.4,
+      "Frederick Maryland",
+      "Snallygaster",
+      "MD",
+      "Town area",
+      1800
+    ],
+    [
+      39.4,
+      -77.6,
+      "Northern Frederick County",
+      "Snallygaster",
+      "MD",
+      "Rural sightings",
+      1850
+    ],
+    [
+      39.2,
+      -77.55,
+      "Southern Frederick",
+      "Snallygaster",
+      "MD",
+      "Southern county area",
+      1900
+    ],
+    [
+      35.0,
+      -82.0,
+      "Appalachian Mountains TN",
+      "Wampus Cat",
+      "TN",
+      "Appalachian sightings",
+      1800
+    ],
+    [
+      35.5,
+      -81.5,
+      "North Carolina Mountains",
+      "Wampus Cat",
+      "NC",
+      "Mountain region",
+      1850
+    ],
+    [
+      35.7,
+      -82.3,
+      "Great Smoky Mountains",
+      "Wampus Cat",
+      "TN",
+      "Smoky Mountain area",
+      1900
+    ],
+    [
+      36.0,
+      -82.0,
+      "Eastern Tennessee",
+      "Wampus Cat",
+      "TN",
+      "East Tennessee sightings",
+      1950
+    ],
+    [
+      32.7555,
+      -97.3208,
+      "Fort Worth Texas",
+      "Lake Worth Monster",
+      "TX",
+      "1969 original sightings",
+      1969
+    ],
+    [
+      32.75,
+      -97.33,
+      "Lake Worth",
+      "Lake Worth Monster",
+      "TX",
+      "Lake area encounters",
+      1970
+    ],
+    [
+      32.76,
+      -97.31,
+      "Fort Worth Riverside",
+      "Lake Worth Monster",
+      "TX",
+      "Riverside sightings",
+      1980
+    ],
+    [
+      31.4,
+      -81.5,
+      "Darien Georgia",
+      "Altamaha-ha",
+      "GA",
+      "River creature sightings",
+      1800
+    ],
+    [
+      31.41,
+      -81.51,
+      "Altamaha River",
+      "Altamaha-ha",
+      "GA",
+      "River mouth area",
+      1920
+    ],
+    [
+      31.39,
+      -81.49,
+      "St. Simons Island",
+      "Altamaha-ha",
+      "GA",
+      "Coastal sightings",
+      1950
+    ],
+    [
+      30.3735,
+      -88.5585,
+      "Pascagoula Mississippi",
+      "Pascagoula Aliens",
+      "MS",
+      "1973 alien encounter",
+      1973
+    ],
+    [
+      30.37,
+      -88.56,
+      "Pascagoula River",
+      "Pascagoula Aliens",
+      "MS",
+      "River abduction site",
+      1973
+    ],
+    [
+      36.5229,
+      -87.2833,
+      "Hopkinsville Kentucky",
+      "Hopkinsville Goblins",
+      "KY",
+      "1955 goblin sightings",
+      1955
+    ],
+    [
+      36.53,
+      -87.29,
+      "Kelly Kentucky",
+      "Hopkinsville Goblins",
+      "KY",
+      "Kelly area encounter",
+      1955
+    ],
+    [
+      29.9511,
+      -92.0402,
+      "Lafayette Louisiana",
+      "Rougarou",
+      "LA",
+      "Bayou country sightings",
+      1800
+    ],
+    [
+      30.15,
+      -92.44,
+      "Atchafalaya Swamp",
+      "Rougarou",
+      "LA",
+      "Swamp creature reports",
+      1900
+    ],
+    [
+      30.0,
+      -92.0,
+      "South Louisiana Bayou",
+      "Rougarou",
+      "LA",
+      "Bayou encounters",
+      1950
+    ],
+    [
+      29.5,
+      -91.0,
+      "Lower Mississippi Bayou",
+      "Rougarou",
+      "LA",
+      "Mississippi delta area",
+      1970
+    ],
+    [
+      47.5534,
+      -122.0311,
+      "Washington Cascades",
+      "Bigfoot",
+      "WA",
+      "Pacific Northwest sightings",
+      1960
+    ],
+    [
+      45.3731,
+      -121.6923,
+      "Mount Hood Oregon",
+      "Bigfoot",
+      "OR",
+      "Oregon mountain sightings",
+      1970
+    ],
+    [
+      40.4168,
+      -121.3426,
+      "Northern California",
+      "Bigfoot",
+      "CA",
+      "California forest sightings",
+      1980
+    ],
+    [
+      48.1,
+      -121.5,
+      "North Cascades",
+      "Bigfoot",
+      "WA",
+      "Mountain wilderness",
+      1995
+    ]
+  ]
+}

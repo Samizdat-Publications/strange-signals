@@ -1,0 +1,844 @@
+{
+  "fields": [
+    "lat",
+    "lon",
+    "name",
+    "state",
+    "type",
+    "length_miles"
+  ],
+  "data": [
+    [
+      37.1863,
+      -86.1004,
+      "Mammoth Cave",
+      "KY",
+      "show_cave",
+      405.0
+    ],
+    [
+      37.215,
+      -86.085,
+      "Flint Ridge Cave System",
+      "KY",
+      "wild_cave",
+      86.0
+    ],
+    [
+      36.9833,
+      -86.3667,
+      "Lost River Cave",
+      "KY",
+      "show_cave",
+      14.2
+    ],
+    [
+      37.85,
+      -84.55,
+      "Carter Caves State Resort Park",
+      "KY",
+      "show_cave",
+      3.4
+    ],
+    [
+      37.9,
+      -85.0,
+      "Blue Spring Branch Cave",
+      "KY",
+      "wild_cave",
+      8.5
+    ],
+    [
+      38.3,
+      -84.2,
+      "Kentucky Caverns",
+      "KY",
+      "show_cave",
+      4.0
+    ],
+    [
+      32.1794,
+      -104.4383,
+      "Carlsbad Caverns",
+      "NM",
+      "show_cave",
+      30.0
+    ],
+    [
+      32.2667,
+      -104.4167,
+      "Lechuguilla Cave",
+      "NM",
+      "wild_cave",
+      140.0
+    ],
+    [
+      32.6333,
+      -107.6667,
+      "Spider Cave",
+      "NM",
+      "wild_cave",
+      45.0
+    ],
+    [
+      32.5833,
+      -107.75,
+      "Kemo Sabe Cave",
+      "NM",
+      "wild_cave",
+      12.0
+    ],
+    [
+      44.3833,
+      -103.8,
+      "Jewel Cave National Monument",
+      "SD",
+      "show_cave",
+      225.0
+    ],
+    [
+      43.6167,
+      -103.4667,
+      "Wind Cave National Park",
+      "SD",
+      "show_cave",
+      150.0
+    ],
+    [
+      43.8667,
+      -103.2167,
+      "Bethesda Cave",
+      "SD",
+      "wild_cave",
+      8.5
+    ],
+    [
+      35.3833,
+      -85.7,
+      "Ruby Falls",
+      "TN",
+      "show_cave",
+      1.2
+    ],
+    [
+      35.6667,
+      -84.8,
+      "Cumberland Caverns",
+      "TN",
+      "show_cave",
+      44.0
+    ],
+    [
+      35.4667,
+      -84.3333,
+      "Tuckaleechee Caverns",
+      "TN",
+      "show_cave",
+      1.8
+    ],
+    [
+      35.65,
+      -87.0,
+      "Lost River Cave",
+      "TN",
+      "wild_cave",
+      5.0
+    ],
+    [
+      36.3333,
+      -88.6667,
+      "Caves of the Ozark Plateau",
+      "TN",
+      "karst_region",
+      null
+    ],
+    [
+      38.7667,
+      -79.0667,
+      "Luray Caverns",
+      "VA",
+      "show_cave",
+      64.0
+    ],
+    [
+      38.55,
+      -79.5167,
+      "Grand Caverns",
+      "VA",
+      "show_cave",
+      3.0
+    ],
+    [
+      37.5333,
+      -80.6,
+      "Blowing Rock Cave",
+      "VA",
+      "wild_cave",
+      8.0
+    ],
+    [
+      37.4,
+      -80.5667,
+      "Weir Cave",
+      "VA",
+      "wild_cave",
+      3.5
+    ],
+    [
+      38.6667,
+      -79.9167,
+      "Melrose Caverns",
+      "VA",
+      "show_cave",
+      2.0
+    ],
+    [
+      38.3833,
+      -92.8167,
+      "Meramec Caverns",
+      "MO",
+      "show_cave",
+      4.7
+    ],
+    [
+      38.0333,
+      -93.5667,
+      "Fantastic Caverns",
+      "MO",
+      "show_cave",
+      1.5
+    ],
+    [
+      38.3667,
+      -92.6333,
+      "Onondaga Cave State Park",
+      "MO",
+      "show_cave",
+      1.2
+    ],
+    [
+      38.5333,
+      -93.3667,
+      "Marvel Cave",
+      "MO",
+      "show_cave",
+      5.0
+    ],
+    [
+      37.9333,
+      -91.6667,
+      "Blanchard Springs Caverns",
+      "AR",
+      "show_cave",
+      1.5
+    ],
+    [
+      38.8333,
+      -93.0,
+      "Ozark Caverns",
+      "MO",
+      "show_cave",
+      0.5
+    ],
+    [
+      38.9667,
+      -92.0333,
+      "Ruebel Cave",
+      "MO",
+      "wild_cave",
+      1.8
+    ],
+    [
+      38.2,
+      -92.5,
+      "Ozark Plateau Karst",
+      "MO",
+      "karst_region",
+      null
+    ],
+    [
+      37.9333,
+      -91.6667,
+      "Blanchard Springs Caverns",
+      "AR",
+      "show_cave",
+      1.5
+    ],
+    [
+      35.4,
+      -93.1,
+      "War Eagle Cavern",
+      "AR",
+      "show_cave",
+      0.75
+    ],
+    [
+      36.3333,
+      -93.5,
+      "Arkansas Karst Region",
+      "AR",
+      "karst_region",
+      null
+    ],
+    [
+      34.9833,
+      -86.5667,
+      "DeSoto Caverns",
+      "AL",
+      "show_cave",
+      2.0
+    ],
+    [
+      34.65,
+      -86.55,
+      "Cathedral Caverns State Park",
+      "AL",
+      "show_cave",
+      0.25
+    ],
+    [
+      34.8,
+      -86.9,
+      "Dismals Canyon",
+      "AL",
+      "show_cave",
+      0.5
+    ],
+    [
+      34.7,
+      -86.5,
+      "Alabama Karst Region",
+      "AL",
+      "karst_region",
+      null
+    ],
+    [
+      42.8667,
+      -88.8,
+      "Cave of the Mounds",
+      "WI",
+      "show_cave",
+      1.0
+    ],
+    [
+      42.9667,
+      -89.1833,
+      "Crystal Cave",
+      "WI",
+      "show_cave",
+      0.25
+    ],
+    [
+      43.0833,
+      -89.5667,
+      "Kickapoo Valley Cave",
+      "WI",
+      "wild_cave",
+      2.5
+    ],
+    [
+      42.9,
+      -89.2,
+      "Driftless Karst Region",
+      "WI",
+      "karst_region",
+      null
+    ],
+    [
+      43.5667,
+      -92.1333,
+      "Mystery Cave",
+      "MN",
+      "show_cave",
+      12.0
+    ],
+    [
+      43.6667,
+      -92.0833,
+      "Forestville/Mystery Cave State Park",
+      "MN",
+      "show_cave",
+      1.5
+    ],
+    [
+      43.5,
+      -92.0,
+      "Driftless Karst - Minnesota",
+      "MN",
+      "karst_region",
+      null
+    ],
+    [
+      43.1667,
+      -91.1667,
+      "Decorah Ice Cave",
+      "IA",
+      "wild_cave",
+      0.1
+    ],
+    [
+      43.2,
+      -91.0,
+      "Driftless Karst - Iowa",
+      "IA",
+      "karst_region",
+      null
+    ],
+    [
+      29.8667,
+      -98.2667,
+      "Natural Bridge Caverns",
+      "TX",
+      "show_cave",
+      0.5
+    ],
+    [
+      30.0667,
+      -98.0667,
+      "Wonder World Caves",
+      "TX",
+      "show_cave",
+      2.0
+    ],
+    [
+      30.1333,
+      -97.8667,
+      "Cascade Caverns",
+      "TX",
+      "show_cave",
+      1.0
+    ],
+    [
+      30.2,
+      -97.9667,
+      "Cave Without a Name",
+      "TX",
+      "show_cave",
+      0.75
+    ],
+    [
+      30.0,
+      -98.5,
+      "Edwards Plateau Karst",
+      "TX",
+      "karst_region",
+      null
+    ],
+    [
+      29.95,
+      -98.3333,
+      "Bracken Cave",
+      "TX",
+      "wild_cave",
+      0.1
+    ],
+    [
+      32.4167,
+      -110.7667,
+      "Colossal Cave Mountain Park",
+      "AZ",
+      "show_cave",
+      2.5
+    ],
+    [
+      33.6667,
+      -109.4167,
+      "Cave Creek",
+      "AZ",
+      "wild_cave",
+      1.0
+    ],
+    [
+      41.7333,
+      -121.5,
+      "Lava Beds National Monument",
+      "CA",
+      "wild_cave",
+      null
+    ],
+    [
+      41.75,
+      -121.5333,
+      "Thurber Lava Tube",
+      "CA",
+      "wild_cave",
+      0.5
+    ],
+    [
+      41.8,
+      -121.5667,
+      "Mammoth Crater Cave",
+      "CA",
+      "wild_cave",
+      0.3
+    ],
+    [
+      42.0833,
+      -123.4167,
+      "Oregon Caves National Monument",
+      "OR",
+      "show_cave",
+      3.0
+    ],
+    [
+      43.2667,
+      -121.0833,
+      "Newberry Lava Tube Caves",
+      "OR",
+      "wild_cave",
+      null
+    ],
+    [
+      40.8667,
+      -77.6,
+      "Penn's Cave",
+      "PA",
+      "show_cave",
+      0.6
+    ],
+    [
+      40.6333,
+      -76.8333,
+      "Indian Echo Cavern",
+      "PA",
+      "show_cave",
+      0.3
+    ],
+    [
+      40.9333,
+      -77.5333,
+      "Penns Cave & Wildlife Park",
+      "PA",
+      "show_cave",
+      0.5
+    ],
+    [
+      40.9,
+      -77.6,
+      "Appalachian Karst - PA",
+      "PA",
+      "karst_region",
+      null
+    ],
+    [
+      42.7167,
+      -74.6667,
+      "Howe Caverns",
+      "NY",
+      "show_cave",
+      0.4
+    ],
+    [
+      42.6833,
+      -74.6833,
+      "Secret Caverns",
+      "NY",
+      "show_cave",
+      0.3
+    ],
+    [
+      42.7,
+      -74.67,
+      "Appalachian Karst - NY",
+      "NY",
+      "karst_region",
+      null
+    ],
+    [
+      38.4333,
+      -82.5667,
+      "Seneca Caverns",
+      "WV",
+      "show_cave",
+      4.3
+    ],
+    [
+      38.5333,
+      -82.1667,
+      "Lost World Caverns",
+      "WV",
+      "show_cave",
+      3.6
+    ],
+    [
+      38.4667,
+      -82.0833,
+      "Organ Cave",
+      "WV",
+      "show_cave",
+      5.0
+    ],
+    [
+      38.6,
+      -82.5,
+      "New River Gorge Caves",
+      "WV",
+      "wild_cave",
+      null
+    ],
+    [
+      38.5,
+      -82.3,
+      "Appalachian Karst - WV",
+      "WV",
+      "karst_region",
+      null
+    ],
+    [
+      39.8667,
+      -82.1333,
+      "Ohio Caverns",
+      "OH",
+      "show_cave",
+      0.4
+    ],
+    [
+      40.1667,
+      -83.5,
+      "Appalachian Karst - Ohio",
+      "OH",
+      "karst_region",
+      null
+    ],
+    [
+      28.25,
+      -82.4167,
+      "Florida Caverns State Park",
+      "FL",
+      "show_cave",
+      2.0
+    ],
+    [
+      27.1667,
+      -82.25,
+      "Devil's Den State Park",
+      "FL",
+      "show_cave",
+      0.1
+    ],
+    [
+      28.5833,
+      -81.6667,
+      "Blue Spring State Park",
+      "FL",
+      "wild_cave",
+      0.05
+    ],
+    [
+      27.5,
+      -82.2,
+      "Florida Karst Region",
+      "FL",
+      "karst_region",
+      null
+    ],
+    [
+      30.5833,
+      -91.9167,
+      "Kisatchie National Forest Caves",
+      "LA",
+      "wild_cave",
+      null
+    ],
+    [
+      32.5,
+      -88.5,
+      "Mississippi Karst Region",
+      "MS",
+      "karst_region",
+      null
+    ],
+    [
+      35.0333,
+      -97.2667,
+      "Alabaster Caverns State Park",
+      "OK",
+      "show_cave",
+      0.8
+    ],
+    [
+      43.4167,
+      -113.8333,
+      "Craters of the Moon Lava Tubes",
+      "ID",
+      "wild_cave",
+      null
+    ],
+    [
+      37.1833,
+      -111.3667,
+      "Horseshoe Canyon Area Caves",
+      "UT",
+      "wild_cave",
+      null
+    ],
+    [
+      39.0833,
+      -117.0833,
+      "Cave Valley",
+      "NV",
+      "wild_cave",
+      null
+    ],
+    [
+      44.5333,
+      -108.8667,
+      "Bighorn Cave",
+      "WY",
+      "wild_cave",
+      0.5
+    ],
+    [
+      37.1667,
+      -107.9,
+      "Lowdermilk Cave",
+      "CO",
+      "wild_cave",
+      1.5
+    ],
+    [
+      39.0,
+      -108.5,
+      "Glenwood Caverns Adventure Park",
+      "CO",
+      "show_cave",
+      5.0
+    ],
+    [
+      35.6667,
+      -82.5,
+      "Linville Caverns",
+      "NC",
+      "show_cave",
+      2.0
+    ],
+    [
+      35.7,
+      -82.55,
+      "Appalachian Karst - NC",
+      "NC",
+      "karst_region",
+      null
+    ],
+    [
+      34.6667,
+      -84.8333,
+      "Caving areas - northern Georgia",
+      "GA",
+      "wild_cave",
+      null
+    ],
+    [
+      38.2667,
+      -86.4667,
+      "Marengo Cave",
+      "IN",
+      "show_cave",
+      0.6
+    ],
+    [
+      38.3,
+      -86.5,
+      "Wyandotte Cave",
+      "IN",
+      "show_cave",
+      2.3
+    ],
+    [
+      38.2833,
+      -86.45,
+      "Midwest Karst - Indiana",
+      "IN",
+      "karst_region",
+      null
+    ],
+    [
+      43.0667,
+      -91.1333,
+      "Guttenberg Caves",
+      "IA",
+      "wild_cave",
+      1.0
+    ],
+    [
+      38.6667,
+      -88.2667,
+      "Illinois Caves (Shawnee)",
+      "IL",
+      "wild_cave",
+      null
+    ],
+    [
+      38.5,
+      -97.5,
+      "Kansas Gypsum Caves",
+      "KS",
+      "wild_cave",
+      null
+    ],
+    [
+      38.0333,
+      -83.6333,
+      "Paintsville Lake Cave",
+      "KY",
+      "wild_cave",
+      null
+    ],
+    [
+      37.6333,
+      -91.4333,
+      "Taum Sauk Cave",
+      "MO",
+      "wild_cave",
+      2.0
+    ],
+    [
+      38.5667,
+      -93.5333,
+      "Thunderbird Cave",
+      "MO",
+      "show_cave",
+      0.3
+    ],
+    [
+      36.0333,
+      -85.5667,
+      "Appalachian Caverns",
+      "TN",
+      "show_cave",
+      0.5
+    ],
+    [
+      43.9333,
+      -103.2333,
+      "Rushmore Cave",
+      "SD",
+      "show_cave",
+      0.5
+    ],
+    [
+      37.5,
+      -81.5,
+      "Central Appalachian Karst",
+      "WV",
+      "karst_region",
+      null
+    ],
+    [
+      38.0,
+      -84.0,
+      "Eastern Kentucky Karst",
+      "KY",
+      "karst_region",
+      null
+    ],
+    [
+      39.0,
+      -82.0,
+      "Ohio Valley Karst",
+      "OH",
+      "karst_region",
+      null
+    ]
+  ]
+}

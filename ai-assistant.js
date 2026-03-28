@@ -189,7 +189,20 @@ const TOOLS=[
   {name:'get_hex_analysis',description:'Get detailed analysis data for the currently selected hex cell (from HEX DENSITY view). Returns location, category breakdown, top subcategories, and up to 100 sighting records with descriptions. User must click a hex first. Use this to analyze themes, patterns, and descriptions within a specific geographic cell.',
     input_schema:{type:'object',properties:{
       include_descriptions:{type:'boolean',default:true,description:'Include sighting descriptions (up to 300 chars each)'}
-    }}}
+    }}},
+  {name:'get_nearby_overlays',description:'Find overlay features near a point: military bases, restricted airspace, caves, fireballs, cryptid sightings, Missing 411 cases. Returns distance-sorted results. Data must be loaded first (user toggles overlay on, or use toggle_overlay).',
+    input_schema:{type:'object',properties:{
+      lat:{type:'number',description:'Latitude'},
+      lon:{type:'number',description:'Longitude'},
+      radius_km:{type:'number',default:50,description:'Search radius in km'}
+    },required:['lat','lon']}},
+  {name:'toggle_overlay',description:'Toggle an overlay dataset on or off. Loads data on first activation. Available overlays: military, airspace, earthquakes, caves, fireballs, cryptids, missing411, geomagnetic, parks, historic.',
+    input_schema:{type:'object',properties:{
+      overlay:{type:'string',enum:['military','airspace','earthquakes','caves','fireballs','cryptids','missing411','geomagnetic','parks','historic'],description:'Overlay to toggle'},
+      enabled:{type:'boolean',default:true,description:'true=show, false=hide'}
+    },required:['overlay']}},
+  {name:'get_active_overlays',description:'List which overlay datasets are currently toggled on and loaded.',
+    input_schema:{type:'object',properties:{}}}
 ];
 
 const SYSTEM_PROMPT=`You are SIGNAL, an AI analyst embedded in Strange Signals — a paranormal sightings correlation map with 258K+ geocoded records across three categories: UFO/UAP (~244K, including ~3.6K Canadian), Bigfoot/Sasquatch (~4.2K), and Haunted Places (~9.7K).
@@ -221,6 +234,18 @@ You can detect anomalies with find_anomalies. Use 'density' to find unusual spat
 When the user has a hex selected in HEX DENSITY view, you can use get_hex_analysis to retrieve detailed data for that specific geographic cell — including category breakdown, subcategories, and up to 100 sighting records with descriptions. Use this to analyze common themes, compile reports on patterns within a region, or find connections between sightings in the same area.
 
 For region comparisons, you can use these named hotspot regions: Pacific Northwest, Appalachia, Skinwalker Ranch, Area 51, Pine Barrens, Hudson Valley, Gulf Breeze, Bridgewater Triangle, San Luis Valley, Marfa, Great Lakes, Ozarks, Point Pleasant, Sedona, Roswell. You can also use US state codes or lat/lon coordinates.
+
+OVERLAY DATASETS: The map has toggleable overlay layers that enrich analysis:
+- Military/DOE Sites (98 installations) — always loaded at startup
+- Restricted Airspace (105 FAA zones: Restricted, MOA, Warning, Prohibited, Alert)
+- USGS Earthquakes (20K M2.5+ events, 2019-2025) — earthquake-lights hypothesis
+- US Cave Systems (104 major caves/karst) — Bigfoot/Missing 411 correlation
+- NASA Fireballs (29 CNEOS detections over US) — UFO misidentification analysis
+- Cryptid Sightings (105 non-Bigfoot: Mothman, Jersey Devil, Champ, Skunk Ape, Dogman, etc)
+- Missing 411 (71 National Park disappearance cases)
+- Geomagnetic Storms (92 G3+ storms, 1950-2026) — temporal overlay on timeline
+
+Use toggle_overlay to activate datasets, get_nearby_overlays to find features near a point, and get_active_overlays to check what is loaded. When analyzing a region, proactively check for nearby restricted airspace, caves, military bases, and Missing 411 cases to provide richer context. For temporal correlations, enable geomagnetic storms to see if sighting spikes coincide with solar activity.
 
 You can place persistent annotation pins on the map using add_annotation. Use annotations to mark specific locations for the user — hotspots you've identified, anomaly sites, areas of interest, etc. Choose appropriate icons: 'ufo' for UFO-related, 'skull' for haunted, 'eye' for observation points, 'alert' for anomalies, 'star' for notable finds, 'pin' for general. Annotations persist across page reloads and can be exported/imported by the user. Use list_annotations to see existing pins, remove_annotation to delete specific ones, and clear_annotations to wipe the slate. When the user asks you to "pin" or "mark" a location, use add_annotation. When presenting analysis results with specific locations (like anomalies or clusters), proactively place annotation pins so the user has a persistent record.`;
 
@@ -733,6 +758,35 @@ async function executeTool(name,input){
         result.sighting_count=hexData.sightings.length;
       }
       return result;
+    }
+    case 'get_nearby_overlays':{
+      if(!SS.getNearbyOverlays)return{error:'Overlay API not available. Update required.'};
+      var nearby=SS.getNearbyOverlays(input.lat,input.lon,input.radius_km||50);
+      if(!Object.keys(nearby).length)return{message:'No overlay features found within '+
+        (input.radius_km||50)+'km. Toggle on overlay datasets first (airspace, caves, cryptids, etc).'};
+      return nearby;
+    }
+    case 'toggle_overlay':{
+      var toggleMap={
+        military:'military-toggle',airspace:'airspace-toggle',earthquakes:'earthquakes-toggle',
+        caves:'caves-toggle',fireballs:'fireballs-toggle',cryptids:'cryptids-toggle',
+        missing411:'missing411-toggle',geomagnetic:'geomagnetic-toggle',
+        parks:'parks-toggle',historic:'historic-toggle'
+      };
+      var tid=toggleMap[input.overlay];
+      if(!tid)return{error:'Unknown overlay: '+input.overlay};
+      var tel=document.getElementById(tid);
+      if(!tel)return{error:'Overlay toggle not found in DOM'};
+      var want=input.enabled!==false;
+      if(tel.checked!==want){
+        tel.checked=want;
+        tel.dispatchEvent(new Event('change'));
+      }
+      return{overlay:input.overlay,enabled:want,message:input.overlay+' overlay '+(want?'enabled':'disabled')};
+    }
+    case 'get_active_overlays':{
+      if(!SS.getActiveOverlays)return{error:'Overlay API not available.'};
+      return{active:SS.getActiveOverlays()};
     }
     default:
       return{error:'Unknown tool: '+name};

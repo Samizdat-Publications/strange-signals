@@ -1,0 +1,958 @@
+{
+  "fields": [
+    "lat",
+    "lon",
+    "name",
+    "type",
+    "floor_ft",
+    "ceiling_ft",
+    "controlling_agency"
+  ],
+  "data": [
+    [
+      42.36,
+      -71.01,
+      "A-201 Boston",
+      "Alert",
+      0,
+      10000,
+      "Logan International"
+    ],
+    [
+      40.77,
+      -73.87,
+      "A-202 New York",
+      "Alert",
+      0,
+      10000,
+      "LaGuardia / JFK Airspace"
+    ],
+    [
+      35.04,
+      -89.98,
+      "A-203 Memphis",
+      "Alert",
+      0,
+      10000,
+      "Naval Air Station Millington"
+    ],
+    [
+      33.94,
+      -118.41,
+      "A-204 Los Angeles",
+      "Alert",
+      0,
+      15000,
+      "LAX / MCAS Miramar"
+    ],
+    [
+      37.62,
+      -122.38,
+      "A-205 San Francisco",
+      "Alert",
+      0,
+      12000,
+      "SFO / NAS Alameda"
+    ],
+    [
+      40.64,
+      -73.78,
+      "A-206 New York Lower",
+      "Alert",
+      0,
+      8000,
+      "New York Special Flight Rules"
+    ],
+    [
+      45.5,
+      -118.5,
+      "Baker MOA",
+      "MOA",
+      0,
+      10000,
+      "Portland Air National Guard"
+    ],
+    [
+      31.32,
+      -99.1,
+      "Brownwood MOA",
+      "MOA",
+      500,
+      10000,
+      "Texas Air National Guard"
+    ],
+    [
+      33.13,
+      -117.13,
+      "Camp Pendleton MOA",
+      "MOA",
+      0,
+      15000,
+      "MCAS Miramar"
+    ],
+    [
+      30.35,
+      -87.6,
+      "Destin MOA",
+      "MOA",
+      0,
+      10000,
+      "Eglin AFB"
+    ],
+    [
+      29.95,
+      -81.3,
+      "Jacksonville MOA",
+      "MOA",
+      500,
+      12000,
+      "NAS Jacksonville"
+    ],
+    [
+      42.22,
+      -121.78,
+      "Klamath MOA",
+      "MOA",
+      0,
+      10000,
+      "Kingsley Field"
+    ],
+    [
+      28.43,
+      -81.3,
+      "Patrick MOA",
+      "MOA",
+      500,
+      15000,
+      "Patrick Space Force Base"
+    ],
+    [
+      37.88,
+      -106.95,
+      "Red Table MOA",
+      "MOA",
+      5000,
+      15000,
+      "Fort Carson"
+    ],
+    [
+      39.78,
+      -119.97,
+      "Reno MOA",
+      "MOA",
+      0,
+      10000,
+      "Nellis AFB"
+    ],
+    [
+      40.78,
+      -112.32,
+      "Salt Lake City MOA",
+      "MOA",
+      0,
+      25000,
+      "Hill AFB"
+    ],
+    [
+      34.73,
+      -117.25,
+      "San Bernardino MOA",
+      "MOA",
+      0,
+      20000,
+      "March Air Reserve Base"
+    ],
+    [
+      35.92,
+      -121.0,
+      "San Luis Obispo MOA",
+      "MOA",
+      0,
+      15000,
+      "Fort Hunter Liggett"
+    ],
+    [
+      47.45,
+      -119.6,
+      "Spokane MOA",
+      "MOA",
+      0,
+      10000,
+      "Spokane AFB"
+    ],
+    [
+      32.92,
+      -109.65,
+      "Tombstone MOA",
+      "MOA",
+      0,
+      10000,
+      "Arizona National Guard"
+    ],
+    [
+      36.25,
+      -115.5,
+      "Vegas MOA",
+      "MOA",
+      0,
+      15000,
+      "Nellis AFB"
+    ],
+    [
+      39.16,
+      -77.464,
+      "P-40 Camp David",
+      "Prohibited",
+      0,
+      18000,
+      "FAA / US Secret Service"
+    ],
+    [
+      37.224,
+      -80.046,
+      "P-42 Bluefield Area",
+      "Prohibited",
+      0,
+      18000,
+      "FAA"
+    ],
+    [
+      39.962,
+      -75.173,
+      "P-46 Philadelphia International",
+      "Prohibited",
+      0,
+      10000,
+      "FAA"
+    ],
+    [
+      38.895,
+      -77.037,
+      "P-56 Washington DC",
+      "Prohibited",
+      0,
+      18000,
+      "FAA / US Secret Service"
+    ],
+    [
+      13.57,
+      144.93,
+      "Andersen AFB Range",
+      "Restricted",
+      0,
+      45000,
+      "Andersen AFB"
+    ],
+    [
+      34.38,
+      -103.3,
+      "Cannon AFB Range",
+      "Restricted",
+      0,
+      35000,
+      "Cannon AFB"
+    ],
+    [
+      36.23,
+      -115.43,
+      "Creech AFB Drone Range",
+      "Restricted",
+      0,
+      35000,
+      "Creech AFB"
+    ],
+    [
+      32.52,
+      -99.8,
+      "Dyess AFB Range",
+      "Restricted",
+      0,
+      25000,
+      "Dyess AFB"
+    ],
+    [
+      64.65,
+      -141.0,
+      "Eielson AFB Range",
+      "Restricted",
+      0,
+      45000,
+      "Eielson AFB"
+    ],
+    [
+      61.27,
+      -149.8,
+      "Elmendorf AFB Range",
+      "Restricted",
+      0,
+      45000,
+      "Joint Base Elmendorf-Richardson"
+    ],
+    [
+      41.15,
+      -104.82,
+      "F.E. Warren AFB Range",
+      "Restricted",
+      0,
+      25000,
+      "F.E. Warren AFB"
+    ],
+    [
+      31.82,
+      -106.5,
+      "Fort Bliss Range",
+      "Restricted",
+      0,
+      30000,
+      "Fort Bliss"
+    ],
+    [
+      38.75,
+      -104.8,
+      "Fort Carson Range",
+      "Restricted",
+      0,
+      25000,
+      "Fort Carson"
+    ],
+    [
+      31.15,
+      -97.8,
+      "Fort Hood Training Range",
+      "Restricted",
+      0,
+      25000,
+      "Fort Cavazos"
+    ],
+    [
+      31.55,
+      -110.35,
+      "Fort Huachuca Range",
+      "Restricted",
+      0,
+      35000,
+      "Fort Huachuca"
+    ],
+    [
+      31.07,
+      -92.77,
+      "Fort Johnson Training Area",
+      "Restricted",
+      0,
+      20000,
+      "Fort Johnson"
+    ],
+    [
+      35.15,
+      -78.98,
+      "Fort Liberty Range",
+      "Restricted",
+      0,
+      20000,
+      "Fort Liberty"
+    ],
+    [
+      32.37,
+      -84.95,
+      "Fort Moore Training Area",
+      "Restricted",
+      0,
+      20000,
+      "Fort Moore"
+    ],
+    [
+      34.65,
+      -98.4,
+      "Fort Sill Artillery Range",
+      "Restricted",
+      0,
+      20000,
+      "Fort Sill"
+    ],
+    [
+      37.15,
+      -115.85,
+      "Groom Lake South Sector",
+      "Restricted",
+      0,
+      99999,
+      "Nellis AFB / CIA"
+    ],
+    [
+      26.35,
+      127.74,
+      "Kadena Air Base Range",
+      "Restricted",
+      0,
+      45000,
+      "Kadena AB"
+    ],
+    [
+      34.82,
+      -106.52,
+      "Kirtland AFB Range",
+      "Restricted",
+      0,
+      45000,
+      "Kirtland AFB"
+    ],
+    [
+      34.3,
+      -116.07,
+      "MCAGCC Range 300",
+      "Restricted",
+      0,
+      30000,
+      "MCAGCC Twentynine Palms"
+    ],
+    [
+      34.25,
+      -116.2,
+      "MCAGCC Range 400",
+      "Restricted",
+      0,
+      30000,
+      "MCAGCC Twentynine Palms"
+    ],
+    [
+      32.87,
+      -117.14,
+      "MCAS Miramar Range",
+      "Restricted",
+      0,
+      35000,
+      "MCAS Miramar"
+    ],
+    [
+      43.68,
+      -115.9,
+      "Mountain Home AFB Range",
+      "Restricted",
+      0,
+      35000,
+      "Mountain Home AFB"
+    ],
+    [
+      36.83,
+      -76.02,
+      "NAS Oceana Range",
+      "Restricted",
+      0,
+      25000,
+      "NAS Oceana"
+    ],
+    [
+      38.27,
+      -76.44,
+      "NAS Patuxent River Test Range",
+      "Restricted",
+      0,
+      45000,
+      "NAS Patuxent River"
+    ],
+    [
+      34.11,
+      -119.04,
+      "NAS Point Mugu Range",
+      "Restricted",
+      0,
+      45000,
+      "NAS Point Mugu"
+    ],
+    [
+      36.15,
+      -118.7,
+      "NWC China Lake North",
+      "Restricted",
+      0,
+      50000,
+      "Naval Weapons Center China Lake"
+    ],
+    [
+      35.98,
+      -119.02,
+      "NWC China Lake South",
+      "Restricted",
+      0,
+      50000,
+      "Naval Weapons Center China Lake"
+    ],
+    [
+      36.23,
+      -115.03,
+      "Nellis AFB Ranges Combined",
+      "Restricted",
+      0,
+      99999,
+      "Nellis AFB"
+    ],
+    [
+      32.5,
+      -106.35,
+      "R-2301 White Sands",
+      "Restricted",
+      0,
+      99999,
+      "White Sands Missile Range"
+    ],
+    [
+      32.3,
+      -106.1,
+      "R-2301N White Sands North",
+      "Restricted",
+      0,
+      85000,
+      "White Sands"
+    ],
+    [
+      32.7,
+      -106.5,
+      "R-2301S White Sands South",
+      "Restricted",
+      0,
+      99999,
+      "White Sands"
+    ],
+    [
+      35.43,
+      -117.88,
+      "R-2508 Edwards AFB Complex",
+      "Restricted",
+      0,
+      99999,
+      "Edwards AFB"
+    ],
+    [
+      35.42,
+      -118.0,
+      "R-2508E Fort Irwin",
+      "Restricted",
+      0,
+      99999,
+      "Fort Irwin"
+    ],
+    [
+      35.27,
+      -118.35,
+      "R-2508N Edwards North",
+      "Restricted",
+      0,
+      75000,
+      "Edwards AFB"
+    ],
+    [
+      35.35,
+      -117.65,
+      "R-2508W China Lake South",
+      "Restricted",
+      0,
+      50000,
+      "China Lake"
+    ],
+    [
+      34.28,
+      -116.05,
+      "R-2515 Twentynine Palms",
+      "Restricted",
+      0,
+      99999,
+      "MCAGCC Twentynine Palms"
+    ],
+    [
+      33.08,
+      -113.9,
+      "R-3201 Barry M. Goldwater Range",
+      "Restricted",
+      0,
+      99999,
+      "Luke AFB"
+    ],
+    [
+      32.88,
+      -114.1,
+      "R-3202 Goldwater South",
+      "Restricted",
+      0,
+      85000,
+      "Luke AFB"
+    ],
+    [
+      33.28,
+      -113.7,
+      "R-3203 Goldwater North",
+      "Restricted",
+      0,
+      99999,
+      "Luke AFB"
+    ],
+    [
+      33.37,
+      -112.85,
+      "R-3401 Luke AFB Range",
+      "Restricted",
+      0,
+      99999,
+      "Luke AFB"
+    ],
+    [
+      33.22,
+      -113.0,
+      "R-3402 Luke South",
+      "Restricted",
+      0,
+      85000,
+      "Luke AFB"
+    ],
+    [
+      33.5,
+      -112.5,
+      "R-3403 Luke East",
+      "Restricted",
+      0,
+      99999,
+      "Luke AFB"
+    ],
+    [
+      32.9,
+      -106.1,
+      "R-4101 Holloman AFB Range",
+      "Restricted",
+      0,
+      99999,
+      "Holloman AFB"
+    ],
+    [
+      32.72,
+      -106.3,
+      "R-4102 Holloman South",
+      "Restricted",
+      0,
+      85000,
+      "Holloman AFB"
+    ],
+    [
+      36.38,
+      -115.82,
+      "R-4302 Red Flag North",
+      "Restricted",
+      0,
+      99999,
+      "Nellis AFB"
+    ],
+    [
+      36.18,
+      -115.95,
+      "R-4303 Red Flag South",
+      "Restricted",
+      0,
+      99999,
+      "Nellis AFB"
+    ],
+    [
+      33.95,
+      -107.45,
+      "R-4401 Melrose Bombing Range",
+      "Restricted",
+      0,
+      99999,
+      "Cannon AFB"
+    ],
+    [
+      33.8,
+      -107.65,
+      "R-4402 Melrose South",
+      "Restricted",
+      0,
+      85000,
+      "Cannon AFB"
+    ],
+    [
+      41.95,
+      -112.88,
+      "R-4703 Utah Test and Training Range",
+      "Restricted",
+      0,
+      99999,
+      "Hill AFB"
+    ],
+    [
+      41.8,
+      -113.1,
+      "R-4704 UTTR South",
+      "Restricted",
+      0,
+      85000,
+      "Hill AFB"
+    ],
+    [
+      37.5,
+      -115.15,
+      "R-4806 NTTR North",
+      "Restricted",
+      0,
+      85000,
+      "Nellis AFB"
+    ],
+    [
+      37.65,
+      -115.5,
+      "R-4806E NTTR East",
+      "Restricted",
+      0,
+      99999,
+      "Nellis AFB"
+    ],
+    [
+      37.37,
+      -115.3,
+      "R-4807 Nevada Test & Training Range",
+      "Restricted",
+      0,
+      99999,
+      "Nellis AFB"
+    ],
+    [
+      37.21,
+      -115.81,
+      "R-4808 Area 51 / Groom Lake",
+      "Restricted",
+      0,
+      99999,
+      "Nellis AFB"
+    ],
+    [
+      37.0,
+      -116.0,
+      "R-4808W Area 51 West",
+      "Restricted",
+      0,
+      99999,
+      "Nellis AFB"
+    ],
+    [
+      30.48,
+      -86.5,
+      "R-5107 Eglin AFB",
+      "Restricted",
+      0,
+      99999,
+      "Eglin AFB"
+    ],
+    [
+      30.42,
+      -86.25,
+      "R-5107E Eglin East",
+      "Restricted",
+      0,
+      85000,
+      "Eglin AFB"
+    ],
+    [
+      30.58,
+      -86.75,
+      "R-5107W Eglin West",
+      "Restricted",
+      0,
+      99999,
+      "Eglin AFB"
+    ],
+    [
+      36.23,
+      -115.03,
+      "R-5301 Nellis AFB",
+      "Restricted",
+      0,
+      99999,
+      "Nellis AFB"
+    ],
+    [
+      36.1,
+      -115.2,
+      "R-5302 Nellis South",
+      "Restricted",
+      0,
+      85000,
+      "Nellis AFB"
+    ],
+    [
+      39.42,
+      -118.72,
+      "R-5403 Fallon Range",
+      "Restricted",
+      0,
+      99999,
+      "Fallon NAS"
+    ],
+    [
+      39.35,
+      -118.9,
+      "R-5404 Fallon South",
+      "Restricted",
+      0,
+      85000,
+      "Fallon NAS"
+    ],
+    [
+      45.32,
+      -111.2,
+      "R-5701 Ennis Range",
+      "Restricted",
+      0,
+      99999,
+      "Malmstrom AFB"
+    ],
+    [
+      45.15,
+      -111.4,
+      "R-5702 Ennis South",
+      "Restricted",
+      0,
+      85000,
+      "Malmstrom AFB"
+    ],
+    [
+      47.93,
+      -119.27,
+      "R-6205 Moses Lake Range",
+      "Restricted",
+      0,
+      99999,
+      "Spokane AFB"
+    ],
+    [
+      47.78,
+      -119.45,
+      "R-6206 Sagebrush Complex",
+      "Restricted",
+      0,
+      85000,
+      "Spokane AFB"
+    ],
+    [
+      47.15,
+      -120.48,
+      "R-6401 Yakima Training Center",
+      "Restricted",
+      0,
+      99999,
+      "Fort Lewis"
+    ],
+    [
+      33.98,
+      -98.5,
+      "Sheppard AFB Range",
+      "Restricted",
+      0,
+      25000,
+      "Sheppard AFB"
+    ],
+    [
+      37.87,
+      -116.77,
+      "Tonopah Test Range",
+      "Restricted",
+      0,
+      99999,
+      "US Air Force"
+    ],
+    [
+      37.75,
+      -122.75,
+      "W-289 San Francisco Bay",
+      "Warning",
+      0,
+      25000,
+      "US Navy"
+    ],
+    [
+      32.7,
+      -117.25,
+      "W-291 San Diego",
+      "Warning",
+      0,
+      30000,
+      "US Navy"
+    ],
+    [
+      26.1,
+      -81.7,
+      "W-381 Florida Keys",
+      "Warning",
+      0,
+      30000,
+      "US Navy"
+    ],
+    [
+      28.75,
+      -80.75,
+      "W-382 Cape Canaveral",
+      "Warning",
+      0,
+      35000,
+      "Space Force Eastern Range"
+    ],
+    [
+      32.8,
+      -76.95,
+      "W-383 Hampton Roads",
+      "Warning",
+      0,
+      20000,
+      "Naval Station Norfolk"
+    ],
+    [
+      30.35,
+      -88.2,
+      "W-384 Gulf of Mexico",
+      "Warning",
+      0,
+      35000,
+      "US Navy"
+    ],
+    [
+      27.73,
+      -97.15,
+      "W-385 Corpus Christi",
+      "Warning",
+      0,
+      30000,
+      "US Navy"
+    ],
+    [
+      41.2,
+      -71.3,
+      "W-386 Atlantic East",
+      "Warning",
+      0,
+      35000,
+      "US Navy"
+    ],
+    [
+      38.1,
+      -75.5,
+      "W-387 Chesapeake Bay",
+      "Warning",
+      0,
+      25000,
+      "Naval Station Norfolk"
+    ],
+    [
+      40.5,
+      -73.7,
+      "W-388 New Jersey Coast",
+      "Warning",
+      0,
+      35000,
+      "US Navy"
+    ],
+    [
+      46.5,
+      -124.5,
+      "W-551 Oregon Coast",
+      "Warning",
+      0,
+      25000,
+      "Naval Station Everett"
+    ]
+  ]
+}

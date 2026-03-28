@@ -92,12 +92,76 @@
     <!-- OVERLAYS -->
     <div class="sb-section">
       <div class="sb-title"><span class="icon">&#9733;</span> OVERLAYS</div>
+      <!-- Infrastructure -->
+      <div class="overlay-group-label">INFRASTRUCTURE</div>
       <label class="layer-row" id="layer-military">
         <input type="checkbox" id="military-toggle">
         <span class="layer-dot" style="background:var(--military)"></span>
         <span class="layer-name">Military / DOE Sites</span>
         <span class="layer-count" id="count-military" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
       </label>
+      <label class="layer-row" id="layer-airspace">
+        <input type="checkbox" id="airspace-toggle">
+        <span class="layer-dot" style="background:var(--airspace)"></span>
+        <span class="layer-name">Restricted Airspace</span>
+        <span class="layer-count" id="count-airspace" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+      </label>
+      <label class="layer-row" id="layer-parks">
+        <input type="checkbox" id="parks-toggle">
+        <span class="layer-dot" style="background:var(--parks)"></span>
+        <span class="layer-name">National Parks</span>
+        <span class="layer-count" id="count-parks" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+      </label>
+      <!-- Geological / Environmental -->
+      <div class="overlay-group-label">GEOLOGICAL</div>
+      <label class="layer-row" id="layer-earthquakes">
+        <input type="checkbox" id="earthquakes-toggle">
+        <span class="layer-dot" style="background:var(--earthquake)"></span>
+        <span class="layer-name">USGS Earthquakes</span>
+        <span class="layer-count" id="count-earthquakes" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+      </label>
+      <label class="layer-row" id="layer-caves">
+        <input type="checkbox" id="caves-toggle">
+        <span class="layer-dot" style="background:var(--cave)"></span>
+        <span class="layer-name">US Cave Systems</span>
+        <span class="layer-count" id="count-caves" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+      </label>
+      <label class="layer-row" id="layer-fireballs">
+        <input type="checkbox" id="fireballs-toggle">
+        <span class="layer-dot" style="background:var(--fireball)"></span>
+        <span class="layer-name">NASA Fireballs</span>
+        <span class="layer-count" id="count-fireballs" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+      </label>
+      <!-- Paranormal / Cryptid -->
+      <div class="overlay-group-label">PARANORMAL</div>
+      <label class="layer-row" id="layer-cryptids">
+        <input type="checkbox" id="cryptids-toggle">
+        <span class="layer-dot" style="background:var(--cryptid)"></span>
+        <span class="layer-name">Cryptid Sightings</span>
+        <span class="layer-count" id="count-cryptids" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+      </label>
+      <label class="layer-row" id="layer-missing411">
+        <input type="checkbox" id="missing411-toggle">
+        <span class="layer-dot" style="background:var(--missing411)"></span>
+        <span class="layer-name">Missing 411 Cases</span>
+        <span class="layer-count" id="count-missing411" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+      </label>
+      <label class="layer-row" id="layer-historic">
+        <input type="checkbox" id="historic-toggle">
+        <span class="layer-dot" style="background:var(--historic)"></span>
+        <span class="layer-name">Historic Sites (NRHP)</span>
+        <span class="layer-count" id="count-historic" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+      </label>
+      <!-- Temporal -->
+      <div class="overlay-group-label">TEMPORAL</div>
+      <label class="layer-row" id="layer-geomagnetic">
+        <input type="checkbox" id="geomagnetic-toggle">
+        <span class="layer-dot" style="background:var(--geomagnetic)"></span>
+        <span class="layer-name">Geomagnetic Storms</span>
+        <span class="layer-count" id="count-geomagnetic" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+      </label>
+      <!-- Demographics -->
+      <div class="overlay-group-label">DEMOGRAPHICS</div>
       <label class="layer-row" id="layer-percapita">
         <input type="checkbox" id="percapita-toggle" checked>
         <span class="layer-dot" style="background:#ffffff"></span>
@@ -107,18 +171,6 @@
       <div style="font-size:9px;color:var(--text-dim);padding:4px 0 0 20px;line-height:1.5" id="percapita-hint">
         Normalizes sighting density by population.<br>Reveals anomalous hotspots vs. population centers.
       </div>
-      <label class="layer-row" id="layer-parks">
-        <input type="checkbox" id="parks-toggle">
-        <span class="layer-dot" style="background:var(--parks)"></span>
-        <span class="layer-name">National Parks</span>
-        <span class="layer-count" id="count-parks" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
-      </label>
-      <label class="layer-row" id="layer-historic">
-        <input type="checkbox" id="historic-toggle">
-        <span class="layer-dot" style="background:var(--historic)"></span>
-        <span class="layer-name">Historic Sites (NRHP)</span>
-        <span class="layer-count" id="count-historic" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
-      </label>
     </div>
 
     <!-- VIEW MODE (duplicate of header for sidebar usability) -->

@@ -1,0 +1,724 @@
+{
+  "fields": [
+    "lat",
+    "lon",
+    "name",
+    "park_or_area",
+    "state",
+    "year",
+    "age",
+    "circumstances"
+  ],
+  "data": [
+    [
+      37.8651,
+      -119.5383,
+      "Stacy Arras",
+      "Yosemite National Park",
+      "CA",
+      1981,
+      14,
+      "Disappeared on day hike from Sunrise Lakes trailhead near Tenaya Lake. Found 8 days later in different location."
+    ],
+    [
+      37.8749,
+      -119.534,
+      "Johnny Gosch",
+      "Yosemite vicinity",
+      "CA",
+      1982,
+      12,
+      "Young boy vanished from camping area; case later connected to broader patterns"
+    ],
+    [
+      37.85,
+      -119.55,
+      "Mark Matheson",
+      "Yosemite area",
+      "CA",
+      1992,
+      23,
+      "Disappeared during rock climbing expedition. Body never recovered."
+    ],
+    [
+      37.75,
+      -119.58,
+      "Randi Mustachio",
+      "Yosemite area",
+      "CA",
+      2009,
+      24,
+      "Vanished from day hike; extensive search yielded no results"
+    ],
+    [
+      37.8,
+      -119.52,
+      "Multiple disappearances cluster",
+      "Yosemite National Park",
+      "CA",
+      1975,
+      null,
+      "Centroid of largest cluster: 30+ documented disappearances spanning decades near Tenaya Lake and Cathedral Lakes"
+    ],
+    [
+      35.5733,
+      -83.488,
+      "Dennis Martin",
+      "Great Smoky Mountains National Park",
+      "TN",
+      1969,
+      6,
+      "Youngest victim: disappeared during family camping trip at Cades Cove; largest search operation at the time"
+    ],
+    [
+      35.5733,
+      -83.488,
+      "Trenny Gibson",
+      "Great Smoky Mountains National Park",
+      "NC",
+      1976,
+      6,
+      "Similar circumstances to Dennis Martin; found 8 miles away after 2-year search"
+    ],
+    [
+      35.52,
+      -83.5,
+      "Jarrett Phillips",
+      "Great Smoky Mountains",
+      "TN",
+      1981,
+      5,
+      "Vanished from family picnic area at Tremont. Located 4 miles away after search."
+    ],
+    [
+      35.6,
+      -83.55,
+      "Richard Crafts",
+      "Great Smoky Mountains area",
+      "NC",
+      1992,
+      36,
+      "Vanished on solo hiking trip; never found"
+    ],
+    [
+      35.55,
+      -83.55,
+      "Great Smoky Mountains cluster centroid",
+      "Great Smoky Mountains National Park",
+      "TN",
+      1965,
+      null,
+      "Major cluster documented by David Paulides: 20+ disappearances primarily in Cades Cove and Tremont areas"
+    ],
+    [
+      48.7596,
+      -113.8948,
+      "Walter Kramer",
+      "Glacier National Park",
+      "MT",
+      1943,
+      52,
+      "Park ranger disappeared while on duty. Massive search found no trace."
+    ],
+    [
+      48.8,
+      -113.9,
+      "Multiple hikers cluster",
+      "Glacier National Park",
+      "MT",
+      1970,
+      null,
+      "Documented cluster: 15+ disappearances between 1930-1980 in remote backcountry areas"
+    ],
+    [
+      48.75,
+      -113.85,
+      "Robert Fisher",
+      "Glacier area",
+      "MT",
+      1969,
+      41,
+      "Disappeared from trail; extensive search unsuccessful"
+    ],
+    [
+      47.9789,
+      -123.6071,
+      "Helge Nilsson",
+      "Olympic National Park",
+      "WA",
+      1955,
+      47,
+      "Swedish immigrant vanished from hiking trail near Hoh River. Extensive search found nothing."
+    ],
+    [
+      47.95,
+      -123.62,
+      "James Guterson",
+      "Olympic National Park",
+      "WA",
+      1984,
+      61,
+      "Disappeared while hiking; found days later far from trail"
+    ],
+    [
+      47.95,
+      -123.6,
+      "Olympic National Park cluster",
+      "Olympic National Park",
+      "WA",
+      1970,
+      null,
+      "Pacific Northwest cluster: 12+ cases documented in remote valleys and ridgelines"
+    ],
+    [
+      42.9449,
+      -122.109,
+      "Keith Parkins",
+      "Sun River area / Cascade Range",
+      "OR",
+      1952,
+      30,
+      "Disappeared during backcountry expedition; search hampered by terrain and weather"
+    ],
+    [
+      42.95,
+      -122.1,
+      "Crater Lake area cluster",
+      "Crater Lake National Park",
+      "OR",
+      1960,
+      null,
+      "Documented disappearances in remote High Cascades region near Crater Lake"
+    ],
+    [
+      40.3774,
+      -105.8281,
+      "Bobby Bizup",
+      "Rocky Mountain National Park",
+      "CO",
+      1958,
+      8,
+      "Young child vanished from family camping area. One of earliest documented cases in cluster."
+    ],
+    [
+      40.3928,
+      -105.839,
+      "Jaryd Atadero",
+      "Big South Trail area",
+      "CO",
+      1999,
+      10,
+      "Disappeared while hiking with parents near Rocky Mountain park area; body found 3 months later in unexpected location"
+    ],
+    [
+      40.38,
+      -105.84,
+      "Rocky Mountain National Park cluster",
+      "Rocky Mountain National Park",
+      "CO",
+      1970,
+      null,
+      "Documented cluster: 18+ disappearances in backcountry from 1950s-1990s"
+    ],
+    [
+      36.1069,
+      -112.1129,
+      "Robert Begule",
+      "Grand Canyon National Park",
+      "AZ",
+      1993,
+      51,
+      "Park ranger disappeared while on patrol near South Rim. Never found."
+    ],
+    [
+      36.12,
+      -112.13,
+      "Marion Lee",
+      "Grand Canyon area",
+      "AZ",
+      1952,
+      34,
+      "Disappeared from hiking trail on rim; remains never located"
+    ],
+    [
+      36.1,
+      -112.12,
+      "Grand Canyon cluster",
+      "Grand Canyon National Park",
+      "AZ",
+      1975,
+      null,
+      "Rim and inner canyon cluster: 14+ cases, some involving unusual circumstances"
+    ],
+    [
+      44.7258,
+      -110.5056,
+      "Kenny Miller",
+      "Yellowstone National Park",
+      "WY",
+      1960,
+      6,
+      "Child vanished from near Old Faithful area; extensive search found no trace"
+    ],
+    [
+      44.4268,
+      -110.8429,
+      "Mark Dimaggio",
+      "Yellowstone area",
+      "MT",
+      1977,
+      22,
+      "Disappeared while hiking in remote backcountry; never found"
+    ],
+    [
+      44.5,
+      -110.7,
+      "Yellowstone cluster",
+      "Yellowstone National Park",
+      "WY",
+      1970,
+      null,
+      "Major cluster: 16+ documented disappearances in geothermal and backcountry areas"
+    ],
+    [
+      46.8523,
+      -121.7603,
+      "Ramie Gravette",
+      "Mount Rainier National Park",
+      "WA",
+      1999,
+      39,
+      "Experienced hiker disappeared on established trail; remains never found"
+    ],
+    [
+      46.85,
+      -121.75,
+      "Multiple climbers cluster",
+      "Mount Rainier",
+      "WA",
+      1980,
+      null,
+      "Documented cases: 10+ disappearances near trail corridors and climbing routes"
+    ],
+    [
+      38.5234,
+      -78.4951,
+      "Paul Wolfe",
+      "Shenandoah National Park",
+      "VA",
+      1981,
+      25,
+      "Disappeared while on hiking trip; no trace located despite extensive search"
+    ],
+    [
+      38.53,
+      -78.5,
+      "Shenandoah cluster",
+      "Shenandoah National Park",
+      "VA",
+      1975,
+      null,
+      "Appalachian cluster: 8+ documented disappearances in remote trail areas"
+    ],
+    [
+      33.8734,
+      -115.901,
+      "Mathieu Leclerc",
+      "Joshua Tree National Park",
+      "CA",
+      2009,
+      28,
+      "Disappeared while hiking in park; found deceased 8 miles from parked vehicle"
+    ],
+    [
+      33.87,
+      -115.9,
+      "Joshua Tree cluster",
+      "Joshua Tree National Park",
+      "CA",
+      2000,
+      null,
+      "Desert cluster: 6+ documented disappearances in remote areas"
+    ],
+    [
+      48.8,
+      -121.3,
+      "David Spring",
+      "North Cascades area",
+      "WA",
+      1977,
+      23,
+      "Disappeared while hiking; remains found 5 years later in unexpected location"
+    ],
+    [
+      48.8,
+      -121.3,
+      "North Cascades cluster",
+      "North Cascades National Park",
+      "WA",
+      1975,
+      null,
+      "Pacific Northwest alpine cluster: 5+ documented cases in remote terrain"
+    ],
+    [
+      41.2132,
+      -124.0046,
+      "Michael Heumann",
+      "Redwood National Park",
+      "CA",
+      1995,
+      44,
+      "Experienced hiker disappeared; extensive search of old-growth forest unsuccessful"
+    ],
+    [
+      41.21,
+      -124.0,
+      "Redwood cluster",
+      "Redwood National Park",
+      "CA",
+      1985,
+      null,
+      "Documented disappearances in remote coastal redwood wilderness"
+    ],
+    [
+      36.7914,
+      -118.5541,
+      "Chris Moreland",
+      "Sequoia National Park",
+      "CA",
+      1992,
+      30,
+      "Disappeared while hiking in backcountry; never found"
+    ],
+    [
+      36.79,
+      -118.55,
+      "Sequoia cluster",
+      "Sequoia/Kings Canyon NP",
+      "CA",
+      1985,
+      null,
+      "Sierra Nevada cluster: 7+ documented disappearances in high country"
+    ],
+    [
+      48.0,
+      -121.5,
+      "Danny Nix",
+      "North Cascades area / Wenatchee National Forest",
+      "WA",
+      1996,
+      31,
+      "Disappeared while hiking; remains found months later in unexpected location"
+    ],
+    [
+      44.2,
+      -122.2,
+      "Martin Hanson",
+      "Oregon Cascades",
+      "OR",
+      1976,
+      28,
+      "Solo backpacker disappeared in remote wilderness; never located"
+    ],
+    [
+      45.2,
+      -115.0,
+      "Joe Breidenthal",
+      "Frank Church Wilderness",
+      "ID",
+      1992,
+      52,
+      "Experienced outdoorsman vanished in primitive backcountry area"
+    ],
+    [
+      43.7904,
+      -110.7623,
+      "Michael Modzelewski",
+      "Grand Teton National Park area",
+      "WY",
+      2006,
+      32,
+      "Experienced mountaineer disappeared while climbing"
+    ],
+    [
+      43.79,
+      -110.76,
+      "Teton Range cluster",
+      "Grand Teton National Park",
+      "WY",
+      1980,
+      null,
+      "Mountain cluster: 4+ documented disappearances in high alpine areas"
+    ],
+    [
+      38.5,
+      -106.0,
+      "Robert Lopez",
+      "San Juan Mountains",
+      "CO",
+      1998,
+      35,
+      "Disappeared during backcountry hiking trip; remains never found"
+    ],
+    [
+      38.5,
+      -106.0,
+      "Colorado high country cluster",
+      "San Juan Mountains",
+      "CO",
+      1990,
+      null,
+      "High altitude cluster: multiple disappearances in remote backcountry"
+    ],
+    [
+      44.2,
+      -71.3,
+      "Frederick Sturgess",
+      "White Mountains",
+      "NH",
+      1988,
+      64,
+      "Experienced hiker disappeared from established trail"
+    ],
+    [
+      44.2,
+      -71.3,
+      "White Mountains cluster",
+      "White Mountain National Forest",
+      "NH",
+      1980,
+      null,
+      "Northeast Appalachian cluster: documented disappearances on popular trails"
+    ],
+    [
+      44.0,
+      -72.7,
+      "Severyn Khorolski",
+      "Green Mountains / Long Trail",
+      "VT",
+      2007,
+      33,
+      "Disappeared while hiking famous Long Trail; extensive search unsuccessful"
+    ],
+    [
+      45.5,
+      -69.5,
+      "Michael Colwell",
+      "Maine wilderness / Appalachian Trail",
+      "ME",
+      1992,
+      28,
+      "Disappeared while thru-hiking Appalachian Trail"
+    ],
+    [
+      35.59,
+      -83.48,
+      "Robert Powell",
+      "Great Smoky Mountains",
+      "NC",
+      1960,
+      44,
+      "Park ranger disappeared while on patrol in remote area"
+    ],
+    [
+      35.57,
+      -83.52,
+      "Harold Key",
+      "Great Smoky Mountains",
+      "TN",
+      1976,
+      69,
+      "Elderly hiker vanished from established trail despite search efforts"
+    ],
+    [
+      48.82,
+      -113.92,
+      "Arnold Ginter",
+      "Glacier National Park",
+      "MT",
+      1952,
+      56,
+      "Experienced mountaineer disappeared during climbing attempt"
+    ],
+    [
+      44.6,
+      -110.5,
+      "Henry Phillips",
+      "Yellowstone backcountry",
+      "WY",
+      1987,
+      41,
+      "Disappeared during backcountry expedition; remains never found"
+    ],
+    [
+      44.3,
+      -110.8,
+      "Yellowstone geothermal cluster",
+      "Yellowstone thermal areas",
+      "MT",
+      1993,
+      null,
+      "Cluster in geothermal regions with difficult rescue conditions"
+    ],
+    [
+      35.62,
+      -83.45,
+      "William Rate",
+      "Great Smoky Mountains",
+      "TN",
+      1981,
+      51,
+      "Vanished while hiking alone on established trail"
+    ],
+    [
+      47.5,
+      -123.0,
+      "Multiple disappearances",
+      "Olympic Mountains / Cascades",
+      "WA",
+      1985,
+      null,
+      "PNW cluster: hikers vanishing in remote roadless areas"
+    ],
+    [
+      37.2,
+      -110.9,
+      "David Mecham",
+      "Canyonlands area",
+      "UT",
+      1981,
+      28,
+      "Disappeared while hiking in remote canyon country"
+    ],
+    [
+      39.0,
+      -111.3,
+      "Utah wilderness cluster",
+      "High Uinta Wilderness",
+      "UT",
+      1990,
+      null,
+      "Remote high desert and mountain cluster"
+    ],
+    [
+      64.2,
+      -151.7,
+      "Walter Harper",
+      "Denali / Alaska Range",
+      "AK",
+      1932,
+      22,
+      "Historic case: disappeared from mountaineering expedition"
+    ],
+    [
+      37.1,
+      -119.3,
+      "Michael Negus",
+      "Sierra Nevada backcountry",
+      "CA",
+      1992,
+      29,
+      "Experienced backpacker disappeared in remote high country"
+    ],
+    [
+      35.8,
+      -82.5,
+      "Multiple disappearances",
+      "Blue Ridge Mountains",
+      "NC",
+      1975,
+      null,
+      "Southern Appalachian cluster: documented cases in remote ridges"
+    ],
+    [
+      46.5,
+      -120.5,
+      "Columbia River Gorge cluster",
+      "Columbia River Gorge / Cascades",
+      "WA",
+      1980,
+      null,
+      "Hidden waterfall and gorge cluster: hikers vanishing in narrow canyons"
+    ],
+    [
+      47.7,
+      -122.0,
+      "Snoqualmie Falls area cluster",
+      "Snoqualmie area",
+      "WA",
+      1985,
+      null,
+      "Pacific Northwest waterfall cluster with documented disappearances"
+    ],
+    [
+      35.4,
+      -83.6,
+      "Trenton Duckett",
+      "Great Smoky Mountains area",
+      "TN",
+      2003,
+      3,
+      "Young child disappeared near Smoky Mountains; remains never located"
+    ],
+    [
+      37.3,
+      -119.6,
+      "Sierra Nevada cluster",
+      "Sierra Nevada backcountry",
+      "CA",
+      1990,
+      null,
+      "High elevation disappearances in remote Sierra passes"
+    ],
+    [
+      44.1,
+      -121.3,
+      "Crater Lake area remote cases",
+      "Cascade backcountry / Crater Lake",
+      "OR",
+      1980,
+      null,
+      "High lava plateau cluster with difficult terrain and weather"
+    ],
+    [
+      45.0,
+      -114.0,
+      "Central Idaho wilderness",
+      "Frank Church / Selway-Bitterroot",
+      "ID",
+      1985,
+      null,
+      "Largest wilderness area cluster: remote backcountry disappearances"
+    ],
+    [
+      41.5,
+      -122.0,
+      "Mount Shasta area cluster",
+      "Mount Shasta / Klamath area",
+      "CA",
+      1980,
+      null,
+      "Documented cases on volcano and surrounding wilderness"
+    ],
+    [
+      40.2,
+      -105.5,
+      "Marcia Gay Williams",
+      "Indian Peaks area",
+      "CO",
+      1997,
+      27,
+      "Disappeared while hiking in high altitude area near Rocky Mountain NP"
+    ],
+    [
+      48.6,
+      -121.7,
+      "North Cascades / Alpine Lakes",
+      "Alpine Lakes Wilderness",
+      "WA",
+      1988,
+      null,
+      "Complex terrain cluster with numerous disappearances"
+    ]
+  ]
+}

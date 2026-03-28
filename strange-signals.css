@@ -14,6 +14,13 @@
   --military: #4488ff;
   --parks: #22cc66;
   --historic: #ffaa22;
+  --airspace: #ff4466;
+  --earthquake: #ff8844;
+  --cave: #aa8866;
+  --fireball: #ffcc00;
+  --cryptid: #cc44ff;
+  --missing411: #ff2222;
+  --geomagnetic: #44ffcc;
   --text: #c8d4e0;
   --text-dim: #7a8a9a;
   --text-bright: #e8f0f8;
@@ -456,6 +463,17 @@ button:disabled,input:disabled,select:disabled{opacity:0.5;cursor:not-allowed}
 .overlay-marker{text-align:center;line-height:12px;background:transparent!important;border:none!important}
 .parks-marker{color:var(--parks);font-size:14px;text-shadow:0 0 6px var(--parks),0 0 2px #000}
 .historic-marker{color:var(--historic);font-size:12px;text-shadow:0 0 6px var(--historic),0 0 2px #000}
+.airspace-marker{color:var(--airspace);font-size:12px;text-shadow:0 0 6px var(--airspace),0 0 2px #000}
+.earthquake-marker{color:var(--earthquake);font-size:9px;text-shadow:0 0 4px var(--earthquake),0 0 2px #000}
+.cave-marker{color:var(--cave);font-size:13px;text-shadow:0 0 6px var(--cave),0 0 2px #000}
+.fireball-marker{color:var(--fireball);font-size:14px;text-shadow:0 0 8px var(--fireball),0 0 3px #000}
+.cryptid-marker{color:var(--cryptid);font-size:12px;text-shadow:0 0 6px var(--cryptid),0 0 2px #000}
+.missing411-marker{color:var(--missing411);font-size:11px;text-shadow:0 0 6px var(--missing411),0 0 2px #000}
+.overlay-group-label{font-family:var(--font-display);font-size:8px;letter-spacing:2px;color:var(--text-dim);
+  padding:8px 0 2px 4px;opacity:0.6}
+.airspace-circle{stroke-width:1.5;fill-opacity:0.08;stroke-opacity:0.5;stroke-dasharray:6 3}
+.geomag-band{opacity:0.25;pointer-events:all}
+.geomag-band:hover{opacity:0.5}
 
 /* ========== FRONTEND POLISH: DEEP SPACE COMMAND ========== */
 
