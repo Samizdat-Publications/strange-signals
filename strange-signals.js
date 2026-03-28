@@ -1808,31 +1808,120 @@ function renderHexTemporalChart(yearBins){
     .call(d3.axisLeft(y).ticks(3).tickFormat(d3.format('~s')));
 }
 
+/* ========== OVERLAY POINT EXTRACTION FOR CORRELATION ========== */
+const OVERLAY_META={
+  airspace:{data:()=>airspaceData,color:'#ff4466',name:'Restricted Airspace',file:'data/restricted_airspace.json',setter:d=>{airspaceData=d}},
+  earthquakes:{data:()=>earthquakeData,color:'#ff8844',name:'USGS Earthquakes',file:'data/usgs_earthquakes.json',setter:d=>{earthquakeData=d}},
+  caves:{data:()=>caveData,color:'#aa8866',name:'Cave Systems',file:'data/us_caves.json',setter:d=>{caveData=d}},
+  fireballs:{data:()=>fireballData,color:'#ffcc00',name:'NASA Fireballs',file:'data/nasa_fireballs.json',setter:d=>{fireballData=d}},
+  cryptids:{data:()=>cryptidData,color:'#cc44ff',name:'Cryptid Sightings',file:'data/cryptid_sightings.json',setter:d=>{cryptidData=d}},
+  missing411:{data:()=>missing411Data,color:'#ff2222',name:'Missing 411',file:'data/missing411.json',setter:d=>{missing411Data=d}},
+  military:{data:()=>militaryData,color:'#4488ff',name:'Military Bases',file:null,setter:null}
+};
+
+async function ensureOverlayLoaded(key){
+  const meta=OVERLAY_META[key];
+  if(!meta)return null;
+  if(meta.data())return meta.data();
+  if(!meta.file)return null;
+  try{
+    const resp=await fetch(meta.file);
+    const d=await resp.json();
+    meta.setter(d);
+    return d;
+  }catch(e){console.warn('Failed to load '+key);return null}
+}
+
+function getOverlayPoints(key){
+  const meta=OVERLAY_META[key];
+  if(!meta)return[];
+  const d=meta.data();
+  if(!d||!d.data)return[];
+  return d.data.map(r=>[r[0],r[1]]); // all overlays have lat,lon at index 0,1
+}
+
+function hexBinOverlayPoints(points,hexFeatures,cellDeg){
+  const overlayCounts=new Array(hexFeatures.length).fill(0);
+  // Build simple grid index for overlay points
+  const idx={};
+  points.forEach(p=>{
+    const r=Math.floor(p[0]/cellDeg),c=Math.floor(p[1]/cellDeg);
+    const k=r+','+c;
+    if(!idx[k])idx[k]=[];
+    idx[k].push(p);
+  });
+  hexFeatures.forEach((hex,hi)=>{
+    const bb=turf.bbox(hex);
+    const minR=Math.floor(bb[1]/cellDeg),maxR=Math.floor(bb[3]/cellDeg);
+    const minC=Math.floor(bb[0]/cellDeg),maxC=Math.floor(bb[2]/cellDeg);
+    for(let r=minR;r<=maxR;r++){
+      for(let c=minC;c<=maxC;c++){
+        const pts=idx[r+','+c];
+        if(!pts)continue;
+        pts.forEach(pt=>{
+          if(turf.booleanPointInPolygon(turf.point([pt[1],pt[0]]),hex)){
+            overlayCounts[hi]++;
+          }
+        });
+      }
+    }
+  });
+  return overlayCounts;
+}
+
+function parseCorrValue(val){
+  if(val.startsWith('overlay:')){
+    const key=val.substring(8);
+    const meta=OVERLAY_META[key];
+    return{type:'overlay',key,name:meta?meta.name:key,color:meta?meta.color:'#888'};
+  }
+  return{type:'sighting',catIdx:parseInt(val),name:CAT_NAMES[parseInt(val)],color:CAT_COLORS[parseInt(val)]};
+}
+
 async function renderCorrelation(){
   // Clear old analysis layers
   if(clusterLayer){map.removeLayer(clusterLayer);clusterLayer=null}
   // Dispatch based on sub-mode; only spatial auto-renders on view switch
   if(corrSubMode==='spatial'){
-    const catA=parseInt(document.getElementById('corr-a').value);
-    const catB=parseInt(document.getElementById('corr-b').value);
-    await runCorrelation(catA,catB);
+    const valA=document.getElementById('corr-a').value;
+    const valB=document.getElementById('corr-b').value;
+    await runCorrelation(valA,valB);
   }
   // Other sub-modes require manual button click
 }
 
 /* ========== CORRELATION ENGINE ========== */
-async function runCorrelation(catA,catB){
+async function runCorrelation(valA,valB){
   if(corrLayer){map.removeLayer(corrLayer);corrLayer=null}
 
   const cellSide=parseFloat(document.getElementById('corr-hex-size').value);
   const{grid,counts}=await getOrBuildHexDataAsync(cellSide);
   const hexFeatures=grid.features;
+  const cellDeg=cellSide/111;
 
-  // Extract per-category counts from shared spatial-indexed hex data
-  const countsA=counts.map(c=>c[catA]);
-  const countsB=counts.map(c=>c[catB]);
+  const specA=parseCorrValue(String(valA));
+  const specB=parseCorrValue(String(valB));
 
-  // Pearson correlation on cells with at least one sighting
+  // Load overlay data if needed
+  if(specA.type==='overlay')await ensureOverlayLoaded(specA.key);
+  if(specB.type==='overlay')await ensureOverlayLoaded(specB.key);
+
+  // Get counts for A and B
+  let countsA,countsB;
+  if(specA.type==='sighting'){
+    countsA=counts.map(c=>c[specA.catIdx]);
+  } else {
+    const pts=getOverlayPoints(specA.key);
+    countsA=hexBinOverlayPoints(pts,hexFeatures,cellDeg);
+  }
+  if(specB.type==='sighting'){
+    countsB=counts.map(c=>c[specB.catIdx]);
+  } else {
+    const pts=getOverlayPoints(specB.key);
+    countsB=hexBinOverlayPoints(pts,hexFeatures,cellDeg);
+  }
+
+  // Pearson correlation on cells with at least one data point
   const pairs=[];
   let hotspotCount=0;
   const medA=d3.median(countsA.filter(v=>v>0))||1;
@@ -1865,15 +1954,21 @@ async function runCorrelation(catA,catB){
   rEl.textContent=rDisplay;
   rEl.style.color=isNaN(r)?'var(--text-dim)':r>0.3?'var(--green)':r<-0.1?'var(--pink)':'var(--cyan)';
 
-  document.getElementById('corr-detail').innerHTML=
-    `<div>${interpretR(r)}</div>`+
-    `<div style="margin-top:3px;font-size:10px;color:${pVal<0.05?'var(--green)':'var(--text-dim)'}">${formatPValue(pVal)}</div>`+
-    `<div style="margin-top:4px">${pairs.length} hex cells analyzed &middot; ${hotspotCount} hotspots</div>`;
+  const detailEl=document.getElementById('corr-detail');
+  detailEl.textContent='';
+  const d1=document.createElement('div');d1.textContent=interpretR(r);detailEl.appendChild(d1);
+  const d2=document.createElement('div');d2.style.cssText='margin-top:3px;font-size:10px;color:'+(pVal<0.05?'var(--green)':'var(--text-dim)');
+  d2.textContent=formatPValue(pVal);detailEl.appendChild(d2);
+  const d3el=document.createElement('div');d3el.style.marginTop='4px';
+  d3el.textContent=pairs.length+' hex cells analyzed \u00B7 '+hotspotCount+' hotspots';detailEl.appendChild(d3el);
   document.getElementById('stat-hotspots').textContent=hotspotCount;
 
   // Color scale: diverging red-blue through neutral
   const maxVal=d3.max(pairs,p=>p[0]+p[1])||1;
   const coOccScale=d3.scaleSequential(d3.interpolateRdYlGn).domain([0,maxVal]);
+
+  const nameA=specA.name,nameB=specB.name;
+  const colorA=specA.color,colorB=specB.color;
 
   corrLayer=L.geoJSON(turf.featureCollection(hexFeatures),{
     style(feature){
@@ -1891,10 +1986,10 @@ async function runCorrelation(catA,catB){
     onEachFeature(feature,layer){
       const a=feature.properties.cA,b=feature.properties.cB;
       if(a>0||b>0){
-        let tip=`<b>Co-occurrence cell</b><br>`;
-        tip+=`<span style="color:${CAT_COLORS[catA]}">${CAT_NAMES[catA]}: ${a}</span><br>`;
-        tip+=`<span style="color:${CAT_COLORS[catB]}">${CAT_NAMES[catB]}: ${b}</span>`;
-        if(feature.properties.hotspot)tip+=`<br><b style="color:var(--green)">HOTSPOT</b>`;
+        let tip='<b>Co-occurrence cell</b><br>';
+        tip+='<span style="color:'+colorA+'">'+nameA+': '+a+'</span><br>';
+        tip+='<span style="color:'+colorB+'">'+nameB+': '+b+'</span>';
+        if(feature.properties.hotspot)tip+='<br><b style="color:var(--green)">HOTSPOT</b>';
         layer.bindTooltip(tip);
         layer.on('click',()=>showHexDetail(feature));
       }

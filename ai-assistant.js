@@ -88,10 +88,10 @@ const TOOLS=[
     input_schema:{type:'object',properties:{
       mode:{type:'string',enum:['markers','heatmap','hexbin','correlation']}
     },required:['mode']}},
-  {name:'run_spatial_correlation',description:'Compute Pearson spatial correlation between two categories using hex binning. Returns r, p-value, interpretation.',
+  {name:'run_spatial_correlation',description:'Compute Pearson spatial correlation between two datasets using hex binning. Returns r, p-value, interpretation. Accepts sighting categories (0=UFO, 1=Bigfoot, 2=Haunted) OR overlay names (airspace, earthquakes, caves, fireballs, cryptids, missing411, military). Pass integers for sightings, strings for overlays.',
     input_schema:{type:'object',properties:{
-      category_a:{type:'integer',enum:[0,1,2]},
-      category_b:{type:'integer',enum:[0,1,2]},
+      category_a:{description:'Sighting category (0/1/2) or overlay name (airspace, earthquakes, caves, fireballs, cryptids, missing411, military)'},
+      category_b:{description:'Sighting category (0/1/2) or overlay name'},
       hex_size_km:{type:'number'}
     },required:['category_a','category_b']}},
   {name:'run_matrix_correlation',description:'Compute all-pairs 3x3 correlation matrix with p-values.',
@@ -493,8 +493,14 @@ async function executeTool(name,input){
     }
     case 'run_spatial_correlation':{
       if(input.hex_size_km)document.getElementById('corr-hex-size').value=input.hex_size_km;
+      // Convert to the format runCorrelation expects: integer for sightings, "overlay:key" for overlays
+      var valA=typeof input.category_a==='number'?String(input.category_a):'overlay:'+input.category_a;
+      var valB=typeof input.category_b==='number'?String(input.category_b):'overlay:'+input.category_b;
+      // Update dropdown to match
+      var selA=document.getElementById('corr-a');if(selA)selA.value=valA;
+      var selB=document.getElementById('corr-b');if(selB)selB.value=valB;
       SS.setView('correlation');
-      var result=await SS.runCorrelation(input.category_a,input.category_b);
+      var result=await SS.runCorrelation(valA,valB);
       return result||{error:'Correlation computation failed'};
     }
     case 'run_matrix_correlation':{

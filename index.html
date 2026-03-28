@@ -209,11 +209,37 @@
         <div class="corr-controls">
           <div class="corr-row">
             <label>A</label>
-            <select id="corr-a" aria-label="Correlation category A"><option value="0">UFO / UAP</option><option value="1">Bigfoot</option><option value="2">Haunted</option></select>
+            <select id="corr-a" aria-label="Correlation category A">
+              <optgroup label="Sightings">
+                <option value="0">UFO / UAP</option><option value="1">Bigfoot</option><option value="2">Haunted</option>
+              </optgroup>
+              <optgroup label="Overlays">
+                <option value="overlay:airspace">Restricted Airspace</option>
+                <option value="overlay:earthquakes">USGS Earthquakes</option>
+                <option value="overlay:caves">Cave Systems</option>
+                <option value="overlay:fireballs">NASA Fireballs</option>
+                <option value="overlay:cryptids">Cryptid Sightings</option>
+                <option value="overlay:missing411">Missing 411</option>
+                <option value="overlay:military">Military Bases</option>
+              </optgroup>
+            </select>
           </div>
           <div class="corr-row">
             <label>B</label>
-            <select id="corr-b" aria-label="Correlation category B"><option value="0">UFO / UAP</option><option value="1" selected>Bigfoot</option><option value="2">Haunted</option></select>
+            <select id="corr-b" aria-label="Correlation category B">
+              <optgroup label="Sightings">
+                <option value="0">UFO / UAP</option><option value="1" selected>Bigfoot</option><option value="2">Haunted</option>
+              </optgroup>
+              <optgroup label="Overlays">
+                <option value="overlay:airspace">Restricted Airspace</option>
+                <option value="overlay:earthquakes">USGS Earthquakes</option>
+                <option value="overlay:caves">Cave Systems</option>
+                <option value="overlay:fireballs">NASA Fireballs</option>
+                <option value="overlay:cryptids">Cryptid Sightings</option>
+                <option value="overlay:missing411">Missing 411</option>
+                <option value="overlay:military">Military Bases</option>
+              </optgroup>
+            </select>
           </div>
           <button class="corr-btn" id="corr-run">&#9672; RUN ANALYSIS</button>
           <div class="analysis-progress" id="hex-progress" style="display:none">
