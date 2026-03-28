@@ -557,8 +557,37 @@ async function executeTool(name,input){
     }
     case 'generate_report':{
       if(window.SignalReports){
-        var r=SignalReports.create(input);
-        return{success:true,window_id:r.windowId,message:'Report opened in new window'};
+        var rpt=SignalReports.create(input);
+        // Inject inline download link in chat
+        var chatMsgs=document.getElementById('signal-messages');
+        if(chatMsgs){
+          var dlDiv=document.createElement('div');
+          dlDiv.className='signal-msg';
+          dlDiv.style.cssText='padding:8px 12px;margin:4px 0';
+          var dlBtn=document.createElement('button');
+          dlBtn.style.cssText='display:flex;align-items:center;gap:8px;width:100%;padding:10px 16px;'+
+            'background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.3);color:#00ff88;'+
+            'font-family:Orbitron,monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;'+
+            'border-radius:4px;transition:all 0.2s';
+          dlBtn.onmouseover=function(){this.style.background='rgba(0,255,136,0.15);';this.style.borderColor='#00ff88'};
+          dlBtn.onmouseout=function(){this.style.background='rgba(0,255,136,0.08)';this.style.borderColor='rgba(0,255,136,0.3)'};
+          dlBtn.textContent='\u2B07 DOWNLOAD REPORT: '+escHtml(input.title||'Report').toUpperCase();
+          dlBtn.addEventListener('click',function(){
+            // Find the report window and trigger its download
+            var win=document.getElementById(rpt.windowId);
+            if(win){
+              var btn=win.querySelector('button');
+              if(btn)btn.click();
+            } else {
+              // Rebuild and download directly
+              SignalReports.download(input);
+            }
+          });
+          dlDiv.appendChild(dlBtn);
+          chatMsgs.appendChild(dlDiv);
+          chatMsgs.scrollTop=chatMsgs.scrollHeight;
+        }
+        return{success:true,window_id:rpt.windowId,message:'Report generated. Download link added to chat.'};
       }
       return{error:'Report module not loaded'};
     }
