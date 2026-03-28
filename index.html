@@ -32,7 +32,7 @@
     <div class="radar-sweep"></div>
   </div>
   <h1>STRANGE SIGNALS</h1>
-  <div id="loading-status">Initializing systems...</div>
+  <div id="loading-status" role="status" aria-live="polite">Initializing systems...</div>
   <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
   <div id="loading-bytes"></div>
   <div id="loading-flavor-wrap"><div id="loading-flavor"></div></div>
@@ -321,7 +321,7 @@
     <!-- STATS -->
     <div class="sb-section">
       <div class="sb-title"><span class="icon">&#9632;</span> STATISTICS</div>
-      <div class="stat-grid">
+      <div class="stat-grid" aria-live="polite" aria-atomic="true">
         <div class="stat-box"><div class="stat-val" id="stat-visible">-</div><div class="stat-label">VISIBLE</div></div>
         <div class="stat-box"><div class="stat-val" id="stat-total">-</div><div class="stat-label">TOTAL</div></div>
         <div class="stat-box"><div class="stat-val" id="stat-hotspots">-</div><div class="stat-label">HOTSPOTS</div></div>
@@ -374,10 +374,10 @@
       <div id="map-legend" style="display:none"></div>
       <!-- ANNOTATION TOOLBAR -->
       <div class="annotation-toolbar" id="annotation-toolbar">
-        <button class="anno-btn" id="anno-toggle" title="Add annotation (A)">&#128204;</button>
-        <button class="anno-btn" id="anno-export" title="Export annotations">&#128190;</button>
-        <button class="anno-btn" id="anno-import" title="Import annotations">&#128194;</button>
-        <button class="anno-btn" id="anno-clear" title="Clear all">&#128465;</button>
+        <button class="anno-btn" id="anno-toggle" title="Add annotation (A)" aria-label="Add annotation">&#128204;</button>
+        <button class="anno-btn" id="anno-export" title="Export annotations" aria-label="Export annotations">&#128190;</button>
+        <button class="anno-btn" id="anno-import" title="Import annotations" aria-label="Import annotations">&#128194;</button>
+        <button class="anno-btn" id="anno-clear" title="Clear all" aria-label="Clear all annotations">&#128465;</button>
         <span class="anno-count-badge"><span id="anno-count">0</span></span>
       </div>
       <!-- TEMPORAL OVERLAY (managed by WindowManager) -->
@@ -397,7 +397,7 @@
     </div>
     <div id="timeline-panel">
       <span id="timeline-label">TIMELINE</span>
-      <button id="timeline-toggle" title="Toggle timeline">&#9660;</button>
+      <button id="timeline-toggle" title="Toggle timeline" aria-label="Toggle timeline">&#9660;</button>
       <svg id="timeline-svg"></svg>
       <div class="timeline-tooltip" id="timeline-tooltip"></div>
     </div>
@@ -405,11 +405,11 @@
 </div>
 
 <!-- KEYBOARD SHORTCUTS HELP OVERLAY -->
-<div id="shortcuts-overlay" class="shortcuts-overlay" style="display:none">
+<div id="shortcuts-overlay" class="shortcuts-overlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" style="display:none">
   <div class="shortcuts-panel">
     <div class="shortcuts-header">
       <h2>KEYBOARD SHORTCUTS</h2>
-      <button id="shortcuts-close" class="shortcuts-close">&times;</button>
+      <button id="shortcuts-close" class="shortcuts-close" aria-label="Close shortcuts">&times;</button>
     </div>
     <div class="shortcuts-grid">
       <div class="shortcut-group">

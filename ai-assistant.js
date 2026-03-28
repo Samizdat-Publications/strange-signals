@@ -611,6 +611,7 @@ async function executeTool(name,input){
           var code=reg.state.toUpperCase();
           if(STATE_CENTROIDS[code]){lat=STATE_CENTROIDS[code][0];lon=STATE_CENTROIDS[code][1];label=label||code;}
         }
+        if(lat==null||lon==null)return{error:'Could not resolve region: '+JSON.stringify(reg),label:label||'Unknown',total:0,ufo:0,bigfoot:0,haunted:0,countsByCategory:{}};
         var result=SS.getSightingsInArea(lat,lon,radius);
         // getSightingsInArea returns {total, showing, countsByCategory: {"UFO/UAP":N,...}, sightings:[...]}
         var cbc=result.countsByCategory||{};

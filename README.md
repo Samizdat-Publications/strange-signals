@@ -155,8 +155,8 @@ All map features work without an API key. To enable the AI assistant:
 |---------|---------|--------|
 | UFO/UAP (NUFORC via TidyTuesday) | ~96K | [TidyTuesday 2023](https://github.com/rfordatascience/tidytuesday/tree/master/data/2023/2023-06-20) |
 | UFO/UAP (planetsig geocoded) | ~80K | [planetsig/ufo-reports](https://github.com/planetsig/ufo-reports) |
-| Bigfoot (BFRO detailed) | ~5K | [timothyrenner/bfro-sightings-data](https://github.com/timothyrenner/bfro-sightings-data) |
-| Bigfoot (BFRO locations) | ~4.2K | [timothyrenner/bfro-sightings-data](https://github.com/timothyrenner/bfro-sightings-data) |
+| Bigfoot (BFRO detailed) | ~5K | [TidyTuesday 2022](https://github.com/rfordatascience/tidytuesday/tree/master/data/2022/2022-09-13) |
+| Bigfoot (BFRO locations) | ~4.2K | [Christopher1994-1/bigfoot-dataset-website](https://github.com/Christopher1994-1/bigfoot-dataset-website) |
 | Haunted Places (Shadowlands) | ~11K | [TidyTuesday 2023](https://github.com/rfordatascience/tidytuesday/tree/master/data/2023/2023-10-10) |
 
 ### Overlay Datasets
@@ -207,7 +207,7 @@ data/
   cryptid_sightings.json   Non-Bigfoot cryptid reports
   missing411.json          Missing 411 cases
   geomagnetic_storms.json  Solar storm temporal data
-  pop_density_grid.json    Population density grid
+  us_population_density.json  Population density grid
   national_parks.json      National park boundaries
 
 setup_sightings.sh              Download raw datasets

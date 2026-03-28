@@ -93,7 +93,7 @@ function openEditor(anno){
     .setLatLng([anno.lat,anno.lon])
     .setContent(
       '<div class="anno-popup">'+
-      '<textarea id="anno-note-'+anno.id+'" placeholder="Add a note...">'+(anno.note||'').replace(/</g,'&lt;')+'</textarea>'+
+      '<textarea id="anno-note-'+anno.id+'" placeholder="Add a note...">'+(anno.note||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')+'</textarea>'+
       '<div class="anno-popup-actions">'+
         '<select id="anno-icon-'+anno.id+'">'+iconOptions+'</select>'+
         '<button class="anno-delete" onclick="window.Annotations.remove('+anno.id+')">DELETE</button>'+
