@@ -18,10 +18,12 @@ data/sightings_descriptions.json
 # Claude Code worktrees (ephemeral)
 .claude/worktrees/
 
-# Screenshots / large images
+# Screenshots / large images (except committed screenshots)
 *.png
 *.jpg
 *.jpeg
+!screenshots/*.png
+!screenshots/*.jpg
 
 # Node (shouldn't exist but just in case)
 node_modules/

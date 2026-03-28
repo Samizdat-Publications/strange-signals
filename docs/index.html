@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strange Signals — Paranormal Sightings Correlation Map</title>
+<meta name="description" content="Interactive map visualizing 258,000+ paranormal sighting reports with spatial correlation analysis, overlay datasets, and AI-powered research tools.">
+<meta property="og:title" content="Strange Signals — Paranormal Sightings Correlation Map">
+<meta property="og:description" content="258K+ UFO, Bigfoot, and Haunted Place sightings with correlation analysis and AI research assistant.">
+<meta property="og:image" content="https://raw.githubusercontent.com/Samizdat-Publications/strange-signals/master/screenshots/hero-markers.png">
+<meta property="og:type" content="website">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap');
+
+  *{margin:0;padding:0;box-sizing:border-box}
+
+  :root{
+    --bg:#05060f;
+    --bg2:#0a0d1a;
+    --text:#c8cad0;
+    --text-dim:#6a6e7a;
+    --green:#00ff88;
+    --cyan:#00ccff;
+    --magenta:#cc44ff;
+    --red:#ff4466;
+    --orange:#ff8844;
+    --yellow:#ffcc00;
+    --border:rgba(0,255,136,0.15);
+  }
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Space Mono',monospace;
+    line-height:1.7;
+    overflow-x:hidden;
+  }
+
+  .hero{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:40px 20px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .hero::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:radial-gradient(ellipse at 50% 30%, rgba(0,255,136,0.06) 0%, transparent 60%),
+               radial-gradient(ellipse at 20% 80%, rgba(0,204,255,0.04) 0%, transparent 50%),
+               radial-gradient(ellipse at 80% 70%, rgba(204,68,255,0.03) 0%, transparent 50%);
+    pointer-events:none;
+  }
+
+  .logo{
+    font-family:Orbitron,monospace;
+    font-size:clamp(2rem,6vw,4.5rem);
+    font-weight:900;
+    color:var(--green);
+    letter-spacing:8px;
+    text-transform:uppercase;
+    margin-bottom:16px;
+    text-shadow:0 0 40px rgba(0,255,136,0.3);
+  }
+
+  .tagline{
+    font-size:clamp(0.85rem,2vw,1.1rem);
+    color:var(--text-dim);
+    max-width:700px;
+    margin-bottom:40px;
+    letter-spacing:1px;
+  }
+
+  .stats{
+    display:flex;
+    gap:40px;
+    margin-bottom:48px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+
+  .stat{
+    text-align:center;
+  }
+
+  .stat-num{
+    font-family:Orbitron,monospace;
+    font-size:2rem;
+    font-weight:700;
+    color:var(--green);
+    display:block;
+  }
+
+  .stat-label{
+    font-size:0.7rem;
+    color:var(--text-dim);
+    letter-spacing:2px;
+    text-transform:uppercase;
+  }
+
+  .cta{
+    display:inline-block;
+    padding:14px 40px;
+    border:2px solid var(--green);
+    color:var(--green);
+    font-family:Orbitron,monospace;
+    font-size:0.85rem;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    text-decoration:none;
+    transition:all 0.3s;
+    margin:8px;
+  }
+
+  .cta:hover{
+    background:rgba(0,255,136,0.1);
+    box-shadow:0 0 30px rgba(0,255,136,0.2);
+  }
+
+  .cta.secondary{
+    border-color:var(--cyan);
+    color:var(--cyan);
+  }
+
+  .cta.secondary:hover{
+    background:rgba(0,204,255,0.1);
+    box-shadow:0 0 30px rgba(0,204,255,0.2);
+  }
+
+  .screenshot-hero{
+    width:100%;
+    max-width:1200px;
+    margin:48px auto 0;
+    border-radius:8px;
+    border:1px solid var(--border);
+    box-shadow:0 20px 80px rgba(0,0,0,0.5);
+  }
+
+  section{
+    max-width:1100px;
+    margin:0 auto;
+    padding:80px 24px;
+  }
+
+  h2{
+    font-family:Orbitron,monospace;
+    font-size:1.4rem;
+    color:var(--cyan);
+    letter-spacing:4px;
+    text-transform:uppercase;
+    margin-bottom:32px;
+    border-left:4px solid var(--cyan);
+    padding-left:16px;
+  }
+
+  .features-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:24px;
+    margin-top:32px;
+  }
+
+  .feature-card{
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:24px;
+    transition:border-color 0.3s;
+  }
+
+  .feature-card:hover{
+    border-color:rgba(0,255,136,0.4);
+  }
+
+  .feature-card h3{
+    font-family:Orbitron,monospace;
+    font-size:0.85rem;
+    color:var(--green);
+    letter-spacing:2px;
+    margin-bottom:12px;
+  }
+
+  .feature-card p{
+    font-size:0.85rem;
+    color:var(--text-dim);
+    line-height:1.6;
+  }
+
+  .screenshot-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(480px,1fr));
+    gap:20px;
+    margin-top:32px;
+  }
+
+  .screenshot-card{
+    border:1px solid var(--border);
+    border-radius:6px;
+    overflow:hidden;
+    background:var(--bg2);
+  }
+
+  .screenshot-card img{
+    width:100%;
+    display:block;
+  }
+
+  .screenshot-card .caption{
+    padding:12px 16px;
+    font-size:0.75rem;
+    color:var(--text-dim);
+    letter-spacing:1px;
+  }
+
+  .overlay-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:24px;
+    font-size:0.85rem;
+  }
+
+  .overlay-table th{
+    font-family:Orbitron,monospace;
+    font-size:0.7rem;
+    color:var(--green);
+    letter-spacing:2px;
+    text-transform:uppercase;
+    text-align:left;
+    padding:12px 16px;
+    border-bottom:1px solid var(--border);
+  }
+
+  .overlay-table td{
+    padding:10px 16px;
+    border-bottom:1px solid rgba(255,255,255,0.03);
+    color:var(--text-dim);
+  }
+
+  .overlay-table tr:hover td{
+    color:var(--text);
+  }
+
+  .dot{
+    display:inline-block;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    margin-right:8px;
+    vertical-align:middle;
+  }
+
+  footer{
+    text-align:center;
+    padding:40px 24px;
+    border-top:1px solid var(--border);
+    font-size:0.75rem;
+    color:var(--text-dim);
+    letter-spacing:1px;
+  }
+
+  footer a{
+    color:var(--green);
+    text-decoration:none;
+  }
+
+  @media(max-width:600px){
+    .stats{gap:20px}
+    .screenshot-grid{grid-template-columns:1fr}
+    .features-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="logo">Strange Signals</div>
+  <p class="tagline">Interactive paranormal sightings correlation map. 258,000+ geocoded reports across UFO/UAP, Bigfoot, and Haunted Places &mdash; with spatial analysis, overlay datasets, and an AI research assistant.</p>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-num">258K+</span>
+      <span class="stat-label">Sighting Reports</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">3</span>
+      <span class="stat-label">Phenomena Categories</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">10+</span>
+      <span class="stat-label">Overlay Datasets</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">5</span>
+      <span class="stat-label">Analysis Modes</span>
+    </div>
+  </div>
+
+  <div>
+    <a href="https://github.com/Samizdat-Publications/strange-signals" class="cta">View on GitHub</a>
+    <a href="https://github.com/Samizdat-Publications/strange-signals#getting-started" class="cta secondary">Get Started</a>
+  </div>
+
+  <img src="../screenshots/hero-markers.png" alt="Strange Signals map overview" class="screenshot-hero">
+</div>
+
+<section>
+  <h2>Visualization Modes</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <h3>Clustered Markers</h3>
+      <p>Color-coded pins for UFO (green), Bigfoot (orange), and Haunted Places (purple). Click any sighting for full details with proximity analysis showing nearby reports of other types.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Density Heatmap</h3>
+      <p>Category-colored heat visualization showing where reports concentrate. Toggle individual layers to isolate patterns. Includes per-capita normalization mode.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Hex Density</h3>
+      <p>Hexagonal binning with viridis color scale. Click any hex for deep analysis: category breakdown, temporal distribution, subcategory tags, and density statistics.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Correlation Suite</h3>
+      <p>Five analysis sub-modes: spatial Pearson correlation, all-pairs matrix, temporal rolling window, BFS cluster detection, and nearest-neighbor distance analysis.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Gallery</h2>
+  <div class="screenshot-grid">
+    <div class="screenshot-card">
+      <img src="../screenshots/heatmap-us.png" alt="Heatmap view">
+      <div class="caption">Heatmap &mdash; National sighting density with per-category color blending</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="../screenshots/hex-detail-panel.png" alt="Hex detail panel">
+      <div class="caption">Hex Detail &mdash; 3,536 sightings in Seattle with subcategory breakdown</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="../screenshots/correlation-matrix.png" alt="Correlation matrix">
+      <div class="caption">Correlation Matrix &mdash; All pairwise correlations with significance markers</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="../screenshots/signal-ai-panel.png" alt="SIGNAL AI">
+      <div class="caption">SIGNAL AI &mdash; Built-in research assistant powered by Claude</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="../screenshots/overlays-military-airspace.png" alt="Overlay layers">
+      <div class="caption">Overlays &mdash; Military bases and restricted airspace over sighting clusters</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="../screenshots/temporal-correlation.png" alt="Temporal analysis">
+      <div class="caption">Temporal &mdash; Rolling correlation and seasonal pattern analysis</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Overlay Datasets</h2>
+  <table class="overlay-table">
+    <thead>
+      <tr><th>Layer</th><th>Records</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="dot" style="background:#4488ff"></span>Military / DOE Sites</td><td>45</td><td>Major military installations and Department of Energy facilities</td></tr>
+      <tr><td><span class="dot" style="background:#ff4466"></span>Restricted Airspace</td><td>105</td><td>MOAs, prohibited zones, and restricted areas with altitude data</td></tr>
+      <tr><td><span class="dot" style="background:#ff8844"></span>USGS Earthquakes</td><td>20,000</td><td>Significant US earthquakes with magnitude and depth</td></tr>
+      <tr><td><span class="dot" style="background:#aa8866"></span>US Cave Systems</td><td>104</td><td>Notable cave systems with type and length data</td></tr>
+      <tr><td><span class="dot" style="background:#ffcc00"></span>NASA Fireballs</td><td>29</td><td>Confirmed fireball/bolide events with energy and velocity</td></tr>
+      <tr><td><span class="dot" style="background:#cc44ff"></span>Cryptid Sightings</td><td>105</td><td>Non-Bigfoot cryptid reports (Mothman, Chupacabra, etc.)</td></tr>
+      <tr><td><span class="dot" style="background:#ff2222"></span>Missing 411</td><td>71</td><td>Unexplained disappearances in wilderness areas</td></tr>
+      <tr><td><span class="dot" style="background:#44ffcc"></span>Geomagnetic Storms</td><td>92</td><td>G3+ solar storms displayed as temporal bands on timeline</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>SIGNAL AI Assistant</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <h3>Natural Language Queries</h3>
+      <p>Ask questions like "Show me UFO hotspots near military bases" or "Are Bigfoot sightings correlated with cave systems?" SIGNAL translates your questions into map actions.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Automated Analysis</h3>
+      <p>SIGNAL can run spatial correlations, detect clusters, apply filters, toggle overlays, and navigate the map &mdash; all from a conversational interface.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Investigation Reports</h3>
+      <p>Generate downloadable HTML investigation reports with findings, charts, and analysis summaries. Reports are self-contained and can be shared offline.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Built by <a href="https://github.com/Samizdat-Publications">Samizdat Publications</a> &bull; <a href="https://github.com/Samizdat-Publications/strange-signals">Source Code</a> &bull; MIT License</p>
+  <p style="margin-top:8px">Explore the unknown.</p>
+</footer>
+
+</body>
+</html>
