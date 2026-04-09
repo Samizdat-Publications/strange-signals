@@ -160,39 +160,34 @@ function decodeEntities(s){
 }
 function esc(s){return s?decodeEntities(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
 
-/* ========== CREATE MARKER ========== */
-const CAT_ICON_SVG=[
-  // UFO/UAP — classic saucer silhouette
-  (c)=>`<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12">
-    <ellipse cx="6" cy="6" rx="5.5" ry="2.5" fill="${c}" opacity="0.9"/>
-    <ellipse cx="6" cy="5" rx="3" ry="2" fill="${c}" opacity="0.7"/>
-    <ellipse cx="6" cy="6" rx="5.5" ry="2.5" stroke="rgba(255,255,255,0.4)" stroke-width="0.5" fill="none"/>
-  </svg>`,
-  // Bigfoot — footprint silhouette
-  (c)=>`<svg xmlns="http://www.w3.org/2000/svg" width="10" height="14" viewBox="0 0 10 14">
-    <ellipse cx="5" cy="9" rx="3.2" ry="4.5" fill="${c}" opacity="0.9"/>
-    <circle cx="2.2" cy="3.2" r="1.3" fill="${c}" opacity="0.85"/>
-    <circle cx="4" cy="2" r="1.2" fill="${c}" opacity="0.85"/>
-    <circle cx="6" cy="2" r="1.2" fill="${c}" opacity="0.85"/>
-    <circle cx="7.8" cy="3.2" r="1.3" fill="${c}" opacity="0.85"/>
-    <rect x="0" y="0" width="10" height="14" rx="1" stroke="rgba(255,255,255,0.3)" stroke-width="0.4" fill="none"/>
-  </svg>`,
-  // Haunted — ghost silhouette
-  (c)=>`<svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
-    <path d="M5.5,1 C8,1 10,3.5 10,6 L10,11 Q9,10 8,11 Q7,12 6,11 Q5.5,10.5 5,11 Q4,12 3,11 Q2,10 1,11 L1,6 C1,3.5 3,1 5.5,1Z" fill="${c}" opacity="0.9" stroke="rgba(255,255,255,0.3)" stroke-width="0.4"/>
-    <circle cx="4" cy="5.5" r="1" fill="rgba(0,0,0,0.5)"/>
-    <circle cx="7" cy="5.5" r="1" fill="rgba(0,0,0,0.5)"/>
-  </svg>`
-];
-function makeIcon(catIdx){
-  const c=CAT_COLORS[catIdx];
-  const svg=CAT_ICON_SVG[catIdx](c);
-  const sizes=[[12,12],[10,14],[11,14]];
-  const anchors=[[6,6],[5,7],[5.5,7]];
-  return L.divIcon({className:'',iconSize:sizes[catIdx],iconAnchor:anchors[catIdx],
-    html:svg});
+/* ========== TABLER ICON SVG REGISTRY ========== */
+const TABLER_SVG={
+  ufo:(c,s=16)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16.95 9.01c3.02 .739 5.05 2.123 5.05 3.714c0 2.367 -4.48 4.276 -10 4.276s-10 -1.909 -10 -4.276c0 -1.59 2.04 -2.985 5.07 -3.724"/><path d="M7 9c0 1.105 2.239 2 5 2s5 -.895 5 -2v-.035c0 -2.742 -2.239 -4.965 -5 -4.965s-5 2.223 -5 4.965v.035"/><path d="M15 17l2 3"/><path d="M8.5 17l-1.5 3"/><path d="M12 14h.01"/><path d="M7 13h.01"/><path d="M17 13h.01"/></svg>`,
+  paw:(c,s=16)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 13.5c-1.1 -2 -1.441 -2.5 -2.7 -2.5c-1.259 0 -1.736 .755 -2.836 2.747c-.942 1.703 -2.846 1.845 -3.321 3.291c-.097 .265 -.145 .677 -.143 .962c0 1.176 .787 2 1.8 2c1.259 0 3 -1 4.5 -1s3.241 1 4.5 1c1.013 0 1.8 -.823 1.8 -2c0 -.285 -.049 -.697 -.146 -.962c-.475 -1.451 -2.512 -1.835 -3.454 -3.538"/><path d="M20.188 8.082a1.039 1.039 0 0 0 -.406 -.082h-.015c-.735 .012 -1.56 .75 -1.993 1.866c-.519 1.335 -.28 2.7 .538 3.052c.129 .055 .267 .082 .406 .082c.739 0 1.575 -.742 2.011 -1.866c.516 -1.335 .273 -2.7 -.54 -3.052l-.001 0"/><path d="M9.474 9c.055 0 .109 0 .163 -.011c.944 -.128 1.533 -1.346 1.32 -2.722c-.203 -1.297 -1.047 -2.267 -1.932 -2.267c-.055 0 -.109 0 -.163 .011c-.944 .128 -1.533 1.346 -1.32 2.722c.204 1.293 1.048 2.267 1.933 2.267"/><path d="M16.456 6.733c.214 -1.376 -.375 -2.594 -1.32 -2.722a1.164 1.164 0 0 0 -.162 -.011c-.885 0 -1.728 .97 -1.93 2.267c-.214 1.376 .375 2.594 1.32 2.722c.054 .007 .108 .011 .162 .011c.885 0 1.73 -.974 1.93 -2.267"/><path d="M5.69 12.918c.816 -.352 1.054 -1.719 .536 -3.052c-.436 -1.124 -1.271 -1.866 -2.009 -1.866c-.14 0 -.277 .027 -.407 .082c-.816 .352 -1.054 1.719 -.536 3.052c.436 1.124 1.271 1.866 2.009 1.866c.14 0 .277 -.027 .407 -.082"/></svg>`,
+  ghost:(c,s=16)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11a7 7 0 0 1 14 0v7a1.78 1.78 0 0 1 -3.1 1.4a1.65 1.65 0 0 0 -2.6 0a1.65 1.65 0 0 1 -2.6 0a1.65 1.65 0 0 0 -2.6 0a1.78 1.78 0 0 1 -3.1 -1.4v-7"/><path d="M10 10l.01 0"/><path d="M14 10l.01 0"/><path d="M10 14a3.5 3.5 0 0 0 4 0"/></svg>`,
+  shield:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"/></svg>`,
+  radar:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12h-8a1 1 0 1 0 -1 1v8a9 9 0 0 0 9 -9"/><path d="M16 9a5 5 0 1 0 -7 7"/><path d="M20.486 9a9 9 0 1 0 -11.482 11.495"/></svg>`,
+  trees:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5l3 3l-2 1l4 4l-3 1l4 4h-9"/><path d="M15 21l0 -3"/><path d="M8 13l-2 -2"/><path d="M8 12l2 -2"/><path d="M8 21v-13"/><path d="M5.824 16a3 3 0 0 1 -2.743 -3.69a3 3 0 0 1 .304 -4.833a3 3 0 0 1 4.615 -3.707a3 3 0 0 1 4.614 3.707a3 3 0 0 1 .305 4.833a3 3 0 0 1 -2.919 3.695h-4l-.176 -.005"/></svg>`,
+  activity:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8l4 -16l3 8h4"/></svg>`,
+  mountain:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18l-6.921 -14.612a2.3 2.3 0 0 0 -4.158 0l-6.921 14.612"/><path d="M7.5 11l2 2.5l2.5 -2.5l2 3l2.5 -2"/></svg>`,
+  meteor:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3l-5 9h5l-6.891 7.086a6.5 6.5 0 1 1 -8.855 -9.506l7.746 -6.58l-1 5l9 -5"/><path d="M7 14.5a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0"/></svg>`,
+  eye:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/></svg>`,
+  alertTriangle:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0"/><path d="M12 16h.01"/></svg>`,
+  buildingCastle:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19v-2a3 3 0 0 0 -6 0v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-14h4v3h3v-3h4v3h3v-3h4v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1"/><path d="M3 11l18 0"/></svg>`,
+  sunElectricity:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a4 4 0 0 0 4 4m0 -8a4 4 0 0 0 -4 4"/><path d="M3 12h1"/><path d="M12 3v1"/><path d="M12 20v1"/><path d="M5.6 5.6l.7 .7"/><path d="M6.3 17.7l-.7 .7"/><path d="M20 7l-3 5h4l-3 5"/></svg>`,
+  world:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/></svg>`,
+  mapPin:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0"/></svg>`
+};
+
+/* ========== TABLER ICON HELPER ========== */
+function tablerIcon(name,color,size){
+  return L.divIcon({className:'tabler-marker',iconSize:[size,size],
+    iconAnchor:[size/2,size/2],popupAnchor:[0,-(size/2)],
+    html:TABLER_SVG[name](color,size)});
 }
-const icons=[makeIcon(0),makeIcon(1),makeIcon(2)];
+
+/* ========== CREATE MARKER ========== */
+const icons=[tablerIcon('ufo',CAT_COLORS[0],16),tablerIcon('paw',CAT_COLORS[1],16),tablerIcon('ghost',CAT_COLORS[2],16)];
 
 function makePopup(rec){
   const cat=rec[F.CAT];
@@ -282,8 +277,7 @@ function renderMilitaryBases(){
   };
   militaryData.data.forEach(b=>{
     const color=branchColors[b[MF.BRANCH]]||'#888888';
-    const icon=L.divIcon({className:'',iconSize:[10,10],iconAnchor:[5,5],
-      html:`<div style="width:10px;height:10px;background:${color};border:1.5px solid rgba(255,255,255,0.6);transform:rotate(45deg);opacity:0.85"></div>`});
+    const icon=tablerIcon('shield',color,14);
     const marker=L.marker([b[MF.LAT],b[MF.LON]],{icon});
     marker.bindTooltip(`<b style="color:${color}">${esc(b[MF.NAME])}</b><br><span style="color:var(--text-dim)">${b[MF.BRANCH]} - ${b[MF.TYPE]}</span>`,{className:'mil-tooltip'});
     marker.addTo(militaryLayer);
@@ -314,7 +308,7 @@ function renderAirspace(){
       'Floor: '+floorStr+' | Ceiling: '+ceilStr+'<br>'+
       '<span style="color:var(--text-dim)">'+esc(a[AF.AGENCY]||'')+'</span>',{className:'mil-tooltip'});
     circle.addTo(airspaceLayer);
-    const icon=L.divIcon({className:'overlay-marker airspace-marker',html:'&#9651;',iconSize:[12,12]});
+    const icon=tablerIcon('radar',color,14);
     L.marker([a[AF.LAT],a[AF.LON]],{icon}).addTo(airspaceLayer);
   });
   airspaceLayer.addTo(map);
@@ -340,10 +334,10 @@ function renderCaves(){
   caveLayer=L.layerGroup();
   const CF={LAT:0,LON:1,NAME:2,STATE:3,TYPE:4,LENGTH:5};
   caveData.data.forEach(c=>{
-    const icon=L.divIcon({className:'overlay-marker cave-marker',html:'&#9673;',iconSize:[12,12]});
+    const icon=tablerIcon('mountain','#aa8866',14);
     const marker=L.marker([c[CF.LAT],c[CF.LON]],{icon});
     const lenStr=c[CF.LENGTH]?'Length: '+c[CF.LENGTH]+' mi':'';
-    marker.bindPopup('<b style="color:var(--cave)">&#9673; '+esc(c[CF.NAME])+'</b><br>'+
+    marker.bindPopup('<b style="color:var(--cave)">'+TABLER_SVG.mountain('var(--cave)',12)+' '+esc(c[CF.NAME])+'</b><br>'+
       esc(c[CF.STATE])+' &mdash; '+esc(c[CF.TYPE])+'<br>'+lenStr);
     caveLayer.addLayer(marker);
   });
@@ -359,12 +353,11 @@ function renderFireballs(){
   fireballData.data.forEach(f=>{
     const energy=f[FF.ENERGY]||1;
     const sz=Math.max(10,Math.min(24,8+Math.sqrt(energy)*3));
-    const icon=L.divIcon({className:'overlay-marker fireball-marker',
-      html:'<span style="font-size:'+sz+'px">&#9788;</span>',iconSize:[sz,sz]});
+    const icon=tablerIcon('meteor','#ffcc00',sz);
     const marker=L.marker([f[FF.LAT],f[FF.LON]],{icon});
     const velStr=f[FF.VELOCITY]?'Velocity: '+f[FF.VELOCITY]+' km/s<br>':'';
     const altStr=f[FF.ALT]?'Altitude: '+f[FF.ALT]+' km':'';
-    marker.bindPopup('<b style="color:var(--fireball)">&#9788; NASA Fireball</b><br>'+
+    marker.bindPopup('<b style="color:var(--fireball)">'+TABLER_SVG.meteor('var(--fireball)',12)+' NASA Fireball</b><br>'+
       'Date: '+esc(f[FF.DATE])+'<br>Energy: '+energy+' kt TNT<br>'+velStr+altStr);
     fireballLayer.addLayer(marker);
   });
@@ -378,10 +371,10 @@ function renderCryptids(){
   cryptidLayer=L.layerGroup();
   const XF={LAT:0,LON:1,NAME:2,TYPE:3,STATE:4,DESC:5,YEAR:6};
   cryptidData.data.forEach(c=>{
-    const icon=L.divIcon({className:'overlay-marker cryptid-marker',html:'&#10070;',iconSize:[12,12]});
+    const icon=tablerIcon('eye','#cc44ff',14);
     const marker=L.marker([c[XF.LAT],c[XF.LON]],{icon});
     const yearStr=c[XF.YEAR]?'Year: '+c[XF.YEAR]+'<br>':'';
-    marker.bindPopup('<b style="color:var(--cryptid)">&#10070; '+esc(c[XF.TYPE])+'</b><br>'+
+    marker.bindPopup('<b style="color:var(--cryptid)">'+TABLER_SVG.eye('var(--cryptid)',12)+' '+esc(c[XF.TYPE])+'</b><br>'+
       '<span style="color:var(--text-dim)">'+esc(c[XF.NAME])+', '+esc(c[XF.STATE])+'</span><br>'+
       yearStr+'<span style="font-size:10px">'+esc(c[XF.DESC]||'')+'</span>');
     cryptidLayer.addLayer(marker);
@@ -396,10 +389,10 @@ function renderMissing411(){
   missing411Layer=L.layerGroup();
   const MF2={LAT:0,LON:1,NAME:2,PARK:3,STATE:4,YEAR:5,AGE:6,CIRC:7};
   missing411Data.data.forEach(m=>{
-    const icon=L.divIcon({className:'overlay-marker missing411-marker',html:'&#9888;',iconSize:[12,12]});
+    const icon=tablerIcon('alertTriangle','#ff2222',14);
     const marker=L.marker([m[MF2.LAT],m[MF2.LON]],{icon});
     const yearAge=(m[MF2.YEAR]?'Year: '+m[MF2.YEAR]:'')+(m[MF2.AGE]?' | Age: '+m[MF2.AGE]:'');
-    marker.bindPopup('<b style="color:var(--missing411)">&#9888; Missing 411</b><br>'+
+    marker.bindPopup('<b style="color:var(--missing411)">'+TABLER_SVG.alertTriangle('var(--missing411)',12)+' Missing 411</b><br>'+
       '<b>'+esc(m[MF2.NAME])+'</b><br>'+
       esc(m[MF2.PARK])+', '+esc(m[MF2.STATE])+'<br>'+
       yearAge+'<br><span style="font-size:10px">'+esc(m[MF2.CIRC]||'')+'</span>');
@@ -1234,11 +1227,14 @@ function createCluster(catIdx){
       const n=cluster.getChildCount();
       const sz=n<100?28:n<1000?36:44;
       const label=n+' '+CAT_NAMES[catIdx]+' sightings';
-      return L.divIcon({className:'',iconSize:[sz,sz],
+      const catIcons=['ufo','paw','ghost'];
+      const catIcon=TABLER_SVG[catIcons[catIdx]](CAT_COLORS[catIdx],12);
+      return L.divIcon({className:'tabler-marker',iconSize:[sz,sz],
         html:`<div aria-label="${label}" style="background:rgba(${c},0.65);color:#fff;font-weight:700;font-size:${sz>36?12:10}px;
-          width:${sz}px;height:${sz}px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+          width:${sz}px;height:${sz}px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
           border:2px solid rgba(${c},0.4);box-shadow:0 0 8px rgba(${c},0.3);font-family:var(--font-mono)">
-          ${n>=1000?Math.round(n/1000)+'k':n}</div>`});
+          <span style="line-height:1;margin-bottom:-1px">${catIcon}</span>
+          <span style="line-height:1">${n>=1000?Math.round(n/1000)+'k':n}</span></div>`});
     }
   });
 }
@@ -2437,9 +2433,9 @@ if(parksToggleEl){
       if(!parksLayer){
         parksLayer=L.layerGroup();
         parksData.data.forEach(p=>{
-          const icon=L.divIcon({className:'overlay-marker parks-marker',html:'&#9830;',iconSize:[12,12]});
+          const icon=tablerIcon('trees','#22cc66',14);
           const marker=L.marker([p[0],p[1]],{icon});
-          marker.bindPopup('<b style="color:#22cc66">&#9830; '+esc(p[2])+'</b><br>'+esc(p[3])+'<br>'+p[4]+' km&sup2;');
+          marker.bindPopup('<b style="color:#22cc66">'+TABLER_SVG.trees('#22cc66',12)+' '+esc(p[2])+'</b><br>'+esc(p[3])+'<br>'+p[4]+' km&sup2;');
           parksLayer.addLayer(marker);
         });
       }
@@ -2466,9 +2462,9 @@ if(histToggleEl){
       if(!historicLayer){
         historicLayer=L.layerGroup();
         historicData.data.forEach(s=>{
-          const icon=L.divIcon({className:'overlay-marker historic-marker',html:'&#9632;',iconSize:[10,10]});
+          const icon=tablerIcon('buildingCastle','#ffaa22',14);
           const marker=L.marker([s[0],s[1]],{icon});
-          marker.bindPopup('<b style="color:#ffaa22">&#9632; '+esc(s[2])+'</b><br>'+esc(s[3])+'<br>Listed: '+esc(String(s[4])));
+          marker.bindPopup('<b style="color:#ffaa22">'+TABLER_SVG.buildingCastle('#ffaa22',12)+' '+esc(s[2])+'</b><br>'+esc(s[3])+'<br>Listed: '+esc(String(s[4])));
           historicLayer.addLayer(marker);
         });
       }

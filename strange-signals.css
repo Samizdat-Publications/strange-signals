@@ -495,14 +495,8 @@ button:disabled,input:disabled,select:disabled{opacity:0.5;cursor:not-allowed}
 
 /* ========== OVERLAY MARKERS ========== */
 .overlay-marker{text-align:center;line-height:12px;background:transparent!important;border:none!important}
-.parks-marker{color:var(--parks);font-size:14px;text-shadow:0 0 6px var(--parks),0 0 2px #000}
-.historic-marker{color:var(--historic);font-size:12px;text-shadow:0 0 6px var(--historic),0 0 2px #000}
-.airspace-marker{color:var(--airspace);font-size:12px;text-shadow:0 0 6px var(--airspace),0 0 2px #000}
-.earthquake-marker{color:var(--earthquake);font-size:9px;text-shadow:0 0 4px var(--earthquake),0 0 2px #000}
-.cave-marker{color:var(--cave);font-size:13px;text-shadow:0 0 6px var(--cave),0 0 2px #000}
-.fireball-marker{color:var(--fireball);font-size:14px;text-shadow:0 0 8px var(--fireball),0 0 3px #000}
-.cryptid-marker{color:var(--cryptid);font-size:12px;text-shadow:0 0 6px var(--cryptid),0 0 2px #000}
-.missing411-marker{color:var(--missing411);font-size:11px;text-shadow:0 0 6px var(--missing411),0 0 2px #000}
+.tabler-marker{background:none!important;border:none!important}
+.tabler-marker svg{filter:drop-shadow(0 0 3px rgba(255,255,255,0.4))}
 .overlay-group-label{font-family:var(--font-display);font-size:8px;letter-spacing:2px;color:var(--text-dim);
   padding:8px 0 2px 4px;opacity:0.6}
 .airspace-circle{stroke-width:1.5;fill-opacity:0.08;stroke-opacity:0.5;stroke-dasharray:6 3}
