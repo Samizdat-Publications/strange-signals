@@ -208,6 +208,7 @@ function makePopup(rec){
   h+=`<div class="popup-coords">${rec[F.LAT].toFixed(4)}, ${rec[F.LON].toFixed(4)}</div>`;
   // proximity analysis (bounding-box pre-filter for performance)
   const radius=parseInt(document.getElementById('prox-radius').value);
+  const radiusDeg=radius/111;
   const pt=turf.point([rec[F.LON],rec[F.LAT]]);
   const latDeg=radius/111;
   const lonDeg=radius/(111*Math.cos(rec[F.LAT]*Math.PI/180));
@@ -2878,8 +2879,8 @@ window.StrangeSignals={
     const vis=filteredCat.reduce((s,a)=>s+a.length,0);
     return{
       total:allData.length,visible:vis,
-      categories:[catArrays[0].length,catArrays[1].length,catArrays[2].length],
-      filtered:[filteredCat[0].length,filteredCat[1].length,filteredCat[2].length],
+      categories:{'UFO/UAP':catArrays[0].length,'Bigfoot/Sasquatch':catArrays[1].length,'Haunted Place':catArrays[2].length},
+      filtered:{'UFO/UAP':filteredCat[0].length,'Bigfoot/Sasquatch':filteredCat[1].length,'Haunted Place':filteredCat[2].length},
       zoom:map.getZoom(),
       bounds:{south:map.getBounds().getSouth(),north:map.getBounds().getNorth(),
               west:map.getBounds().getWest(),east:map.getBounds().getEast()},
@@ -2897,8 +2898,9 @@ window.StrangeSignals={
     const results=[];
     const cats=category!=null?[category]:[0,1,2];
     for(const cat of cats){
-      for(const r of filteredCat[cat]){
-        const dlat=r[F.LAT]-lat,dlon=r[F.LON]-lon;
+      const cosLat=Math.cos(lat*Math.PI/180);
+    for(const r of filteredCat[cat]){
+        const dlat=r[F.LAT]-lat,dlon=(r[F.LON]-lon)*cosLat;
         if(Math.abs(dlat)>radiusDeg||Math.abs(dlon)>radiusDeg)continue;
         const dist=Math.sqrt(dlat*dlat+dlon*dlon)*111;
         if(dist<=radiusKm){

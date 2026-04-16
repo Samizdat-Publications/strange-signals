@@ -304,7 +304,7 @@ function createChatWindow(){
     '<button class="signal-gear" id="signal-gear" title="Settings">&#9881;</button>'+
     '<div class="signal-settings" id="signal-settings" style="display:none">'+
       '<label>API KEY</label>'+
-      '<input type="password" id="signal-api-key" placeholder="sk-ant-..." value="'+(localStorage.getItem('signal-api-key')||'')+'">'+
+      '<input type="password" id="signal-api-key" placeholder="sk-ant-..." value="">'+
       '<div style="font-size:9px;color:var(--text-dim);margin:-4px 0 8px;line-height:1.5">'+
         'Your key stays in your browser (localStorage). Never sent anywhere except Anthropic. '+
         '<a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style="color:var(--cyan)">Get a key &rarr;</a>'+
@@ -337,6 +337,9 @@ function createChatWindow(){
     defaultSize:{width:420,height:500},
     minSize:{width:320,height:300}
   });
+
+  // Set API key via DOM property to avoid HTML injection
+  document.getElementById('signal-api-key').value = localStorage.getItem('signal-api-key') || '';
 
   // Event listeners
   document.getElementById('signal-gear').addEventListener('click',()=>{
@@ -438,7 +441,7 @@ function renderMarkdown(text){
     .replace(/\*(.+?)\*/g,'<em>$1</em>')
     .replace(/`(.+?)`/g,'<code>$1</code>')
     .replace(/^- (.+)$/gm,'<li>$1</li>')
-    .replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
+    .replace(/((?:<li>[\s\S]*?<\/li>\s*)+)/g,'<ul>$1</ul>')
     .replace(/\n/g,'<br>');
 }
 
@@ -841,13 +844,28 @@ function formatApiError(err,response){
   return{msg:'Something went wrong.',details:err.message||'HTTP '+response.status}
 }
 
+function escapeHtml(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function showError(errInfo){
   var typing=document.getElementById('signal-typing');
   if(typing)typing.remove();
   var div=document.createElement('div');
   div.className='signal-error';
-  div.innerHTML=escHtml(errInfo.msg)+' <span class="signal-error-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'block\'?\'none\':\'block\'">Show details</span>'
-    +'<div class="signal-error-details">'+escHtml(errInfo.details||'')+'</div>';
+  var msgSpan=document.createElement('span');
+  msgSpan.textContent=errInfo.msg;
+  var toggle=document.createElement('span');
+  toggle.className='signal-error-toggle';
+  toggle.textContent='Show details';
+  toggle.onclick=function(){var d=toggle.nextElementSibling;d.style.display=d.style.display==='block'?'none':'block';};
+  var details=document.createElement('div');
+  details.className='signal-error-details';
+  details.textContent=errInfo.details||'';
+  div.appendChild(msgSpan);
+  div.appendChild(document.createTextNode(' '));
+  div.appendChild(toggle);
+  div.appendChild(details);
   document.getElementById('signal-messages').appendChild(div);
   document.getElementById('signal-messages').scrollTop=document.getElementById('signal-messages').scrollHeight;
   isStreaming=false;
