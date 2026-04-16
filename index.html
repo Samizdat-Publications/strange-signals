@@ -13,9 +13,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+  integrity="sha384-pmjIAcz2bAn0xukfxADbZIb3t8oRT9Sv0rvO+BR5Csr6Dhqq+nZs59P0pPKQJkEV" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+  integrity="sha384-wgw+aLYNQ7dlhK47ZPK7FRACiq7ROZwgFNg0m04avm4CaXS+Z9Y7nMu8yNjBKYC+" crossorigin="anonymous" />
 <link rel="stylesheet" href="window-manager.css">
 <link rel="stylesheet" href="ai-assistant.css">
 <link rel="stylesheet" href="annotations.css">
@@ -69,23 +72,23 @@
     <!-- LAYERS -->
     <div class="sb-section">
       <div class="sb-title"><span class="icon">&#9678;</span> LAYERS</div>
-      <label class="layer-row" id="layer-ufo">
-        <input type="checkbox" checked data-cat="0">
-        <span class="layer-dot" style="background:var(--green)"></span>
+      <label class="layer-row" id="layer-ufo" data-glyph="▲">
+        <input type="checkbox" checked data-cat="0" aria-label="Toggle UFO/UAP sightings layer">
+        <span class="layer-dot" style="background:var(--green)" aria-hidden="true"></span>
         <span class="layer-name">UFO / UAP</span>
-        <span class="layer-count" id="count-0">-</span>
+        <span class="layer-count" id="count-0" aria-label="UFO/UAP sighting count">-</span>
       </label>
-      <label class="layer-row" id="layer-bigfoot">
-        <input type="checkbox" checked data-cat="1">
-        <span class="layer-dot" style="background:var(--orange)"></span>
+      <label class="layer-row" id="layer-bigfoot" data-glyph="●">
+        <input type="checkbox" checked data-cat="1" aria-label="Toggle Bigfoot/Sasquatch sightings layer">
+        <span class="layer-dot" style="background:var(--orange)" aria-hidden="true"></span>
         <span class="layer-name">Bigfoot / Sasquatch</span>
-        <span class="layer-count" id="count-1">-</span>
+        <span class="layer-count" id="count-1" aria-label="Bigfoot/Sasquatch sighting count">-</span>
       </label>
-      <label class="layer-row" id="layer-haunted">
-        <input type="checkbox" checked data-cat="2">
-        <span class="layer-dot" style="background:var(--purple)"></span>
+      <label class="layer-row" id="layer-haunted" data-glyph="✦">
+        <input type="checkbox" checked data-cat="2" aria-label="Toggle Haunted Places layer">
+        <span class="layer-dot" style="background:var(--purple)" aria-hidden="true"></span>
         <span class="layer-name">Haunted Places</span>
-        <span class="layer-count" id="count-2">-</span>
+        <span class="layer-count" id="count-2" aria-label="Haunted places count">-</span>
       </label>
     </div>
 
@@ -445,13 +448,19 @@
   </div>
 </div>
 
-<!-- CDN Libraries -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-<script src="https://unpkg.com/@turf/turf@7/turf.min.js"></script>
-<script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
-<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<!-- CDN Libraries (SRI-pinned) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+  integrity="sha384-eXVCORTRlv4FUUgS/xmOyr66XBVraen8ATNLMESp92FKXLAMiKkerixTiBvXriZr" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"
+  integrity="sha384-mFKkGiGvT5vo1fEyGCD3hshDdKmW3wzXW/x+fWriYJArD0R3gawT6lMvLboM22c0" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@turf/turf@7/turf.min.js"
+  integrity="sha384-h3w0B8Lv6f1GBZkVHDjoqjS6RJG3EpyUJ2o4pkLu7SWbofW9JXJO4jPq53kY+Iml" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/d3@7/dist/d3.min.js"
+  integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"
+  integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
 <!-- App Logic -->
 <script src="highlight-layer.js"></script>
 <script src="window-manager.js"></script>
