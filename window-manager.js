@@ -79,10 +79,12 @@ class SSWindow{
     resizeHandleBL.className='ss-window-resize-bl';
     this.el.appendChild(resizeHandleBL);
 
-    // Set size
+    // Set size — clamp to viewport so modals never overflow on narrow phones
     const dw=opts.defaultSize||{width:500,height:400};
-    this.el.style.width=dw.width+'px';
-    this.el.style.height=dw.height+'px';
+    const maxW=Math.max(240,window.innerWidth-24);
+    const maxH=Math.max(240,window.innerHeight-96);
+    this.el.style.width=Math.min(dw.width,maxW)+'px';
+    this.el.style.height=Math.min(dw.height,maxH)+'px';
 
     // Set position
     const dp=opts.defaultPos||{right:20,bottom:60};

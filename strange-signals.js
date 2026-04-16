@@ -59,10 +59,30 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
   attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19
 }).addTo(map);
 
+// Delegated handler for popup "Show more/less" toggle buttons
+document.addEventListener('click',(e)=>{
+  const btn=e.target.closest('[data-popup-toggle]');
+  if(!btn)return;
+  e.preventDefault();
+  const id=btn.dataset.popupToggle;
+  const shortEl=document.getElementById(id+'-short');
+  const fullEl=document.getElementById(id+'-full');
+  if(!shortEl||!fullEl)return;
+  if(btn.dataset.popupAction==='expand'){
+    shortEl.style.display='none';fullEl.style.display='inline';
+  } else {
+    fullEl.style.display='none';shortEl.style.display='inline';
+  }
+});
+
+let _zoomRenderTimer=null;
 map.on('zoomend',()=>{
   document.getElementById('stat-zoom').textContent=map.getZoom();
-  // Re-render heatmap/hexbin on zoom so dynamic radius/cell-size updates
-  if(currentView==='heatmap'||currentView==='hexbin')renderCurrentView();
+  // Debounce heatmap/hexbin re-render — heavy work shouldn't fire mid-gesture
+  if(currentView==='heatmap'||currentView==='hexbin'){
+    if(_zoomRenderTimer)clearTimeout(_zoomRenderTimer);
+    _zoomRenderTimer=setTimeout(()=>{_zoomRenderTimer=null;renderCurrentView();},300);
+  }
 });
 
 /* ========== PROGRESS ========== */
@@ -185,7 +205,7 @@ function makePopup(rec){
     const TRUNC=200;
     if(desc.length>TRUNC){
       const id='desc-'+Math.random().toString(36).slice(2,8);
-      h+=`<div class="popup-desc"><span id="${id}-short">${desc.slice(0,TRUNC)}... <a href="#" class="popup-expand" onclick="document.getElementById('${id}-short').style.display='none';document.getElementById('${id}-full').style.display='inline';return false">Show more</a></span><span id="${id}-full" style="display:none">${desc} <a href="#" class="popup-expand" onclick="document.getElementById('${id}-full').style.display='none';document.getElementById('${id}-short').style.display='inline';return false">Show less</a></span></div>`;
+      h+=`<div class="popup-desc"><span id="${id}-short">${desc.slice(0,TRUNC)}... <button type="button" class="popup-expand" data-popup-toggle="${id}" data-popup-action="expand" aria-expanded="false">Show more</button></span><span id="${id}-full" style="display:none">${desc} <button type="button" class="popup-expand" data-popup-toggle="${id}" data-popup-action="collapse" aria-expanded="true">Show less</button></span></div>`;
     } else {
       h+=`<div class="popup-desc">${desc}</div>`;
     }
@@ -2736,13 +2756,11 @@ async function init(){
     result=sightResult.value;
     if(popResp.status==='fulfilled'){
       popDensityGrid=popResp.value;
-      console.log('Population density grid loaded:',popResp.value.rows+'x'+popResp.value.cols);
     } else {
       console.warn('Population density data not available:',popResp.reason);
     }
     if(milResp.status==='fulfilled'){
       militaryData=milResp.value;
-      console.log('Military bases loaded:',milResp.value.data.length,'installations');
     } else {
       console.warn('Military bases data not available:',milResp.reason);
     }
@@ -2768,8 +2786,6 @@ async function init(){
   // Clear the download counter — it's stale now
   const bytesEl=document.getElementById('loading-bytes');
   if(bytesEl)bytesEl.textContent='';
-
-  console.log(`Loaded ${result.total.toLocaleString()} records: UFO=${catArrays[0].length}, Bigfoot=${catArrays[1].length}, Haunted=${catArrays[2].length}`);
 
   document.getElementById('stat-total').textContent=result.total.toLocaleString();
   document.getElementById('stat-zoom').textContent=map.getZoom();
