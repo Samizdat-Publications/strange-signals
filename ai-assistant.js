@@ -901,12 +901,20 @@ async function runConversationLoop(){
   var apiKey=getApiKey();
   var model=getModel();
 
+  // Prompt caching: mark stable prefix (system + tools) as ephemeral so the API
+  // reads it from cache on subsequent turns. ~2KB system + tool schemas cached
+  // for ~5min → meaningful savings on multi-turn tool-use conversations.
+  var cachedSystem=[{type:'text',text:SYSTEM_PROMPT,cache_control:{type:'ephemeral'}}];
+  var cachedTools=TOOLS.map(function(t,i){
+    return i===TOOLS.length-1 ? Object.assign({},t,{cache_control:{type:'ephemeral'}}) : t;
+  });
+
   for(var turn=0;turn<10;turn++){
     var body={
       model:model,
       max_tokens:4096,
-      system:SYSTEM_PROMPT,
-      tools:TOOLS,
+      system:cachedSystem,
+      tools:cachedTools,
       messages:messages,
       stream:true
     };

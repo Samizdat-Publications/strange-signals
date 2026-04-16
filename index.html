@@ -13,9 +13,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+  integrity="sha384-pmjIAcz2bAn0xukfxADbZIb3t8oRT9Sv0rvO+BR5Csr6Dhqq+nZs59P0pPKQJkEV" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+  integrity="sha384-wgw+aLYNQ7dlhK47ZPK7FRACiq7ROZwgFNg0m04avm4CaXS+Z9Y7nMu8yNjBKYC+" crossorigin="anonymous" />
 <link rel="stylesheet" href="window-manager.css">
 <link rel="stylesheet" href="ai-assistant.css">
 <link rel="stylesheet" href="annotations.css">
@@ -69,23 +72,23 @@
     <!-- LAYERS -->
     <div class="sb-section">
       <div class="sb-title"><span class="icon">&#9678;</span> LAYERS</div>
-      <label class="layer-row" id="layer-ufo">
-        <input type="checkbox" checked data-cat="0">
-        <span class="layer-dot" style="background:var(--green)"></span>
+      <label class="layer-row" id="layer-ufo" data-glyph="▲">
+        <input type="checkbox" checked data-cat="0" aria-label="Toggle UFO/UAP sightings layer">
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16.95 9.01c3.02 .739 5.05 2.123 5.05 3.714c0 2.367 -4.48 4.276 -10 4.276s-10 -1.909 -10 -4.276c0 -1.59 2.04 -2.985 5.07 -3.724"/><path d="M7 9c0 1.105 2.239 2 5 2s5 -.895 5 -2v-.035c0 -2.742 -2.239 -4.965 -5 -4.965s-5 2.223 -5 4.965v.035"/><path d="M15 17l2 3"/><path d="M8.5 17l-1.5 3"/><path d="M12 14h.01"/><path d="M7 13h.01"/><path d="M17 13h.01"/></svg></span>
         <span class="layer-name">UFO / UAP</span>
-        <span class="layer-count" id="count-0">-</span>
+        <span class="layer-count" id="count-0" aria-label="UFO/UAP sighting count">-</span>
       </label>
-      <label class="layer-row" id="layer-bigfoot">
-        <input type="checkbox" checked data-cat="1">
-        <span class="layer-dot" style="background:var(--orange)"></span>
+      <label class="layer-row" id="layer-bigfoot" data-glyph="●">
+        <input type="checkbox" checked data-cat="1" aria-label="Toggle Bigfoot/Sasquatch sightings layer">
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff6622" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 13.5c-1.1 -2 -1.441 -2.5 -2.7 -2.5c-1.259 0 -1.736 .755 -2.836 2.747c-.942 1.703 -2.846 1.845 -3.321 3.291c-.097 .265 -.145 .677 -.143 .962c0 1.176 .787 2 1.8 2c1.259 0 3 -1 4.5 -1s3.241 1 4.5 1c1.013 0 1.8 -.823 1.8 -2c0 -.285 -.049 -.697 -.146 -.962c-.475 -1.451 -2.512 -1.835 -3.454 -3.538"/><path d="M20.188 8.082a1.039 1.039 0 0 0 -.406 -.082h-.015c-.735 .012 -1.56 .75 -1.993 1.866c-.519 1.335 -.28 2.7 .538 3.052c.129 .055 .267 .082 .406 .082c.739 0 1.575 -.742 2.011 -1.866c.516 -1.335 .273 -2.7 -.54 -3.052l-.001 0"/><path d="M9.474 9c.055 0 .109 0 .163 -.011c.944 -.128 1.533 -1.346 1.32 -2.722c-.203 -1.297 -1.047 -2.267 -1.932 -2.267c-.055 0 -.109 0 -.163 .011c-.944 .128 -1.533 1.346 -1.32 2.722c.204 1.293 1.048 2.267 1.933 2.267"/><path d="M16.456 6.733c.214 -1.376 -.375 -2.594 -1.32 -2.722a1.164 1.164 0 0 0 -.162 -.011c-.885 0 -1.728 .97 -1.93 2.267c-.214 1.376 .375 2.594 1.32 2.722c.054 .007 .108 .011 .162 .011c.885 0 1.73 -.974 1.93 -2.267"/><path d="M5.69 12.918c.816 -.352 1.054 -1.719 .536 -3.052c-.436 -1.124 -1.271 -1.866 -2.009 -1.866c-.14 0 -.277 .027 -.407 .082c-.816 .352 -1.054 1.719 -.536 3.052c.436 1.124 1.271 1.866 2.009 1.866c.14 0 .277 -.027 .407 -.082"/></svg></span>
         <span class="layer-name">Bigfoot / Sasquatch</span>
-        <span class="layer-count" id="count-1">-</span>
+        <span class="layer-count" id="count-1" aria-label="Bigfoot/Sasquatch sighting count">-</span>
       </label>
-      <label class="layer-row" id="layer-haunted">
-        <input type="checkbox" checked data-cat="2">
-        <span class="layer-dot" style="background:var(--purple)"></span>
+      <label class="layer-row" id="layer-haunted" data-glyph="✦">
+        <input type="checkbox" checked data-cat="2" aria-label="Toggle Haunted Places layer">
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#aa44ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11a7 7 0 0 1 14 0v7a1.78 1.78 0 0 1 -3.1 1.4a1.65 1.65 0 0 0 -2.6 0a1.65 1.65 0 0 1 -2.6 0a1.65 1.65 0 0 0 -2.6 0a1.78 1.78 0 0 1 -3.1 -1.4v-7"/><path d="M10 10l.01 0"/><path d="M14 10l.01 0"/><path d="M10 14a3.5 3.5 0 0 0 4 0"/></svg></span>
         <span class="layer-name">Haunted Places</span>
-        <span class="layer-count" id="count-2">-</span>
+        <span class="layer-count" id="count-2" aria-label="Haunted places count">-</span>
       </label>
     </div>
 
@@ -96,19 +99,19 @@
       <div class="overlay-group-label">INFRASTRUCTURE</div>
       <label class="layer-row" id="layer-military">
         <input type="checkbox" id="military-toggle">
-        <span class="layer-dot" style="background:var(--military)"></span>
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4488ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"/></svg></span>
         <span class="layer-name">Military / DOE Sites</span>
         <span class="layer-count" id="count-military" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-airspace">
         <input type="checkbox" id="airspace-toggle">
-        <span class="layer-dot" style="background:var(--airspace)"></span>
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff4466" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12h-8a1 1 0 1 0 -1 1v8a9 9 0 0 0 9 -9"/><path d="M16 9a5 5 0 1 0 -7 7"/><path d="M20.486 9a9 9 0 1 0 -11.482 11.495"/></svg></span>
         <span class="layer-name">Restricted Airspace</span>
         <span class="layer-count" id="count-airspace" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-parks">
         <input type="checkbox" id="parks-toggle">
-        <span class="layer-dot" style="background:var(--parks)"></span>
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22cc66" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5l3 3l-2 1l4 4l-3 1l4 4h-9"/><path d="M15 21l0 -3"/><path d="M8 13l-2 -2"/><path d="M8 12l2 -2"/><path d="M8 21v-13"/><path d="M5.824 16a3 3 0 0 1 -2.743 -3.69a3 3 0 0 1 .304 -4.833a3 3 0 0 1 4.615 -3.707a3 3 0 0 1 4.614 3.707a3 3 0 0 1 .305 4.833a3 3 0 0 1 -2.919 3.695h-4l-.176 -.005"/></svg></span>
         <span class="layer-name">National Parks</span>
         <span class="layer-count" id="count-parks" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
       </label>
@@ -116,19 +119,19 @@
       <div class="overlay-group-label">GEOLOGICAL</div>
       <label class="layer-row" id="layer-earthquakes">
         <input type="checkbox" id="earthquakes-toggle">
-        <span class="layer-dot" style="background:var(--earthquake)"></span>
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff8844" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8l4 -16l3 8h4"/></svg></span>
         <span class="layer-name">USGS Earthquakes</span>
         <span class="layer-count" id="count-earthquakes" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-caves">
         <input type="checkbox" id="caves-toggle">
-        <span class="layer-dot" style="background:var(--cave)"></span>
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#aa8866" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18l-6.921 -14.612a2.3 2.3 0 0 0 -4.158 0l-6.921 14.612"/><path d="M7.5 11l2 2.5l2.5 -2.5l2 3l2.5 -2"/></svg></span>
         <span class="layer-name">US Cave Systems</span>
         <span class="layer-count" id="count-caves" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-fireballs">
         <input type="checkbox" id="fireballs-toggle">
-        <span class="layer-dot" style="background:var(--fireball)"></span>
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffcc00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3l-5 9h5l-6.891 7.086a6.5 6.5 0 1 1 -8.855 -9.506l7.746 -6.58l-1 5l9 -5"/><path d="M7 14.5a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0"/></svg></span>
         <span class="layer-name">NASA Fireballs</span>
         <span class="layer-count" id="count-fireballs" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
       </label>
@@ -136,19 +139,19 @@
       <div class="overlay-group-label">PARANORMAL</div>
       <label class="layer-row" id="layer-cryptids">
         <input type="checkbox" id="cryptids-toggle">
-        <span class="layer-dot" style="background:var(--cryptid)"></span>
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#cc44ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/></svg></span>
         <span class="layer-name">Cryptid Sightings</span>
         <span class="layer-count" id="count-cryptids" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-missing411">
         <input type="checkbox" id="missing411-toggle">
-        <span class="layer-dot" style="background:var(--missing411)"></span>
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff2222" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0"/><path d="M12 16h.01"/></svg></span>
         <span class="layer-name">Missing 411 Cases</span>
         <span class="layer-count" id="count-missing411" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-historic">
         <input type="checkbox" id="historic-toggle">
-        <span class="layer-dot" style="background:var(--historic)"></span>
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffaa22" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19v-2a3 3 0 0 0 -6 0v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-14h4v3h3v-3h4v3h3v-3h4v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1"/><path d="M3 11l18 0"/></svg></span>
         <span class="layer-name">Historic Sites (NRHP)</span>
         <span class="layer-count" id="count-historic" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
       </label>
@@ -156,7 +159,7 @@
       <div class="overlay-group-label">TEMPORAL</div>
       <label class="layer-row" id="layer-geomagnetic">
         <input type="checkbox" id="geomagnetic-toggle">
-        <span class="layer-dot" style="background:var(--geomagnetic)"></span>
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#44ffcc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a4 4 0 0 0 4 4m0 -8a4 4 0 0 0 -4 4"/><path d="M3 12h1"/><path d="M12 3v1"/><path d="M12 20v1"/><path d="M5.6 5.6l.7 .7"/><path d="M6.3 17.7l-.7 .7"/><path d="M20 7l-3 5h4l-3 5"/></svg></span>
         <span class="layer-name">Geomagnetic Storms</span>
         <span class="layer-count" id="count-geomagnetic" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
       </label>
@@ -164,7 +167,7 @@
       <div class="overlay-group-label">DEMOGRAPHICS</div>
       <label class="layer-row" id="layer-percapita">
         <input type="checkbox" id="percapita-toggle" checked>
-        <span class="layer-dot" style="background:#ffffff"></span>
+        <span class="layer-dot" style="background:none;border:none;display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/></svg></span>
         <span class="layer-name">Per Capita Heatmap</span>
         <span class="layer-count" style="font-size:8px;color:var(--text-dim)">HEAT</span>
       </label>
@@ -445,13 +448,19 @@
   </div>
 </div>
 
-<!-- CDN Libraries -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-<script src="https://unpkg.com/@turf/turf@7/turf.min.js"></script>
-<script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
-<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<!-- CDN Libraries (SRI-pinned) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+  integrity="sha384-eXVCORTRlv4FUUgS/xmOyr66XBVraen8ATNLMESp92FKXLAMiKkerixTiBvXriZr" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"
+  integrity="sha384-mFKkGiGvT5vo1fEyGCD3hshDdKmW3wzXW/x+fWriYJArD0R3gawT6lMvLboM22c0" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@turf/turf@7/turf.min.js"
+  integrity="sha384-h3w0B8Lv6f1GBZkVHDjoqjS6RJG3EpyUJ2o4pkLu7SWbofW9JXJO4jPq53kY+Iml" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/d3@7/dist/d3.min.js"
+  integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"
+  integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
 <!-- App Logic -->
 <script src="highlight-layer.js"></script>
 <script src="window-manager.js"></script>

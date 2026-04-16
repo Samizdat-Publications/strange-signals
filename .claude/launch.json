@@ -4,8 +4,9 @@
     {
       "name": "strange-signals",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8002", "-d", "C:/Users/stewa/OneDrive/Documents/Claude/UAP Correlation Project/.claude/worktrees/naughty-panini"],
-      "port": 8002
+      "runtimeArgs": ["-m", "http.server", "8002", "-d", "."],
+      "port": 8002,
+      "cwd": "${workspaceFolder}"
     }
   ]
 }
