@@ -166,6 +166,77 @@ def load_ufo_wlouie1():
     return df
 
 
+def load_larry_hatch():
+    """Larry Hatch *U* Database (RR0 digitization) — ~18K historical UFO cases, 593 BC to 2003."""
+    path = os.path.join(RAW, "tier1", "uDb", "data", "udb", "output", "u.csv")
+    if not os.path.exists(path):
+        print("  [9/9] Larry Hatch U Database - file not found, skipping")
+        return None
+    print("  [9/9] Larry Hatch *U* Database (18K historical, 593 BC–2003)...")
+    df = pd.read_csv(path, low_memory=False, encoding="utf-8")
+    # Columns: id, year, month, day, time, location, stateOrProvince, title,
+    #          description, locale, duration, credibility, locationFlags,
+    #          longitude, latitude, elevation, relativeAltitude, ref,
+    #          strangeness, miscellaneousFlags, continent, country, ...
+    before = len(df)
+    df = clean_coords(df)
+    print(f"         {len(df):,} / {before:,} with valid coordinates")
+
+    # Build a date string from year/month/day columns
+    def build_date(row):
+        y = row.get("year", "")
+        m = row.get("month", "")
+        d = row.get("day", "")
+        try:
+            yr = int(y)
+        except (ValueError, TypeError):
+            return ""
+        # For BCE dates, just use the year
+        if yr < 0:
+            return f"{yr}"
+        parts = [f"{yr:04d}"]
+        try:
+            mo = int(m)
+            if 1 <= mo <= 12:
+                parts.append(f"{mo:02d}")
+                try:
+                    da = int(d)
+                    if 1 <= da <= 31:
+                        parts.append(f"{da:02d}")
+                except (ValueError, TypeError):
+                    pass
+        except (ValueError, TypeError):
+            pass
+        return "-".join(parts)
+
+    df["date_str"] = df.apply(build_date, axis=1)
+    return df
+
+
+def load_nuforc_hf():
+    """HuggingFace NUFORC geocoded (~116K after geocoding, ~50K net new after dedup)."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "data", "nuforc_hf_geocoded.csv")
+    if not os.path.exists(path):
+        print("  [10/10] HuggingFace NUFORC - file not found, skipping")
+        print("          Run: python geocode_nuforc_hf.py --run")
+        return None
+    print("  [10/10] HuggingFace NUFORC geocoded (~116K)...")
+    df = pd.read_csv(path, low_memory=False)
+    before = len(df)
+    # Filter to only geocoded rows
+    df = df.dropna(subset=["lat", "lon"])
+    df = df.rename(columns={"lat": "latitude", "lon": "longitude"})
+    df = clean_coords(df)
+    print(f"         {len(df):,} / {before:,} with valid coordinates")
+    # Parse date from date_time column (e.g., "2014-09-21 13:00:00")
+    df["date"] = df["date_time"].apply(
+        lambda x: str(x)[:10] if pd.notna(x) and len(str(x)) >= 10 else "")
+    df["time"] = df["date_time"].apply(
+        lambda x: str(x)[11:16] if pd.notna(x) and len(str(x)) > 11 else "")
+    return df
+
+
 def truncate(val, maxlen=500):
     if pd.isna(val):
         return ""
@@ -183,7 +254,8 @@ def clean_for_excel(df):
 
 
 def build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
-                   ufo_corgis=None, haunted_kaggle=None, ufo_wlouie1=None):
+                   ufo_corgis=None, haunted_kaggle=None, ufo_wlouie1=None,
+                   larry_hatch=None, nuforc_hf=None):
     """Build a single normalized dataset for mapping overlays."""
     print("\n  Building Combined_All...")
     frames = []
@@ -302,6 +374,40 @@ def build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
             "source": "Kaggle Haunted Places",
         }))
 
+    # Larry Hatch *U* Database (historical UFO cases, 593 BC – 2003)
+    if larry_hatch is not None and len(larry_hatch) > 0:
+        df = larry_hatch.copy()
+        frames.append(pd.DataFrame({
+            "category": "UFO/UAP",
+            "subcategory": df.get("typeOfUfoCraftFlags", ""),
+            "date": df.get("date_str", ""),
+            "time": df.get("time", ""),
+            "latitude": df["latitude"],
+            "longitude": df["longitude"],
+            "city": df.get("location", ""),
+            "state": df.get("stateOrProvince", ""),
+            "country": df.get("country", ""),
+            "description": df.get("description", "").apply(lambda x: truncate(x)),
+            "source": "Larry Hatch *U* Database (RR0)",
+        }))
+
+    # HuggingFace NUFORC (geocoded via gazetteer + Nominatim)
+    if nuforc_hf is not None and len(nuforc_hf) > 0:
+        df = nuforc_hf.copy()
+        frames.append(pd.DataFrame({
+            "category": "UFO/UAP",
+            "subcategory": df.get("shape", ""),
+            "date": df.get("date", ""),
+            "time": df.get("time", ""),
+            "latitude": df["latitude"],
+            "longitude": df["longitude"],
+            "city": df.get("city", ""),
+            "state": df.get("state", ""),
+            "country": df.get("country", ""),
+            "description": df.get("summary", "").apply(lambda x: truncate(x)),
+            "source": "HuggingFace NUFORC (kcimc, geocoded)",
+        }))
+
     # UFO wlouie1 (includes Canadian sightings)
     if ufo_wlouie1 is not None and len(ufo_wlouie1) > 0:
         df = ufo_wlouie1.copy()
@@ -396,10 +502,13 @@ def main():
     ufo_corgis = safe_load("UFO CORGIS", load_ufo_corgis)
     haunted_kaggle = safe_load("Haunted Kaggle", load_haunted_kaggle)
     ufo_wlouie1 = safe_load("UFO wlouie1", load_ufo_wlouie1)
+    larry_hatch = safe_load("Larry Hatch", load_larry_hatch)
+    nuforc_hf = safe_load("NUFORC HF", load_nuforc_hf)
 
     combined = build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
                               ufo_corgis=ufo_corgis, haunted_kaggle=haunted_kaggle,
-                              ufo_wlouie1=ufo_wlouie1)
+                              ufo_wlouie1=ufo_wlouie1, larry_hatch=larry_hatch,
+                              nuforc_hf=nuforc_hf)
 
     datasets = {
         "UFO_NUFORC_97K": ufo_nuforc,
@@ -419,6 +528,16 @@ def main():
         if "description" in wl.columns:
             wl["description"] = wl["description"].apply(lambda x: truncate(x, 2000))
         datasets["UFO_Wlouie1_80K"] = wl
+    if larry_hatch is not None and len(larry_hatch) > 0:
+        lh = larry_hatch.copy()
+        if "description" in lh.columns:
+            lh["description"] = lh["description"].apply(lambda x: truncate(x, 2000))
+        datasets["UFO_LarryHatch_18K"] = lh
+    if nuforc_hf is not None and len(nuforc_hf) > 0:
+        hf = nuforc_hf.copy()
+        if "summary" in hf.columns:
+            hf["summary"] = hf["summary"].apply(lambda x: truncate(x, 2000))
+        datasets["UFO_HF_NUFORC_116K"] = hf
 
     summary = build_summary(datasets)
     datasets["Summary"] = summary
