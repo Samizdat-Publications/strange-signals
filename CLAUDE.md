@@ -16,8 +16,8 @@ bash setup_sightings.sh            # Downloads 5 datasets + builds JSON (~184K r
 
 ### Development
 ```bash
-python -m http.server 8001         # Serve from project root
-# Open http://localhost:8001
+python -m http.server 8002         # Serve from project root (matches .claude/launch.json)
+# Open http://localhost:8002
 ```
 
 ## File Map
@@ -25,9 +25,15 @@ python -m http.server 8001         # Serve from project root
 ```
 index.html                 HTML shell — structure, CDN refs, links CSS/JS
 strange-signals.css        All styles — CSS vars, layout, sidebar, charts
-strange-signals.js         All logic (~2800 lines) — IIFE-wrapped app code
-parse-worker.js            Web Worker for off-main-thread JSON parsing
+strange-signals.js         Main app logic — IIFE-wrapped
+parse-worker.js            Web Worker: off-main-thread JSON parsing
+hex-worker.js              Web Worker: hex-grid correlation computation
 ai-assistant.js            SIGNAL AI assistant (Anthropic API, tool use)
+signal-charts.js           Correlation chart rendering (D3)
+signal-reports.js          Report generation for SIGNAL AI
+annotations.js             User-drawn map annotations layer
+highlight-layer.js         Map highlighting layer
+window-manager.js          Floating window / panel manager
 
 DATA PIPELINE (Python 3)
   setup_sightings.sh         Downloads 5 raw CSV datasets from GitHub/TidyTuesday
@@ -57,7 +63,7 @@ DATA PIPELINE (Python 3)
     *.xlsx                   Generated Excel (git-ignored)
 
 CONFIG
-  .claude/launch.json        Dev server: python -m http.server 8001
+  .claude/launch.json        Dev server: python -m http.server 8002
   .env                       API keys (git-ignored — see .env.example)
   .env.example               Template for .env
   requirements.txt           Python deps: pandas, openpyxl, numpy, python-dotenv
@@ -112,6 +118,7 @@ Everything is wrapped in an IIFE `(function(){ 'use strict'; ... })();`
 | leaflet-heat | 0.2.0 | Heatmap overlay |
 | Turf.js | 7 | Geospatial analysis (hexGrid, distance, bbox, centroid, booleanPointInPolygon) |
 | D3.js | 7 | Timeline, correlation charts |
+| html2canvas | 1.4.1 | Snapshot export (P key) |
 
 ### Core Datasets (5 sources, ~258K records combined)
 1. **UFO NUFORC** (TidyTuesday 2023) — ~96K sightings
