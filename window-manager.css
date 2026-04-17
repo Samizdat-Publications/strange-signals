@@ -1,8 +1,8 @@
 /* ========== WINDOW MANAGER ========== */
 .ss-window{position:absolute;z-index:1200;background:var(--surface-solid);border:1px solid var(--border);
-  border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:flex;flex-direction:column;
+  border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;flex-direction:column;
   min-width:300px;min-height:200px;overflow:hidden}
-.ss-window.focused{border-color:var(--border-bright);box-shadow:0 8px 32px rgba(0,255,136,0.15)}
+.ss-window.focused{border-color:var(--border-bright);box-shadow:0 4px 16px rgba(0,0,0,0.5),0 0 0 1px rgba(0,255,136,0.2)}
 .ss-window.minimized{display:none}
 
 .ss-window-titlebar{display:flex;justify-content:space-between;align-items:center;
@@ -14,29 +14,39 @@
 .ss-win-btn{width:24px;height:24px;border:1px solid var(--border);border-radius:3px;
   background:rgba(255,255,255,0.03);color:var(--text-dim);cursor:pointer;
   font-size:14px;display:flex;align-items:center;justify-content:center;
-  transition:all .15s;line-height:1;padding:0}
+  transition:color .15s,border-color .15s,background-color .15s;line-height:1;padding:0}
 .ss-win-btn:hover{color:var(--text);border-color:var(--border-bright)}
-.ss-win-btn.close:hover{background:rgba(255,51,102,0.15);border-color:rgba(255,51,102,0.3);color:#ff3366}
+.ss-win-btn.close:hover{background:rgba(255,51,102,0.15);border-color:rgba(255,51,102,0.3);color:var(--pink)}
 
 .ss-window-body{flex:1;overflow:auto;min-height:0}
 
-.ss-window-resize{position:absolute;bottom:0;right:0;width:16px;height:16px;cursor:nwse-resize}
-.ss-window-resize::after{content:'';position:absolute;bottom:3px;right:3px;
-  width:8px;height:8px;border-right:2px solid var(--border-bright);
-  border-bottom:2px solid var(--border-bright)}
-
-.ss-window-resize-bl{position:absolute;bottom:0;left:0;width:16px;height:16px;cursor:nesw-resize}
-.ss-window-resize-bl::after{content:'';position:absolute;bottom:3px;left:3px;
-  width:8px;height:8px;border-left:2px solid var(--border-bright);
-  border-bottom:2px solid var(--border-bright)}
+/* Resize handles — diagonal 3-dot pattern (functional grip, not decorative stripe) */
+.ss-window-resize,.ss-window-resize-bl{position:absolute;bottom:0;width:16px;height:16px}
+.ss-window-resize{right:0;cursor:nwse-resize;
+  background-image:radial-gradient(circle 1px at 11px 11px,var(--border-bright) 50%,transparent 51%),
+    radial-gradient(circle 1px at 8px 11px,var(--border-bright) 50%,transparent 51%),
+    radial-gradient(circle 1px at 11px 8px,var(--border-bright) 50%,transparent 51%)}
+.ss-window-resize-bl{left:0;cursor:nesw-resize;
+  background-image:radial-gradient(circle 1px at 5px 11px,var(--border-bright) 50%,transparent 51%),
+    radial-gradient(circle 1px at 8px 11px,var(--border-bright) 50%,transparent 51%),
+    radial-gradient(circle 1px at 5px 8px,var(--border-bright) 50%,transparent 51%)}
 
 /* Minimized dock */
 .ss-dock{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
   display:flex;gap:6px;z-index:1199}
 .ss-dock-btn{padding:4px 12px;background:var(--surface-solid);border:1px solid var(--border);
   border-radius:3px;color:var(--text-dim);font-family:var(--font-display);font-size:8px;
-  letter-spacing:1px;cursor:pointer;transition:all .15s}
+  letter-spacing:1px;cursor:pointer;transition:color .15s,border-color .15s}
 .ss-dock-btn:hover{color:var(--text);border-color:var(--border-bright)}
+
+/* Focus visibility */
+.ss-win-btn:focus-visible,.ss-dock-btn:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  .highlight-spotlight{animation:none!important}
+  .ss-window{transition:none!important}
+}
 
 /* ========== HIGHLIGHT ANIMATIONS ========== */
 @keyframes highlight-ping{

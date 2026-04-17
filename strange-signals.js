@@ -651,7 +651,9 @@ function interpretR(r){
 function setCorrSubMode(mode){
   corrSubMode=mode;
   document.querySelectorAll('.corr-sub-btn').forEach(b=>{
-    b.classList.toggle('active',b.dataset.submode===mode);
+    const isActive=b.dataset.submode===mode;
+    b.classList.toggle('active',isActive);
+    b.setAttribute('aria-selected',isActive?'true':'false');
   });
   const panelMap={spatial:'spatial-panel',matrix:'matrix-panel',temporal:'temporal-panel',clusters:'cluster-panel',nearest:'nearest-panel'};
   Object.entries(panelMap).forEach(([key,panelId])=>{
@@ -2030,12 +2032,12 @@ async function runCorrelation(valA,valB){
 
 /* ========== TIMELINE (D3) ========== */
 function buildTimeline(){
-  if(timelineBuilt)return;
+  const svg=d3.select('#timeline-svg');
+  svg.selectAll('*').remove();
   timelineBuilt=true;
 
-  const svg=d3.select('#timeline-svg');
   const container=document.getElementById('timeline-panel');
-  const w=container.clientWidth-32;
+  const w=Math.max(container.clientWidth-32,200);
   const h=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--timeline-h'))-36;
   const margin={top:4,right:16,bottom:22,left:40};
   const iw=w-margin.left-margin.right;
@@ -2581,6 +2583,28 @@ document.getElementById('timeline-toggle').addEventListener('click',()=>{
   document.getElementById('timeline-toggle').textContent=panel.classList.contains('collapsed')?'\u25B2':'\u25BC';
   setTimeout(()=>map.invalidateSize(),350);
 });
+
+// Redraw timeline on panel resize (sidebar collapse, window resize, etc.)
+(function(){
+  const panel=document.getElementById('timeline-panel');
+  if(!panel)return;
+  let lastW=0, timer=0;
+  function maybeRebuild(){
+    if(!timelineBuilt||panel.classList.contains('collapsed'))return;
+    const w=panel.clientWidth;
+    if(Math.abs(w-lastW)<4)return;
+    lastW=w;
+    clearTimeout(timer);
+    timer=setTimeout(()=>{
+      buildTimeline();
+      if(showGeomagnetic)renderGeomagBands();
+    },120);
+  }
+  window.addEventListener('resize',maybeRebuild);
+  if(typeof ResizeObserver!=='undefined'){
+    new ResizeObserver(maybeRebuild).observe(panel);
+  }
+})();
 
 // URL state save on map move
 map.on('moveend',saveState);
