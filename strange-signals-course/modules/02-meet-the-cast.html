@@ -1,0 +1,360 @@
+<section class="module" id="module-2" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Meet the Cast</h1>
+      <p class="module-subtitle">The writers' room behind Strange Signals — who does what, and how they pass notes.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- ================= SCREEN 1 ================= -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Who's the main character?</h2>
+
+        <p>You open the project folder. Nine JavaScript files. Eleven Python files. Three CSS files. A pile of JSON. Nobody has labeled a single one of them "start here."</p>
+
+        <p>Think of this codebase the way you'd think of a TV show's writers' room. Each writer has a specific job — one plots the mystery, one punches up the jokes, one keeps the continuity binder. An episode only works when they collaborate. The files here are the same: each has a role, and the show falls apart if you don't know which one to talk to.</p>
+
+        <p>Here's the cast list, annotated.</p>
+
+        <div class="file-tree">
+          <div class="ft-folder open">
+            <span class="ft-name">strange-signals/</span>
+            <span class="ft-desc">The project root</span>
+            <div class="ft-children">
+              <div class="ft-file">
+                <span class="ft-name">index.html</span>
+                <span class="ft-desc">The director. Loads every other script in order.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">strange-signals.js</span>
+                <span class="ft-desc">The lead. 3,061 lines. The map lives here.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">strange-signals.css</span>
+                <span class="ft-desc">Wardrobe. Colors, fonts, layout.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">parse-worker.js</span>
+                <span class="ft-desc">The stage hand. Runs off-screen so the show doesn't freeze.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">hex-worker.js</span>
+                <span class="ft-desc">The mathematician. Also off-screen.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">ai-assistant.js</span>
+                <span class="ft-desc">SIGNAL. Talks to Claude. Drives the map on command.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">signal-reports.js</span>
+                <span class="ft-desc">The writer who turns findings into HTML reports.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">signal-charts.js</span>
+                <span class="ft-desc">The inline chart artist.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">annotations.js</span>
+                <span class="ft-desc">The user's pin-notes.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">window-manager.js</span>
+                <span class="ft-desc">The floating panels.</span>
+              </div>
+              <div class="ft-folder">
+                <span class="ft-name">data/</span>
+                <span class="ft-desc">The script — what everyone's reading from</span>
+                <div class="ft-children">
+                  <div class="ft-file">
+                    <span class="ft-name">sightings_map_data.json</span>
+                    <span class="ft-desc">258,000 sightings compressed into one file.</span>
+                  </div>
+                </div>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">build_*.py</span>
+                <span class="ft-desc">The prep crew. Python. Never runs in the browser.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 2 ================= -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The six who carry the show</h2>
+
+        <p>Out of that whole cast, six characters do the heavy lifting. Learn these names and you can point an AI coding assistant at the right file every time.</p>
+
+        <div class="icon-rows">
+
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-1)">D</div>
+            <div>
+              <strong>index.html &mdash; The Director</strong>
+              <p>Loads every other script in order. Holds the nav bar, the sidebar, and the loading screen. Nothing happens until the browser reads this file.</p>
+            </div>
+          </div>
+
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">L</div>
+            <div>
+              <strong>strange-signals.js &mdash; The Lead</strong>
+              <p>Holds all the <span class="term" data-definition="The app's current memory: what's loaded, what's selected, what filters are on. When state changes, the map re-renders.">state</span> (<code>allData</code>, <code>filteredCat</code>, <code>currentView</code>), runs the map, handles every click. Everything flows through here.</p>
+            </div>
+          </div>
+
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-3)">P</div>
+            <div>
+              <strong>parse-worker.js &mdash; The Data Receiver</strong>
+              <p>A separate <span class="term" data-definition="A single lane of execution. Your browser's main thread draws the page and handles clicks. A worker thread runs in parallel — good for heavy math that would otherwise freeze the UI.">thread</span>. Gets the raw JSON, validates it, groups records by category, ships batches back to the Lead.</p>
+            </div>
+          </div>
+
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-4)">H</div>
+            <div>
+              <strong>hex-worker.js &mdash; The Math Thread</strong>
+              <p>Another separate thread. Its only job: count how many sighting points fall inside each hexagon on the hex-density view. Pure math, no visuals.</p>
+            </div>
+          </div>
+
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-5)">A</div>
+            <div>
+              <strong>ai-assistant.js &mdash; The Agent</strong>
+              <p>Talks to Claude's API directly from the browser. Reads user messages, picks tools, executes those tools against the map.</p>
+            </div>
+          </div>
+
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-text-secondary)">Py</div>
+            <div>
+              <strong>build_*.py &mdash; The Offline Prep Crew</strong>
+              <p>Python scripts that run on a developer's laptop long before anything is shipped. They turn raw CSV files into the compact JSON the browser reads. They never run live.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 3 ================= -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">How they pass notes: the bubble trick</h2>
+
+        <p>Here's the architectural idea that matters most. In a writers' room, not every scribbled note on a whiteboard is for public consumption &mdash; most of it is private to one writer. A few deliberate things get taped to the door so anyone can read them.</p>
+
+        <p>Strange Signals does the same thing with an <span class="term" data-definition="Immediately-Invoked Function Expression. A function that runs the instant it's defined. Used here to create a private bubble so variables don't leak into the global page.">IIFE</span>. The entire Lead script is wrapped in a bubble &mdash; a private room. Variables inside stay inside. At the very end of the file, the Lead picks a small set of functions and tapes them to <code>window.StrangeSignals</code> so the other files can reach them.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+<pre><code><span class="code-line">(<span class="code-keyword">function</span>(){</span>
+<span class="code-line"><span class="code-string">'use strict'</span>;</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">/* ========== CONSTANTS ========== */</span></span>
+<span class="code-line"><span class="code-keyword">const</span> CAT_COLORS = [<span class="code-string">'#00ff88'</span>,<span class="code-string">'#ff6622'</span>,<span class="code-string">'#aa44ff'</span>];</span>
+<span class="code-line"><span class="code-keyword">const</span> CAT_NAMES = [<span class="code-string">'UFO/UAP'</span>,<span class="code-string">'Bigfoot/Sasquatch'</span>,<span class="code-string">'Haunted Place'</span>];</span>
+<span class="code-line"><span class="code-keyword">const</span> CAT_RGB = [<span class="code-string">'0,255,136'</span>,<span class="code-string">'255,102,34'</span>,<span class="code-string">'170,68,255'</span>];</span>
+<span class="code-line"><span class="code-keyword">const</span> F={<span class="code-property">LAT</span>:<span class="code-number">0</span>,<span class="code-property">LON</span>:<span class="code-number">1</span>,<span class="code-property">CAT</span>:<span class="code-number">2</span>,<span class="code-property">DATE</span>:<span class="code-number">3</span>,<span class="code-property">LOC</span>:<span class="code-number">4</span>,<span class="code-property">SUB</span>:<span class="code-number">5</span>,<span class="code-property">DESC</span>:<span class="code-number">6</span>};</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">/* ========== STATE ========== */</span></span>
+<span class="code-line"><span class="code-keyword">let</span> allData=[], catArrays=[[],[],[]];</span>
+<span class="code-line"><span class="code-keyword">let</span> filteredCat=[[],[],[]];</span>
+<span class="code-line"><span class="code-keyword">let</span> currentView=<span class="code-string">'markers'</span>;</span>
+</code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>Open a private bubble.</strong> Everything between these parentheses is invisible to the rest of the page.</p>
+              <p class="tl"><strong>Turn on strict mode.</strong> The stricter flavor of JavaScript &mdash; catches silly typos that would otherwise silently misbehave.</p>
+              <p class="tl">Three colors, three names, three RGB strings. Green for UFO, orange for Bigfoot, purple for Haunted. That's the whole visual identity.</p>
+              <p class="tl">A cheat sheet. Each sighting record is a plain array (not an object), so <code>F.LAT</code> is just the number <code>0</code> &mdash; "the first slot in the array is latitude."</p>
+              <p class="tl">An empty list waiting to be filled. By the time the page loads, <code>allData</code> holds 258,000 entries.</p>
+              <p class="tl">Right now the user is looking at the markers view. This flag flips when they click a different nav button.</p>
+            </div>
+          </div>
+        </div>
+
+        <p>That's the private side. Everything above lives inside the bubble and nobody outside can touch it directly. So how does the AI Assistant switch views? How do Annotations read the map? Through one taped-up note at the bottom of the file &mdash; the public API.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+<pre><code><span class="code-line"><span class="code-comment">/* ========== PUBLIC API (for AI assistant) ========== */</span></span>
+<span class="code-line">window.StrangeSignals={</span>
+<span class="code-line">  <span class="code-comment">// Map</span></span>
+<span class="code-line">  <span class="code-property">getMap</span>:()=&gt;map,</span>
+<span class="code-line">  <span class="code-property">setView</span>:setView,</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-comment">// Filters</span></span>
+<span class="code-line">  <span class="code-property">applyFilters</span>:applyFilters,</span>
+<span class="code-line">  <span class="code-property">setFilterValues</span>:(opts)=&gt;{</span>
+<span class="code-line">    <span class="code-keyword">if</span>(opts.yearFrom!=<span class="code-keyword">null</span>)<span class="code-function">document.getElementById</span>(<span class="code-string">'year-from'</span>).value=opts.yearFrom;</span>
+<span class="code-line">    <span class="code-keyword">if</span>(opts.yearTo!=<span class="code-keyword">null</span>)<span class="code-function">document.getElementById</span>(<span class="code-string">'year-to'</span>).value=opts.yearTo;</span>
+<span class="code-line">    <span class="code-keyword">if</span>(opts.state!=<span class="code-keyword">null</span>)<span class="code-function">document.getElementById</span>(<span class="code-string">'state-filter'</span>).value=opts.state;</span>
+<span class="code-line">    ...</span>
+</code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>Open the bubble to the outside world &mdash; but only for these specific things.</strong> <code>window.StrangeSignals</code> is the <span class="term" data-definition="A container for names so they don't collide. window.StrangeSignals is a namespace — all the map's public functions live inside it instead of on the bare window.">namespace</span> everyone else uses to talk to the Lead.</p>
+              <p class="tl">Give anyone who asks a reference to the <span class="term" data-definition="A JavaScript library for interactive maps. It handles the map tiles, zoom, pan, and pin drawing. Strange Signals builds on top of it.">Leaflet</span> map object. Ask politely, receive the map.</p>
+              <p class="tl">Expose the function that switches between markers, heatmap, hex, and correlation views.</p>
+              <p class="tl">Expose the function that re-runs every filter across the dataset.</p>
+              <p class="tl">A shortcut the AI uses to poke the actual form inputs. When SIGNAL wants to filter 1990&ndash;2005, it calls <code>setFilterValues({yearFrom: 1990, yearTo: 2005})</code> and this function types it into the sidebar for it.</p>
+              <p class="tl">This is the handshake. The AI Assistant says <code>SS.setView('hexbin')</code> and the map changes. No imports. No requires. Just a shared note taped to the door.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! This is how files communicate without imports.</strong>
+            <p>Modern web apps use <span class="term" data-definition="The modern way JavaScript files share code — one file says 'export foo', another says 'import { foo } from ./file.js'. This app doesn't use them; it uses the shared window object instead.">import/export</span> syntax to share code between files. Zero-build apps like Strange Signals skip that entirely and use the shared <code>window</code> object as their <span class="term" data-definition="The shared pool of names that every script on a page can see. In this app, all scripts write their public stuff to window.* — one shared whiteboard.">global namespace</span>. Older, simpler, and every script on the page shares one giant whiteboard.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 4: DND ================= -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Match the job to the writer</h2>
+
+        <p>Drag each file name onto the job description that fits it. If you've read the last three screens, this should feel like casting the pilot episode.</p>
+
+        <div class="dnd-container" id="dnd-module2">
+          <div class="dnd-chips">
+            <div class="dnd-chip" draggable="true" data-answer="ss-js">strange-signals.js</div>
+            <div class="dnd-chip" draggable="true" data-answer="parse">parse-worker.js</div>
+            <div class="dnd-chip" draggable="true" data-answer="hex">hex-worker.js</div>
+            <div class="dnd-chip" draggable="true" data-answer="ai">ai-assistant.js</div>
+            <div class="dnd-chip" draggable="true" data-answer="index">index.html</div>
+          </div>
+
+          <div class="dnd-zones">
+            <div class="dnd-zone" data-correct="ss-js">
+              <p class="dnd-zone-label">Holds the list of 258,000 sightings in memory.</p>
+              <div class="dnd-zone-target">Drop here</div>
+            </div>
+            <div class="dnd-zone" data-correct="parse">
+              <p class="dnd-zone-label">Runs in a background thread so parsing doesn't freeze the page.</p>
+              <div class="dnd-zone-target">Drop here</div>
+            </div>
+            <div class="dnd-zone" data-correct="hex">
+              <p class="dnd-zone-label">Counts points inside hexagons without blocking the UI.</p>
+              <div class="dnd-zone-target">Drop here</div>
+            </div>
+            <div class="dnd-zone" data-correct="ai">
+              <p class="dnd-zone-label">Sends messages to Claude and executes the tools Claude picks.</p>
+              <div class="dnd-zone-target">Drop here</div>
+            </div>
+            <div class="dnd-zone" data-correct="index">
+              <p class="dnd-zone-label">The very first file the browser loads &mdash; wires all the others together.</p>
+              <div class="dnd-zone-target">Drop here</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap: var(--space-3); margin-top: var(--space-4);">
+            <button class="btn" onclick="checkDnD('dnd-module2')">Check Matches</button>
+            <button class="btn" onclick="resetDnD('dnd-module2')">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 5: QUIZ ================= -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Pilot episode pop quiz</h2>
+
+        <p>Three scenarios. Each tests whether you can point an AI at the right actor in the writers' room.</p>
+
+        <div class="quiz-container" id="quiz-module2">
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Exactly. Layer behavior — when things pulsate, fade, or glow in response to state — lives with the layer logic itself. That's the Lead file. CSS could do a static pulse animation, but the 'when it's selected' part is behavioral state that only the Lead knows about."
+               data-explanation-wrong="Not quite. 'Pulsate when selected' is behavior over time that depends on which layer is currently selected — which is state the Lead file manages. CSS can animate, but it can't know what the user picked. The structure file (index.html) and the background thread (parse-worker.js) don't touch visuals at all.">
+            <h3 class="quiz-question">You ask AI to "make the 'bigfoot' layer pulsate when it's selected." Which file is the right place to send AI to?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span><code>index.html</code> &mdash; structure is defined here</span>
+              </button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span><code>strange-signals.css</code> &mdash; animations are styling</span>
+              </button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span><code>strange-signals.js</code> &mdash; layer state and behavior live here</span>
+              </button>
+              <button class="quiz-option" data-value="d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span><code>parse-worker.js</code> &mdash; it handles the data</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Right. Typing into the console is exactly like any other outside file calling into the Lead — you're just another voice in the writers' room. The fact that it worked proves setView got deliberately taped to window.StrangeSignals. If it weren't exposed, the console wouldn't see it either."
+               data-explanation-wrong="Not quite. The console has no magic — it runs JavaScript in the same scope as everything else on the page. It can only see things the bubble has chosen to expose. There's no hidden backend here; Strange Signals is a static-file app with no server.">
+            <h3 class="quiz-question">You open the browser console and type <code>StrangeSignals.setView('heatmap')</code>. The view changes. What does that prove about the app?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>That the view logic is deliberately open to the outside world via <code>window.StrangeSignals</code>.</span>
+              </button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>That the console is privileged and can bypass the bubble.</span>
+              </button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>That there's a hidden backend endpoint being called.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Exactly. setFilterValues is the handshake point — the one taped-to-the-door note that lets the AI touch filters. If the AI is trying and nothing happens, either it's not calling that function, or the function isn't receiving the shape of input it expects. That's always where the bug lives in a zero-build, window-based app."
+               data-explanation-wrong="Not quite. The Python pipeline already ran — it built the JSON months ago and doesn't run in the browser at all. And CSS couldn't block a filter from applying; it only styles things. When the AI talks to the map, it goes through the public API on window.StrangeSignals. Start there.">
+            <h3 class="quiz-question">A bug: when the AI tries to apply a year filter, nothing happens. Where would you look first?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The <code>setFilterValues</code> function exposed on <code>window.StrangeSignals</code> &mdash; is it actually being called?</span>
+              </button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The Python build pipeline &mdash; the data might be wrong.</span>
+              </button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The CSS file &mdash; maybe something is hidden visually.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div style="display:flex; gap: var(--space-3); margin-top: var(--space-4);">
+            <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Check Answers</button>
+            <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Try Again</button>
+          </div>
+        </div>
+
+        <p style="margin-top: var(--space-10); color: var(--color-text-secondary);">Now that you know who the cast is, the next module watches them do the opening scene: loading 258,000 records into the browser without freezing the page.</p>
+      </section>
+
+    </div>
+  </div>
+</section>

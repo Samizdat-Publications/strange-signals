@@ -1,0 +1,445 @@
+<section class="module" id="module-5" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">The Correlation Math</h1>
+      <p class="module-subtitle">How the app separates a dramatic headline from actual evidence.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- ============ SCREEN 1 ============ -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Question the App Is Really Answering</h2>
+
+        <p>You zoom into the <span class="term" data-definition="A number between minus one and plus one that says how much two lists of numbers move together. Plus one equals perfectly in sync, zero equals no relationship, minus one equals perfectly opposite.">correlation</span> view and see it: a <span class="term" data-definition="The most common correlation measure. What people mean when they say &quot;correlation&quot; without qualifying it.">Pearson r</span> of 0.71 between UFO hotspots and military bases. The number feels huge. <em>It must mean something.</em></p>
+
+        <p>Before you post the screenshot to Reddit, Strange Signals shuffles the data 999 times, recomputes the correlation on each scramble, and asks: "How often does a r&nbsp;&ge;&nbsp;0.71 happen by pure dumb luck?" If the answer is "less than 1 in 1000," you have something. If it's "1 in 5," you have a coincidence.</p>
+
+        <p>This module is the math that separates the two.</p>
+
+        <div class="callout callout-info" style="margin-top: var(--space-8)">
+          <div class="callout-icon">&#9878;</div>
+          <div class="callout-content">
+            <strong class="callout-title">The courtroom frame</strong>
+            <p>The prosecution shows the jury a dramatic chart. The defense stands up and asks a single question: <em>"Could this pattern happen by pure random chance?"</em> If "yeah, pretty often," the case collapses. That question is what a <span class="term" data-definition="The probability that you would see a pattern this extreme (or more) by pure chance. Low p equals unlikely to be luck. High p equals probably just noise.">p-value</span> answers, and every correlation Strange Signals shows you has one attached.</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top: var(--space-12); font-family: var(--font-display); font-size: var(--text-xl)">The comparison is the point</h3>
+
+        <p>You have three categories of sightings and a dozen overlay datasets. The question is never <em>"are there UFO hotspots?"</em> — you can see that on the markers map. The question is always comparative:</p>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">&#9678;</div>
+          <div class="callout-content">
+            <strong class="callout-title">The question every correlation answers</strong>
+            <p>"Is there a suspicious overlap between UFO hotspots and <em>some other thing</em> — military bases, earthquakes, caves, haunted places?" Correlation is the math of overlap.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCREEN 2 ============ -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Step 1: Turn a Map Into Two Lists of Numbers</h2>
+
+        <p>You can't correlate pins directly. Correlation works on <em>pairs of numbers</em>. So the app carves the map into a <span class="term" data-definition="A honeycomb tiling of the map. Used here to bin geographic points into equal-area cells so you can count them.">hex grid</span> using <span class="term" data-definition="A JavaScript library for geographic math. Computes hex grids, distances, point-in-polygon tests.">Turf.js</span>, then counts how many sightings of each category land inside each hex.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">HEX TABLE</span>
+<pre><code><span class="code-line"><span class="code-comment">// Each row = one honeycomb tile</span></span>
+<span class="code-line">Hex #1:  [ 12 UFO,  0 Bigfoot ]</span>
+<span class="code-line">Hex #2:  [  3 UFO,  8 Bigfoot ]</span>
+<span class="code-line">Hex #3:  [  0 UFO,  0 Bigfoot ]</span>
+<span class="code-line">  ...</span>
+<span class="code-line">Hex #N:  [  5 UFO,  2 Bigfoot ]</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">// Then split into two parallel lists:</span></span>
+<span class="code-line"><span class="code-keyword">const</span> xArr = [<span class="code-number">12</span>, <span class="code-number">3</span>, <span class="code-number">0</span>, ..., <span class="code-number">5</span>];</span>
+<span class="code-line"><span class="code-keyword">const</span> yArr = [ <span class="code-number">0</span>, <span class="code-number">8</span>, <span class="code-number">0</span>, ..., <span class="code-number">2</span>];</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Every hex gets two counts — one per category.</p>
+              <p class="tl">Hex #1 caught 12 UFO pins and zero Bigfoot pins.</p>
+              <p class="tl">Hex #2 is the opposite: mostly Bigfoot, barely any UFO.</p>
+              <p class="tl">Hex #3 caught nothing — that's fine, zeros are data too.</p>
+              <p class="tl">Pull column 1 out as <code>xArr</code>, column 2 as <code>yArr</code>.</p>
+              <p class="tl">Two arrays, same length, same order. That's the raw material the math operates on.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">&#10024;</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! Spatial correlation is just two parallel lists.</strong>
+            <p>The map is for humans; the math only needs numbers in rows. Every correlation feature in the app — no matter how it looks on screen — ultimately boils down to "build two arrays the same length, then compute one number."</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCREEN 3 ============ -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Step 2: Pearson r, the Correlation Number</h2>
+
+        <p>Pearson r asks one intuitive question: <em>"When X is above its average, is Y also above its average?"</em> If yes across the board, r approaches <strong>+1</strong>. If X goes up while Y goes down, r approaches <strong>&minus;1</strong>. If there's no pattern, r hovers near <strong>0</strong>.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE — strange-signals.js</span>
+<pre><code><span class="code-line"><span class="code-keyword">function</span> <span class="code-function">pearsonR</span>(xArr,yArr){</span>
+<span class="code-line">  <span class="code-keyword">const</span> n=xArr.length;</span>
+<span class="code-line">  <span class="code-keyword">if</span>(n&lt;<span class="code-number">5</span>)<span class="code-keyword">return</span> NaN;</span>
+<span class="code-line">  <span class="code-keyword">const</span> mx=d3.<span class="code-function">mean</span>(xArr),my=d3.<span class="code-function">mean</span>(yArr);</span>
+<span class="code-line">  <span class="code-keyword">let</span> num=<span class="code-number">0</span>,dx2=<span class="code-number">0</span>,dy2=<span class="code-number">0</span>;</span>
+<span class="code-line">  <span class="code-keyword">for</span>(<span class="code-keyword">let</span> i=<span class="code-number">0</span>;i&lt;n;i++){</span>
+<span class="code-line">    <span class="code-keyword">const</span> dx=xArr[i]-mx,dy=yArr[i]-my;</span>
+<span class="code-line">    num+=dx*dy;dx2+=dx*dx;dy2+=dy*dy;</span>
+<span class="code-line">  }</span>
+<span class="code-line">  <span class="code-keyword">const</span> den=Math.<span class="code-function">sqrt</span>(dx2*dy2);</span>
+<span class="code-line">  <span class="code-keyword">return</span> den&gt;<span class="code-number">0</span>?num/den:NaN;</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Take two parallel lists of numbers.</p>
+              <p class="tl">Refuse to answer if we have fewer than 5 data points. Any correlation on 4 points is noise.</p>
+              <p class="tl">Compute the average of each list. Correlation is about deviations <em>from</em> the average, not raw values.</p>
+              <p class="tl">Set up three running totals: the "agreement" number and two "spread" numbers.</p>
+              <p class="tl">For each hex: how far above or below its average is this X? Same for Y.</p>
+              <p class="tl">Multiply the two deviations. If both are positive (both above average) or both negative (both below), this adds a positive number. If they disagree in sign, it subtracts. This is the heart of the formula.</p>
+              <p class="tl">Normalize by how spread out each list is, so the answer lives between &minus;1 and +1 no matter the scale.</p>
+              <p class="tl">If one list has zero variation (all the same value), correlation is undefined — return NaN.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: var(--space-10); font-family: var(--font-display); font-size: var(--text-xl)">A quick sanity scale</h3>
+
+        <div class="icon-rows">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: #9E9790">0</div>
+            <div><strong>r &asymp; 0.0 to 0.2</strong><p>Essentially unrelated. Whatever you're seeing is noise.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-4)">~</div>
+            <div><strong>r &asymp; 0.2 to 0.5</strong><p>Weak-to-moderate link. Interesting, but don't bet the farm.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">+</div>
+            <div><strong>r &asymp; 0.5 to 0.8</strong><p>Meaningful co-movement. The two lists really do rise and fall together.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-accent)">!</div>
+            <div><strong>r &asymp; 0.8+</strong><p>Suspiciously tight. Go look for a cause — or a confounder.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCREEN 4 ============ -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Step 3: The Permutation P-Value</h2>
+
+        <p>The defense attorney stands up. "r = 0.71 is a nice number, but so what? Could random noise have produced it too?" The app answers by simulation.</p>
+
+        <p>Imagine writing every Y value on an index card. Shuffle the cards. Now X and Y have no real relationship — Y is in random order. Compute r on this scrambled pair. Save it. Shuffle again. Recompute. 999 times. You've built a histogram of <em>"correlations that happen by pure chance."</em> Compare your observed r to that histogram.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE — strange-signals.js</span>
+<pre><code><span class="code-line"><span class="code-keyword">function</span> <span class="code-function">permutationPValue</span>(xArr,yArr,observedR,nPerms){</span>
+<span class="code-line">  nPerms=nPerms||<span class="code-number">999</span>;</span>
+<span class="code-line">  <span class="code-keyword">if</span>(xArr.length&lt;<span class="code-number">5</span>||<span class="code-function">isNaN</span>(observedR))<span class="code-keyword">return</span> <span class="code-number">1</span>;</span>
+<span class="code-line">  <span class="code-keyword">let</span> extremeCount=<span class="code-number">0</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> yCopy=yArr.<span class="code-function">slice</span>();</span>
+<span class="code-line">  <span class="code-keyword">for</span>(<span class="code-keyword">let</span> p=<span class="code-number">0</span>;p&lt;nPerms;p++){</span>
+<span class="code-line">    <span class="code-keyword">for</span>(<span class="code-keyword">let</span> i=yCopy.length-<span class="code-number">1</span>;i&gt;<span class="code-number">0</span>;i--){</span>
+<span class="code-line">      <span class="code-keyword">const</span> j=Math.<span class="code-function">floor</span>(Math.<span class="code-function">random</span>()*(i+<span class="code-number">1</span>));</span>
+<span class="code-line">      [yCopy[i],yCopy[j]]=[yCopy[j],yCopy[i]];</span>
+<span class="code-line">    }</span>
+<span class="code-line">    <span class="code-keyword">const</span> permR=<span class="code-function">pearsonR</span>(xArr,yCopy);</span>
+<span class="code-line">    <span class="code-keyword">if</span>(!<span class="code-function">isNaN</span>(permR)&amp;&amp;Math.<span class="code-function">abs</span>(permR)&gt;=Math.<span class="code-function">abs</span>(observedR))extremeCount++;</span>
+<span class="code-line">  }</span>
+<span class="code-line">  <span class="code-keyword">return</span>(extremeCount+<span class="code-number">1</span>)/(nPerms+<span class="code-number">1</span>);</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Do 999 scrambles by default. That many shuffles gives enough resolution to tell tiny p-values apart.</p>
+              <p class="tl">Bail out cleanly if there isn't enough data or the observed r failed.</p>
+              <p class="tl">Keep a counter: how many shuffles produced a correlation at least as extreme as the real one?</p>
+              <p class="tl">Don't destroy the real Y array. Make a working copy we can shuffle.</p>
+              <p class="tl">Outer loop: do the whole thing 999 times.</p>
+              <p class="tl">Inner three lines: the <span class="term" data-definition="A fast algorithm for producing a truly random permutation of an array. Walk from end to start, swap each item with a random earlier one.">Fisher-Yates shuffle</span>. Walk from the end to the start and swap each item with a random earlier one. This produces a uniform random permutation in one pass.</p>
+              <p class="tl">Correlate X with scrambled Y. Any pattern here is pure coincidence — the pairing is random.</p>
+              <p class="tl">Count the scrambles that produced a correlation as strong or stronger than what we actually observed. <code>Math.abs</code> because we care about "strong" in either direction.</p>
+              <p class="tl">Fraction of scrambles that beat or matched the real data. That fraction <em>is</em> the p-value. The +1s are a standard correction so p is never exactly zero.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: var(--space-10); font-family: var(--font-display); font-size: var(--text-xl)">Significance stars, decoded</h3>
+
+        <div class="badge-list">
+          <div class="badge-item">
+            <code class="badge-code">***</code>
+            <span class="badge-desc"><strong>p &lt; 0.001</strong> — would happen by chance less than 1 in 1000 times. Strong evidence.</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">**</code>
+            <span class="badge-desc"><strong>p &lt; 0.01</strong> — less than 1 in 100. Solid evidence.</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">*</code>
+            <span class="badge-desc"><strong>p &lt; 0.05</strong> — less than 1 in 20. The conventional bar for "publishable."</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">n.s.</code>
+            <span class="badge-desc"><strong>p &ge; 0.05</strong> — "not significant." Could be coincidence; proceed with caution.</span>
+          </div>
+        </div>
+
+        <p style="margin-top: var(--space-6); font-size: var(--text-sm); color: var(--color-text-secondary)">These are <span class="term" data-definition="Shorthand from academic papers: * = p less than 0.05, ** = p less than 0.01, *** = p less than 0.001. The more stars, the less likely it is coincidence.">significance stars</span> — shorthand you'll see in any academic paper. Strange Signals prints them right next to the r value.</p>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">&#10024;</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! Scrambling is the null hypothesis made concrete.</strong>
+            <p>The <span class="term" data-definition="The boring default: &quot;there is no real relationship; any pattern is coincidence.&quot; Statistics is the art of trying to disprove this.">null hypothesis</span> is the boring default: "there's no real link — any pattern is luck." A <span class="term" data-definition="A way to get a p-value by simulation instead of formulas. Shuffle the data many times to see what patterns random chance produces, then compare.">permutation test</span> doesn't derive a p-value from a textbook formula — it <em>simulates</em> what chance looks like by actually breaking the link 999 times. If you can shuffle an array, you never need to open a statistics textbook again.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCREEN 4.5 — end-to-end flow animation ============ -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Full Pipeline, End to End</h2>
+
+        <p>Watch what happens when you hit "Run Correlation" in the app. Map tiles become numbers, numbers become an r, and an r gets stress-tested into a p.</p>
+
+        <div class="flow-animation" id="flow-module5-correlation" data-steps='[
+          {"highlight":"flow-actor-1","label":"User is zoomed into the Pacific Northwest. We only correlate what is on screen."},
+          {"highlight":"flow-actor-2","label":"Turf.js generates a hex grid covering the visible area — say, 200 tiles, each 50km across.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"For each hex, count how many UFOs and how many Bigfeet landed inside.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"Feed the two parallel lists in. Out comes r = 0.71.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-5","label":"Same lists, 999 shuffles. Count how many shuffled runs beat r = 0.71.","packet":true,"from":"actor-3","to":"actor-5"},
+          {"highlight":"flow-actor-5","label":"Only 0 of 999 shuffles beat it. p is about 0.001."},
+          {"highlight":"flow-actor-6","label":"Report both numbers. The r is the headline; the p is the stress test.","packet":true,"from":"actor-4","to":"actor-6"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon" style="background: var(--color-actor-3)">&#9632;</div>
+              <span>Map Bounds</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon" style="background: var(--color-actor-2)">&#x2B21;</div>
+              <span>Turf Hex Grid</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon" style="background: var(--color-actor-4)">#</div>
+              <span>Per-Hex Counts</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon" style="background: var(--color-actor-5)">r</div>
+              <span>pearsonR</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon" style="background: var(--color-actor-1)">&#8652;</div>
+              <span>permutationPValue</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-6">
+              <div class="flow-actor-icon" style="background: var(--color-text)">&#9733;</div>
+              <span>r = 0.71, p &lt; 0.001 ***</span>
+            </div>
+          </div>
+
+          <div class="flow-packet" id="flow-packet"></div>
+          <div class="flow-step-label" id="flow-label">Click "Next Step" to trace the pipeline.</div>
+
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <h3 style="margin-top: var(--space-12); font-family: var(--font-display); font-size: var(--text-xl)">The detective interrogates the evidence</h3>
+
+        <p>Same idea, performed as a conversation. A detective wants to know if two datasets are "in cahoots." Pearson R offers the scale; the Permutation Test is the defense lawyer.</p>
+
+        <div class="chat-window" id="chat-module5-detective">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="detective" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">D</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Detective</span>
+                <p>I have got a suspect. Are these two datasets related?</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="hex" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">H</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-2)">Hex Grid</span>
+                <p>I will carve the map into honeycomb tiles and count sightings in each.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="pearson" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">r</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">Pearson R</span>
+                <p>Give me the two parallel lists. I will tell you whether they move together — scale from &minus;1 to +1.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="detective" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">D</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Detective</span>
+                <p>r = 0.71. That is our suspect. Case closed?</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="perm" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">P</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Permutation Test</span>
+                <p>Not so fast. Let me shuffle one of the arrays 999 times and see how often pure chance beats 0.71.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="5" data-sender="perm" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">P</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Permutation Test</span>
+                <p>&hellip;zero times. Alright, detective, you have got real evidence. p &lt; 0.001.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="6" data-sender="detective" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">D</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Detective</span>
+                <p>If <em>50</em> of the shuffles had beat it?</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="7" data-sender="perm" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">P</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Permutation Test</span>
+                <p>Then we would have p &asymp; 0.05 — borderline. And if 500 beat it, your "suspect" is just a coincidence.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar">?</div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCREEN 5 — QUIZ ============ -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check Your Thinking</h2>
+        <p>Three scenarios. None of them have a trick answer — just apply the intuition from the courtroom.</p>
+
+        <div class="quiz-container" id="quiz-module5">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Exactly. Both ice cream sales and drowning deaths are independently caused by summer heat. The r is real, the math is fine — but heat is a confounding variable, and mistaking correlation for causation is the oldest trap in data work."
+               data-explanation-wrong="Not quite. The number itself is real — the issue is what's *behind* it. A hidden third variable (summer heat) is driving both. That's called a confounding variable, and no p-value can rescue you from one.">
+            <h3 class="quiz-question">A headline reads: "SHOCKING: Ice cream sales correlate with drowning deaths, r = 0.8!" What is the right response?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Wow, eating ice cream is dangerous.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Both go up in summer. The real cause is heat; ice cream and drownings are independently caused by the same third thing — a <span class="term" data-definition="A hidden third factor that causes two things to move together even though neither causes the other. Ice cream and drowning are both caused by summer heat.">confounding variable</span>.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The r is wrong.</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Need a p-value.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Right. r = 0.4 sounds moderate on its own, but p = 0.22 says there is roughly a 22% chance this pattern happens by pure luck. Well above the 5% bar for 'publishable.' Not evidence."
+               data-explanation-wrong="Look at the p-value, not just the r. A p of 0.22 means roughly 1 in 5 random shuffles would produce a correlation at least this strong. That's coincidence territory.">
+            <h3 class="quiz-question">Your Strange Signals screen shows r = 0.4, p = 0.22 between UFO sightings and earthquake epicenters. Should you be excited?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes — r = 0.4 is moderate.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>No — the p-value says this correlation happens about 22% of the time by chance alone. Not evidence.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes — any nonzero r is meaningful.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-a"
+               data-explanation-right="Exactly. The p-value is an estimate built from how many shuffles 'beat' the observed r. More shuffles = finer resolution. With only 50 shuffles you cannot tell p = 0.02 from p = 0.001 — both show up as 'zero out of 50.' 999 gives you real resolution, while still finishing fast."
+               data-explanation-wrong="Think about what the p-value actually counts: shuffles that beat the observed r, divided by total shuffles. With only 50 trials, the smallest non-zero p you can express is about 1/51. 999 lets you distinguish very strong evidence (p ~ 0.001) from merely strong evidence (p ~ 0.02).">
+            <h3 class="quiz-question">Why does the app run 999 permutations instead of just, say, 50?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The more shuffles, the more precise the p-value estimate — especially for small p-values. With 50 shuffles you cannot tell the difference between p = 0.02 and p = 0.001.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>999 is a lucky number.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The code has a bug.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module5')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module5')">Try Again</button>
+        </div>
+
+        <div class="callout callout-info" style="margin-top: var(--space-12)">
+          <div class="callout-icon">&rarr;</div>
+          <div class="callout-content">
+            <strong class="callout-title">Coming up: SIGNAL AI</strong>
+            <p>You now know what the app can compute. The final module shows how Claude plugs in as a conversational co-pilot that knows when to pull each of these levers. Next, we meet SIGNAL — the AI that drives the whole machine in plain English.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

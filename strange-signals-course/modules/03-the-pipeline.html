@@ -1,0 +1,388 @@
+<section class="module" id="module-3" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">The Pipeline</h1>
+      <p class="module-subtitle">From five scattered CSVs to 258,000 pins in your browser — without freezing the page.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1 — The journey in one picture -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The journey, in one picture</h2>
+
+        <p>The dataset for this app is 258,000 records. A naive <span class="term" data-definition="JavaScript Object Notation — a plain-text format for storing data. It's the default way data moves between a server and a browser.">JSON</span> file of all of them is around 70 MB. Dropped raw onto a page, you'd stare at a frozen tab for half a minute. Strange Signals loads it in a handful of seconds, and the page never freezes — even during parsing.</p>
+
+        <p>Think of it like a shipping warehouse the week before a holiday sale. Goods arrive from five different suppliers in five different formats. They get sorted, labeled, packed efficiently, loaded onto one truck, and delivered. Then a helper on the receiving end unloads the truck in the background — the shopkeeper never has to stop serving customers.</p>
+
+        <div class="flow-animation animate-in" id="flow-module3-journey" data-steps='[
+          {"highlight":"flow-actor-1","label":"Five Raw CSVs arrive from five sources: NUFORC, BFRO detailed, BFRO locations, Shadowlands haunted places, and UFO planetsig. Each one uses a different column layout."},
+          {"highlight":"flow-actor-1","label":"The developer runs setup_sightings.sh. Python fetches every CSV onto a laptop.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"Python merges, cleans, and dedupes the five files. Around 258,000 usable records survive."},
+          {"highlight":"flow-actor-2","label":"Records get written as compact arrays — [lat, lon, cat, date, ...] — with no field names repeated per row.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-3","label":"One big JSON file sits in the repo, ready to ship."},
+          {"highlight":"flow-actor-3","label":"You open the page. The browser downloads the single JSON file.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-4","label":"Main thread hands the raw bytes straight to the Parse Worker. Its hands are free again.","packet":true,"from":"actor-4","to":"actor-5"},
+          {"highlight":"flow-actor-5","label":"Worker decodes, validates, and sorts records into three category buckets."},
+          {"highlight":"flow-actor-6","label":"Worker ships results to the Main Thread in 5,000-record batches. The map stays responsive the whole time.","packet":true,"from":"actor-5","to":"actor-6"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon" style="background: var(--color-actor-4)">CSV</div>
+              <span>Five Raw CSVs</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon" style="background: var(--color-actor-5)">PY</div>
+              <span>Python Scripts</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon" style="background: var(--color-actor-3)">{ }</div>
+              <span>One Big JSON File</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon" style="background: var(--color-actor-2)">GET</div>
+              <span>Browser Fetch</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon" style="background: var(--color-actor-1)">W</div>
+              <span>Parse Worker</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-6">
+              <div class="flow-actor-icon" style="background: var(--color-actor-1)">M</div>
+              <span>Main Thread</span>
+            </div>
+          </div>
+
+          <div class="flow-packet" id="flow-packet"></div>
+
+          <div class="flow-step-label" id="flow-label">Click "Next Step" to follow a record from spreadsheet to screen.</div>
+
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">i</div>
+          <div class="callout-content">
+            <strong class="callout-title">The punchline</strong>
+            <p>The first five stops all happen on a developer's laptop <em>before</em> the app is ever shipped. Only the last two — downloading the JSON and parsing it — happen on your machine.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2 — Compact arrays -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Trick #1: the packing trick</h2>
+
+        <p>Imagine labeling every single box in the warehouse with the words <em>"this is a box"</em> on all six sides. Useful? No. Wasteful? Absolutely. That's what a verbose JSON record does — it repeats the column names on every single row.</p>
+
+        <p>With 258,000 records, repeating <code>"latitude"</code> and <code>"longitude"</code> and <code>"category"</code> over and over adds up to many megabytes of dead weight. So this app strips the labels and stores every record as a plain list, knowing the code on the other end can figure out the order.</p>
+
+        <div class="pattern-cards">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-error)">
+            <div class="pattern-icon" style="background: var(--color-error)">A</div>
+            <h4 class="pattern-title">Verbose (what most AI writes first)</h4>
+            <pre style="background: var(--color-bg-code); color: #CDD6F4; padding: var(--space-3); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: var(--text-xs); line-height: 1.6; white-space: pre-wrap; word-break: break-word;">{ "latitude": 39.12,
+  "longitude": -84.56,
+  "category": "UFO/UAP",
+  "date": "2020-01-15",
+  "location": "Cincinnati, OH" }</pre>
+            <p class="pattern-desc">Every column name written out every time. Clear to read, huge on disk.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-success)">
+            <div class="pattern-icon" style="background: var(--color-success)">B</div>
+            <h4 class="pattern-title">Compact (what Strange Signals does)</h4>
+            <pre style="background: var(--color-bg-code); color: #CDD6F4; padding: var(--space-3); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: var(--text-xs); line-height: 1.6; white-space: pre-wrap; word-break: break-word;">[39.12, -84.56, 0,
+ "2020-01-15",
+ "Cincinnati, OH",
+ "triangle",
+ "Bright light..."]</pre>
+            <p class="pattern-desc">A plain list. Position 0 is always latitude. Position 1 is always longitude. Roughly half the file size.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! Array positions are the column names.</strong>
+            <p>The code knows <code>position 0 = lat</code>, <code>position 1 = lon</code>, <code>position 2 = category</code>. The <code>F = {LAT:0, LON:1, ...}</code> cheat sheet from Module 2 is exactly what reads these lists. The column names live in <em>one</em> place — in the code — not 258,000 times on disk.</p>
+          </div>
+        </div>
+
+        <h3 style="font-family: var(--font-display); font-size: var(--text-xl); margin-top: var(--space-10);">How the packing actually happens</h3>
+
+        <p>Here's the Python that does the squeezing. It runs once, on the developer's laptop, when the data pipeline rebuilds.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-comment"># Build records as list of lists (vectorized via itertuples — 10x faster than iterrows)</span></span>
+<span class="code-line">records = []</span>
+<span class="code-line"><span class="code-keyword">for</span> r <span class="code-keyword">in</span> df.itertuples(index=<span class="code-keyword">False</span>):</span>
+<span class="code-line">    records.append([</span>
+<span class="code-line">        <span class="code-function">float</span>(r.latitude),</span>
+<span class="code-line">        <span class="code-function">float</span>(r.longitude),</span>
+<span class="code-line">        <span class="code-function">int</span>(r.cat),</span>
+<span class="code-line">        r.date_str <span class="code-keyword">if</span> r.date_str != <span class="code-string">"nan"</span> <span class="code-keyword">else</span> <span class="code-string">""</span>,</span>
+<span class="code-line">        r.loc,</span>
+<span class="code-line">        r.sub <span class="code-keyword">if</span> r.sub != <span class="code-string">"nan"</span> <span class="code-keyword">else</span> <span class="code-string">""</span>,</span>
+<span class="code-line">        r.desc <span class="code-keyword">if</span> r.desc != <span class="code-string">"nan"</span> <span class="code-keyword">else</span> <span class="code-string">""</span>,</span>
+<span class="code-line">    ])</span>
+<span class="code-line"></span>
+<span class="code-line">output = {</span>
+<span class="code-line">    <span class="code-string">"categories"</span>: [<span class="code-string">"UFO/UAP"</span>, <span class="code-string">"Bigfoot/Sasquatch"</span>, <span class="code-string">"Haunted Place"</span>],</span>
+<span class="code-line">    <span class="code-string">"fields"</span>: [<span class="code-string">"lat"</span>, <span class="code-string">"lon"</span>, <span class="code-string">"cat"</span>, <span class="code-string">"date"</span>, <span class="code-string">"location"</span>, <span class="code-string">"subcategory"</span>, <span class="code-string">"description"</span>],</span>
+<span class="code-line">    <span class="code-string">"data"</span>: records,</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Start with an empty list. Every sighting in the warehouse gets added to it.</p>
+              <p class="tl">Walk every row of the cleaned <span class="term" data-definition="Pandas is a Python library for working with tables of data. A DataFrame is its table type — rows and columns, a bit like a spreadsheet in memory.">DataFrame</span> one at a time. Using <span class="term" data-definition="Doing an operation on a whole column at once instead of one row at a time. Much faster than looping — the comment says it's about 10x quicker here.">vectorized</span> iteration makes this pass fast.</p>
+              <p class="tl">For each row, throw away the column names. Keep the values in a fixed order: latitude, longitude, category code, date, location, subcategory, description.</p>
+              <p class="tl">Empty strings replace missing values so downstream code never has to check for "nan".</p>
+              <p class="tl">Wrap the giant list in a tiny header that tells the browser what each position means. This header is the decoder ring — <code>fields[0]</code> is <code>"lat"</code>, so <code>data[i][0]</code> is the latitude of record i.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3 — The Parse Worker -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Trick #2: the unfreeze trick</h2>
+
+        <p>Back to the warehouse. Your <span class="term" data-definition="The single thread that draws your page, handles clicks, and runs most JavaScript. If it gets busy, the whole user interface freezes.">main thread</span> is the shopkeeper at the counter. Smiling at customers. Ringing things up. If the shopkeeper personally unloads the delivery truck, every customer waits while they sweat through 258,000 boxes.</p>
+
+        <p>So you hire a dock worker — a <span class="term" data-definition="A background thread in your browser. Module 2 introduced them; here's one in action, doing the heavy parsing work without blocking the UI.">Web Worker</span>. They open the truck around back, sort the pallets into three bins (UFO, Bigfoot, Haunted), and pass finished boxes up to the counter in small batches. The shopkeeper keeps smiling. Nobody notices the unloading.</p>
+
+        <div class="icon-rows">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-5)">1</div>
+            <div>
+              <strong>Validate and categorize in one pass</strong>
+              <p>The worker throws out any record with a bad latitude, longitude, or category code — and groups the survivors into three lists (one per category).</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">2</div>
+            <div>
+              <strong>Ship results in 5,000-record batches</strong>
+              <p>Each small chunk crosses the thread boundary via <span class="term" data-definition="The only way a Web Worker and the main thread can talk. They can't share variables — they shove data back and forth with postMessage.">postMessage</span>. Small chunks copy fast. A giant blob would cause a visible hiccup on the main thread.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="font-family: var(--font-display); font-size: var(--text-xl); margin-top: var(--space-10);">The entire worker, in 30 lines</h3>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-comment">// Web Worker: decode, parse, validate, categorize — all off main thread.</span></span>
+<span class="code-line"><span class="code-comment">// Sends results back in small batches so the main thread never blocks on structured clone.</span></span>
+<span class="code-line">self.onmessage=<span class="code-keyword">function</span>(e){</span>
+<span class="code-line">  <span class="code-keyword">try</span>{</span>
+<span class="code-line">    <span class="code-keyword">const</span> text=<span class="code-keyword">new</span> <span class="code-function">TextDecoder</span>().<span class="code-function">decode</span>(e.data);</span>
+<span class="code-line">    <span class="code-keyword">const</span> json=JSON.<span class="code-function">parse</span>(text);</span>
+<span class="code-line">    <span class="code-keyword">const</span> raw=json.data;</span>
+<span class="code-line">    <span class="code-keyword">if</span>(!Array.<span class="code-function">isArray</span>(raw)||!raw.length){</span>
+<span class="code-line">      self.<span class="code-function">postMessage</span>({<span class="code-property">type</span>:<span class="code-string">'error'</span>,<span class="code-property">error</span>:<span class="code-string">'Invalid or empty data'</span>});</span>
+<span class="code-line">      <span class="code-keyword">return</span>;</span>
+<span class="code-line">    }</span>
+<span class="code-line">    <span class="code-comment">// Filter + categorize in one pass</span></span>
+<span class="code-line">    <span class="code-keyword">const</span> cats=[[],[],[]];</span>
+<span class="code-line">    <span class="code-keyword">for</span>(<span class="code-keyword">let</span> i=<span class="code-number">0</span>;i&lt;raw.length;i++){</span>
+<span class="code-line">      <span class="code-keyword">const</span> r=raw[i];</span>
+<span class="code-line">      <span class="code-keyword">if</span>(!Array.<span class="code-function">isArray</span>(r)||r.length&lt;<span class="code-number">7</span>)<span class="code-keyword">continue</span>;</span>
+<span class="code-line">      <span class="code-keyword">if</span>(<span class="code-keyword">typeof</span> r[<span class="code-number">0</span>]!==<span class="code-string">'number'</span>||<span class="code-function">isNaN</span>(r[<span class="code-number">0</span>]))<span class="code-keyword">continue</span>;</span>
+<span class="code-line">      <span class="code-keyword">if</span>(<span class="code-keyword">typeof</span> r[<span class="code-number">1</span>]!==<span class="code-string">'number'</span>||<span class="code-function">isNaN</span>(r[<span class="code-number">1</span>]))<span class="code-keyword">continue</span>;</span>
+<span class="code-line">      <span class="code-keyword">if</span>(r[<span class="code-number">2</span>]&lt;<span class="code-number">0</span>||r[<span class="code-number">2</span>]&gt;<span class="code-number">2</span>)<span class="code-keyword">continue</span>;</span>
+<span class="code-line">      cats[r[<span class="code-number">2</span>]].<span class="code-function">push</span>(r);</span>
+<span class="code-line">    }</span>
+<span class="code-line">    <span class="code-keyword">const</span> total=cats[<span class="code-number">0</span>].length+cats[<span class="code-number">1</span>].length+cats[<span class="code-number">2</span>].length;</span>
+<span class="code-line">    <span class="code-comment">// Send back in small batches to avoid structured clone blocking main thread</span></span>
+<span class="code-line">    <span class="code-keyword">const</span> BATCH=<span class="code-number">5000</span>;</span>
+<span class="code-line">    <span class="code-keyword">for</span>(<span class="code-keyword">let</span> cat=<span class="code-number">0</span>;cat&lt;<span class="code-number">3</span>;cat++){</span>
+<span class="code-line">      <span class="code-keyword">for</span>(<span class="code-keyword">let</span> i=<span class="code-number">0</span>;i&lt;cats[cat].length;i+=BATCH){</span>
+<span class="code-line">        self.<span class="code-function">postMessage</span>({<span class="code-property">type</span>:<span class="code-string">'batch'</span>,<span class="code-property">cat</span>:cat,<span class="code-property">records</span>:cats[cat].<span class="code-function">slice</span>(i,i+BATCH)});</span>
+<span class="code-line">      }</span>
+<span class="code-line">    }</span>
+<span class="code-line">    self.<span class="code-function">postMessage</span>({<span class="code-property">type</span>:<span class="code-string">'done'</span>,<span class="code-property">total</span>:total});</span>
+<span class="code-line">  }<span class="code-keyword">catch</span>(err){</span>
+<span class="code-line">    self.<span class="code-function">postMessage</span>({<span class="code-property">type</span>:<span class="code-string">'error'</span>,<span class="code-property">error</span>:err.message});</span>
+<span class="code-line">  }</span>
+<span class="code-line">};</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">This worker sits quietly and waits for the main thread to hand it a file. When that happens, this function runs.</p>
+              <p class="tl">Turn the raw <span class="term" data-definition="Raw file content before it's been interpreted as text. A fetched file arrives as bytes; TextDecoder turns them into a string.">bytes</span> into text, then turn the text into a JavaScript object.</p>
+              <p class="tl">Sanity check: is there actually data here? If not, send an error back and bail out.</p>
+              <p class="tl">Three empty buckets — one per category (UFO, Bigfoot, Haunted).</p>
+              <p class="tl">Walk every record. Skip the broken ones: wrong shape, bad latitude, bad longitude, or a category code outside 0 through 2.</p>
+              <p class="tl">Drop each valid record into the bucket named by its category code. All three buckets fill up in a single pass.</p>
+              <p class="tl">Now ship results back — 5,000 records at a time.</p>
+              <p class="tl">Each chunk is small enough that the browser's <span class="term" data-definition="The browser's process for deep-copying data from one thread to another. It's fast, but copying a very large blob can still pause things — which is why this app sends 5,000-record chunks instead.">structured clone</span> copy is invisible to the user.</p>
+              <p class="tl">When the last batch is out the door, send a "done" message with the final tally.</p>
+              <p class="tl">If anything blew up, send the error back to the main thread instead of crashing silently.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4 — The main thread's job -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">What the main thread actually does</h2>
+
+        <p>Now that the worker is doing the heavy lifting, the shopkeeper's job is almost embarrassingly small: receive a box, drop it in the right bin, update the progress bar, smile at the next customer. Repeat.</p>
+
+        <div class="step-cards">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>A batch message arrives</strong>
+              <p>The worker calls <code>postMessage({type:'batch', cat:0, records:[...5000 records...]})</code>. The main thread's listener wakes up for a fraction of a second.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Append to the right bucket</strong>
+              <p>The main thread has three arrays in memory: <code>catArrays[0]</code> (UFO), <code>catArrays[1]</code> (Bigfoot), <code>catArrays[2]</code> (Haunted). It pushes the batch onto the one matching <code>cat</code>. That's it.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Nudge the progress bar, then back to idle</strong>
+              <p>The UI updates. The main thread returns to its normal duties — handling clicks, scrolls, and redraws — until the next batch lands.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>"done" arrives, the map draws</strong>
+              <p>When the worker signals completion, the main thread kicks off the rendering pipeline — which is Module 4's whole job.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="font-family: var(--font-display); font-size: var(--text-xl); margin-top: var(--space-10);">Two tricks every big-data browser app should use</h3>
+
+        <div class="pattern-cards">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">{ }</div>
+            <h4 class="pattern-title">Compact array format</h4>
+            <p class="pattern-desc">Store records as plain lists, not objects with repeated keys. Half the file size. The field-order header is your decoder ring.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">W</div>
+            <h4 class="pattern-title">Web Worker + batched postMessage</h4>
+            <p class="pattern-desc">Parse and validate off the main thread. Ship results back in small chunks so the copy across threads is never a visible hiccup.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Why this matters when you're using AI</strong>
+            <p>Ask AI to "load a big JSON file in the browser" and by default it'll hand you <code><span class="term" data-definition="The browser's built-in way to download a file from a URL. fetch(url) returns a promise that resolves when the file arrives.">fetch</span>(url).then(r =&gt; r.json())</code> on the main thread — which freezes the UI for big files. Now you know the names to ask for: <em>compact array format</em> and <em>parse it in a Web Worker with batched postMessage</em>. That vocabulary is the difference between a snappy app and a frozen tab.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5 — Quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your intuition</h2>
+        <p>Three scenarios. None of them are about memorizing file names — they're about what you'd actually do when you run into these situations in your own projects.</p>
+
+        <div class="quiz-container" id="quiz-module3">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Exactly. A 50 MB JSON file parses fine memory-wise, but JSON.parse on the main thread is synchronous — it grabs the CPU and holds it. The page freezes for a second or two while it runs. The fix is to move parsing into a Web Worker and stream results back in batches, just like Strange Signals does."
+               data-explanation-wrong="Think about which part of loading a big file hurts the user experience. 50 MB isn't huge for modern memory, and fetch doesn't corrupt files. The real pain is elsewhere — what part of the process has to run in one uninterrupted blocking step?">
+            <h3 class="quiz-question">You ask AI to load a 50 MB JSON file of product listings into your e-commerce site. It writes <code>const data = await fetch(url).then(r =&gt; r.json());</code> on the main thread. What's the actual risk?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The browser will run out of memory and crash.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Parsing a file that big on the main thread will freeze the UI for a second or two.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The file will be corrupted in transit.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Right. With 258,000 records, writing out the word 'latitude' 258,000 times would add several megabytes of field-name text that carries no information. The compact format stores the column order once in a header and then stores each record as a bare list. Same data, roughly half the bytes."
+               data-explanation-wrong="Parse speed is a nice side benefit but not the main reason. And objects with keys absolutely work in JSON — that's the most common JSON shape. The core motivation is much more concrete: what's getting repeated 258,000 times in the verbose version that doesn't need to be?">
+            <h3 class="quiz-question">Why does the JSON file store records as <code>[39.12, -84.56, 0, ...]</code> instead of <code>{lat: 39.12, lon: -84.56, cat: 0, ...}</code>?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Arrays are faster to parse than objects.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It's smaller on disk and over the wire — field names aren't repeated 258,000 times.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Objects with keys don't work in JSON.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-a"
+               data-explanation-right="Yes — this is defensive programming. The category code should always be 0, 1, or 2. If a record somehow has a category of 5 (corrupted data, a bug upstream, a future category that wasn't added to the UI yet), this line quietly drops it rather than crashing the map. Silent filtering like this is common at trust boundaries between systems."
+               data-explanation-wrong="Location filtering happens much earlier — the Python pipeline handles geography. And deduplication also happens in Python, before this JSON is ever written. This single line is doing something much narrower: a sanity check on a specific field to keep bad data from reaching the map.">
+            <h3 class="quiz-question">The parse worker validates <code>if (r[2] &lt; 0 || r[2] &gt; 2) continue;</code> — what does this actually guard against?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Records with a category code that isn't 0 (UFO), 1 (Bigfoot), or 2 (Haunted) get silently dropped.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Records from outside the United States get filtered out.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Duplicate records get removed.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
+        </div>
+
+        <div class="callout callout-info" style="margin-top: var(--space-12);">
+          <div class="callout-icon">&rarr;</div>
+          <div class="callout-content">
+            <strong class="callout-title">Coming up in Module 4</strong>
+            <p>The pins are in memory. Drawing all 258,000 at once on a map would crash a mid-range laptop. Next up: how the app gets away with it — clustering, viewport culling, and the rendering tricks that make it feel instant.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
