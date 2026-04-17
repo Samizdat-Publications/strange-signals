@@ -1060,7 +1060,11 @@ function toggleAssistant(){
   var win=createChatWindow();
   win.toggle();
   var btn=document.getElementById('ai-toggle');
-  if(btn)btn.classList.toggle('active',!win._hidden&&!win._minimized);
+  if(btn){
+    var open=!win._hidden&&!win._minimized;
+    btn.classList.toggle('active',open);
+    btn.setAttribute('aria-pressed',open?'true':'false');
+  }
 }
 
 // Toggle button

@@ -60,8 +60,8 @@
   <div class="header-right">
     <input type="text" id="search-box" placeholder="Search location..." aria-label="Search location">
     <span class="kbd-hint">/ to search</span>
-    <button id="ai-toggle" title="Toggle AI Assistant (I)">SIGNAL</button>
-    <button id="snapshot-btn" title="Export snapshot (P)">&#128247; SNAP</button>
+    <button id="ai-toggle" type="button" title="Toggle AI Assistant (I)" aria-label="Toggle SIGNAL AI assistant" aria-pressed="false">SIGNAL</button>
+    <button id="snapshot-btn" type="button" title="Export snapshot (P)" aria-label="Export map snapshot"><span aria-hidden="true">&#128247;</span> SNAP</button>
   </div>
 </header>
 
@@ -74,19 +74,19 @@
       <div class="sb-title"><span class="icon">&#9678;</span> LAYERS</div>
       <label class="layer-row" id="layer-ufo" data-glyph="▲">
         <input type="checkbox" checked data-cat="0" aria-label="Toggle UFO/UAP sightings layer">
-        <span class="layer-dot" style="background:var(--green)" aria-hidden="true"></span>
+        <span class="layer-dot layer-dot--ufo" aria-hidden="true"></span>
         <span class="layer-name">UFO / UAP</span>
         <span class="layer-count" id="count-0" aria-label="UFO/UAP sighting count">-</span>
       </label>
       <label class="layer-row" id="layer-bigfoot" data-glyph="●">
         <input type="checkbox" checked data-cat="1" aria-label="Toggle Bigfoot/Sasquatch sightings layer">
-        <span class="layer-dot" style="background:var(--orange)" aria-hidden="true"></span>
+        <span class="layer-dot layer-dot--bigfoot" aria-hidden="true"></span>
         <span class="layer-name">Bigfoot / Sasquatch</span>
         <span class="layer-count" id="count-1" aria-label="Bigfoot/Sasquatch sighting count">-</span>
       </label>
       <label class="layer-row" id="layer-haunted" data-glyph="✦">
         <input type="checkbox" checked data-cat="2" aria-label="Toggle Haunted Places layer">
-        <span class="layer-dot" style="background:var(--purple)" aria-hidden="true"></span>
+        <span class="layer-dot layer-dot--haunted" aria-hidden="true"></span>
         <span class="layer-name">Haunted Places</span>
         <span class="layer-count" id="count-2" aria-label="Haunted places count">-</span>
       </label>
@@ -98,80 +98,80 @@
       <!-- Infrastructure -->
       <div class="overlay-group-label">INFRASTRUCTURE</div>
       <label class="layer-row" id="layer-military">
-        <input type="checkbox" id="military-toggle">
-        <span class="layer-dot" style="background:var(--military)"></span>
+        <input type="checkbox" id="military-toggle" aria-label="Toggle Military / DOE Sites overlay">
+        <span class="layer-dot layer-dot--military" aria-hidden="true"></span>
         <span class="layer-name">Military / DOE Sites</span>
-        <span class="layer-count" id="count-military" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+        <span class="layer-count layer-count--glyph" id="count-military" aria-hidden="true">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-airspace">
-        <input type="checkbox" id="airspace-toggle">
-        <span class="layer-dot" style="background:var(--airspace)"></span>
+        <input type="checkbox" id="airspace-toggle" aria-label="Toggle Restricted Airspace overlay">
+        <span class="layer-dot layer-dot--airspace" aria-hidden="true"></span>
         <span class="layer-name">Restricted Airspace</span>
-        <span class="layer-count" id="count-airspace" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+        <span class="layer-count layer-count--glyph" id="count-airspace" aria-hidden="true">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-parks">
-        <input type="checkbox" id="parks-toggle">
-        <span class="layer-dot" style="background:var(--parks)"></span>
+        <input type="checkbox" id="parks-toggle" aria-label="Toggle National Parks overlay">
+        <span class="layer-dot layer-dot--parks" aria-hidden="true"></span>
         <span class="layer-name">National Parks</span>
-        <span class="layer-count" id="count-parks" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+        <span class="layer-count layer-count--glyph" id="count-parks" aria-hidden="true">&#9670;</span>
       </label>
       <!-- Geological / Environmental -->
       <div class="overlay-group-label">GEOLOGICAL</div>
       <label class="layer-row" id="layer-earthquakes">
-        <input type="checkbox" id="earthquakes-toggle">
-        <span class="layer-dot" style="background:var(--earthquake)"></span>
+        <input type="checkbox" id="earthquakes-toggle" aria-label="Toggle USGS Earthquakes overlay">
+        <span class="layer-dot layer-dot--earthquake" aria-hidden="true"></span>
         <span class="layer-name">USGS Earthquakes</span>
-        <span class="layer-count" id="count-earthquakes" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+        <span class="layer-count layer-count--glyph" id="count-earthquakes" aria-hidden="true">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-caves">
-        <input type="checkbox" id="caves-toggle">
-        <span class="layer-dot" style="background:var(--cave)"></span>
+        <input type="checkbox" id="caves-toggle" aria-label="Toggle US Cave Systems overlay">
+        <span class="layer-dot layer-dot--cave" aria-hidden="true"></span>
         <span class="layer-name">US Cave Systems</span>
-        <span class="layer-count" id="count-caves" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+        <span class="layer-count layer-count--glyph" id="count-caves" aria-hidden="true">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-fireballs">
-        <input type="checkbox" id="fireballs-toggle">
-        <span class="layer-dot" style="background:var(--fireball)"></span>
+        <input type="checkbox" id="fireballs-toggle" aria-label="Toggle NASA Fireballs overlay">
+        <span class="layer-dot layer-dot--fireball" aria-hidden="true"></span>
         <span class="layer-name">NASA Fireballs</span>
-        <span class="layer-count" id="count-fireballs" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+        <span class="layer-count layer-count--glyph" id="count-fireballs" aria-hidden="true">&#9670;</span>
       </label>
       <!-- Paranormal / Cryptid -->
       <div class="overlay-group-label">PARANORMAL</div>
       <label class="layer-row" id="layer-cryptids">
-        <input type="checkbox" id="cryptids-toggle">
-        <span class="layer-dot" style="background:var(--cryptid)"></span>
+        <input type="checkbox" id="cryptids-toggle" aria-label="Toggle Cryptid Sightings overlay">
+        <span class="layer-dot layer-dot--cryptid" aria-hidden="true"></span>
         <span class="layer-name">Cryptid Sightings</span>
-        <span class="layer-count" id="count-cryptids" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+        <span class="layer-count layer-count--glyph" id="count-cryptids" aria-hidden="true">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-missing411">
-        <input type="checkbox" id="missing411-toggle">
-        <span class="layer-dot" style="background:var(--missing411)"></span>
+        <input type="checkbox" id="missing411-toggle" aria-label="Toggle Missing 411 Cases overlay">
+        <span class="layer-dot layer-dot--missing411" aria-hidden="true"></span>
         <span class="layer-name">Missing 411 Cases</span>
-        <span class="layer-count" id="count-missing411" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+        <span class="layer-count layer-count--glyph" id="count-missing411" aria-hidden="true">&#9670;</span>
       </label>
       <label class="layer-row" id="layer-historic">
-        <input type="checkbox" id="historic-toggle">
-        <span class="layer-dot" style="background:var(--historic)"></span>
+        <input type="checkbox" id="historic-toggle" aria-label="Toggle Historic Sites overlay">
+        <span class="layer-dot layer-dot--historic" aria-hidden="true"></span>
         <span class="layer-name">Historic Sites (NRHP)</span>
-        <span class="layer-count" id="count-historic" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+        <span class="layer-count layer-count--glyph" id="count-historic" aria-hidden="true">&#9670;</span>
       </label>
       <!-- Temporal -->
       <div class="overlay-group-label">TEMPORAL</div>
       <label class="layer-row" id="layer-geomagnetic">
-        <input type="checkbox" id="geomagnetic-toggle">
-        <span class="layer-dot" style="background:var(--geomagnetic)"></span>
+        <input type="checkbox" id="geomagnetic-toggle" aria-label="Toggle Geomagnetic Storms overlay">
+        <span class="layer-dot layer-dot--geomagnetic" aria-hidden="true"></span>
         <span class="layer-name">Geomagnetic Storms</span>
-        <span class="layer-count" id="count-geomagnetic" style="font-size:9px;color:var(--text-dim)">&#9670;</span>
+        <span class="layer-count layer-count--glyph" id="count-geomagnetic" aria-hidden="true">&#9670;</span>
       </label>
       <!-- Demographics -->
       <div class="overlay-group-label">DEMOGRAPHICS</div>
       <label class="layer-row" id="layer-percapita">
-        <input type="checkbox" id="percapita-toggle" checked>
-        <span class="layer-dot" style="background:#ffffff"></span>
+        <input type="checkbox" id="percapita-toggle" checked aria-label="Toggle Per Capita Heatmap">
+        <span class="layer-dot layer-dot--percapita" aria-hidden="true"></span>
         <span class="layer-name">Per Capita Heatmap</span>
-        <span class="layer-count" style="font-size:8px;color:var(--text-dim)">HEAT</span>
+        <span class="layer-count layer-count--tag" aria-hidden="true">HEAT</span>
       </label>
-      <div style="font-size:9px;color:var(--text-dim);padding:4px 0 0 20px;line-height:1.5" id="percapita-hint">
+      <div class="percapita-hint" id="percapita-hint">
         Normalizes sighting density by population.<br>Reveals anomalous hotspots vs. population centers.
       </div>
     </div>
@@ -192,12 +192,12 @@
       <div class="sb-title"><span class="icon">&#9733;</span> CORRELATION ANALYSIS</div>
 
       <!-- Sub-mode tabs -->
-      <div class="corr-submodes" id="corr-submodes">
-        <button class="corr-sub-btn active" data-submode="spatial">SPATIAL</button>
-        <button class="corr-sub-btn" data-submode="matrix">MATRIX</button>
-        <button class="corr-sub-btn" data-submode="temporal">TEMPORAL</button>
-        <button class="corr-sub-btn" data-submode="clusters">CLUSTERS</button>
-        <button class="corr-sub-btn" data-submode="nearest">NEAREST</button>
+      <div class="corr-submodes" id="corr-submodes" role="tablist" aria-label="Correlation analysis mode">
+        <button class="corr-sub-btn active" data-submode="spatial" role="tab" id="corr-tab-spatial" aria-selected="true" aria-controls="spatial-panel" type="button">SPATIAL</button>
+        <button class="corr-sub-btn" data-submode="matrix" role="tab" id="corr-tab-matrix" aria-selected="false" aria-controls="matrix-panel" type="button">MATRIX</button>
+        <button class="corr-sub-btn" data-submode="temporal" role="tab" id="corr-tab-temporal" aria-selected="false" aria-controls="temporal-panel" type="button">TEMPORAL</button>
+        <button class="corr-sub-btn" data-submode="clusters" role="tab" id="corr-tab-clusters" aria-selected="false" aria-controls="cluster-panel" type="button">CLUSTERS</button>
+        <button class="corr-sub-btn" data-submode="nearest" role="tab" id="corr-tab-nearest" aria-selected="false" aria-controls="nearest-panel" type="button">NEAREST</button>
       </div>
 
       <!-- Shared hex size slider -->
@@ -408,11 +408,11 @@
 </div>
 
 <!-- KEYBOARD SHORTCUTS HELP OVERLAY -->
-<div id="shortcuts-overlay" class="shortcuts-overlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" style="display:none">
+<div id="shortcuts-overlay" class="shortcuts-overlay" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title" style="display:none">
   <div class="shortcuts-panel">
     <div class="shortcuts-header">
-      <h2>KEYBOARD SHORTCUTS</h2>
-      <button id="shortcuts-close" class="shortcuts-close" aria-label="Close shortcuts">&times;</button>
+      <h2 id="shortcuts-title">KEYBOARD SHORTCUTS</h2>
+      <button id="shortcuts-close" class="shortcuts-close" type="button" aria-label="Close shortcuts">&times;</button>
     </div>
     <div class="shortcuts-grid">
       <div class="shortcut-group">

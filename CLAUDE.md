@@ -150,3 +150,27 @@ Everything is wrapped in an IIFE `(function(){ 'use strict'; ... })();`. Cross-s
 - **Compact data format** — arrays (not objects) for large datasets to minimize JSON size
 - **CSS custom properties** — `:root` variables for all colors, fonts, spacing
 - **Git-ignore generated data** — only source code committed; data rebuilt from pipeline
+
+## Design Context
+
+Full version lives in `.impeccable.md`. Short version for quick recall:
+
+### Users
+UFO / paranormal **hobbyists at night** — curious, mood-seeking, exploring case data on a laptop in the 9pm-1am window. They want cockpit / signals atmosphere, not a clinical dashboard.
+
+### Brand Personality
+**Instrumented, nocturnal, earnest.** A console, not a magazine. Takes the subject matter seriously — not ironic, not camp, not Halloween-store kitsch.
+
+### Aesthetic Direction
+Lean harder into the cockpit. Deliberate retrofuturism — instruments, callouts, typographic density, CRT patina. The whole app should read as one self-consistent console, not a dashboard with decorations stuck on top.
+
+**Keep the stack and tokens** (Orbitron + Space Mono, `--green #00ff88`, dark `#05060f` base). Course surface keeps its own warm paper tokens (Bricolage / DM Sans) — do not cross-contaminate.
+
+**Anti-references:** cutesy paranormal (ghost/alien emoji), hacker cliché (glitch fonts, text rain), corporate sci-fi AI (cyan→purple gradients, glassmorphism everywhere), generic admin dashboard (border-left callout stripes, icon-card grids).
+
+### Design Principles
+1. **Instrumented, not illustrated.** Every element earns its place by functioning.
+2. **Typographic density is the aesthetic.** Small type, tight leading, tabular numerals, SCREAMING CAPS labels.
+3. **Green is precious.** Reserve `--green` for signal/active/alive. Everything else dims to `--text-dim`.
+4. **No slop fingerprints.** No border-left stripe decoration; no gradient text via `background-clip: text`; no cyan→purple gradients; no decorative glassmorphism; no emoji as UI icons.
+5. **Quiet by default, alive on interaction.** Subtle radar pulse, cursor-aware glow on primary controls — not entrance-animation chaos.
