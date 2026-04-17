@@ -1,0 +1,2532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strange Signals — How it Works</title>
+
+  <!-- Google Fonts: Bricolage Grotesque · DM Sans · JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    :root {
+      --color-accent:       #D94F30;
+      --color-accent-hover: #C4432A;
+      --color-accent-light: #FDEEE9;
+      --color-accent-muted: #E8836C;
+    }
+  </style>
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+
+  <nav class="nav" id="nav">
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="nav-inner">
+      <span class="nav-title">Strange Signals — How it Works</span>
+      <div class="nav-dots" id="nav-dots" role="tablist">
+        <button class="nav-dot" data-target="module-1" data-tooltip="The Scene" role="tab" aria-label="Module 1: The Scene"></button>
+        <button class="nav-dot" data-target="module-2" data-tooltip="Meet the Cast" role="tab" aria-label="Module 2: Meet the Cast"></button>
+        <button class="nav-dot" data-target="module-3" data-tooltip="The Pipeline" role="tab" aria-label="Module 3: The Pipeline"></button>
+        <button class="nav-dot" data-target="module-4" data-tooltip="Rendering 258K Pins" role="tab" aria-label="Module 4: Rendering 258K Pins"></button>
+        <button class="nav-dot" data-target="module-5" data-tooltip="The Correlation Math" role="tab" aria-label="Module 5: The Correlation Math"></button>
+        <button class="nav-dot" data-target="module-6" data-tooltip="SIGNAL AI" role="tab" aria-label="Module 6: SIGNAL AI"></button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- modules/*.html content is assembled here by build.sh -->
+<section class="module" id="module-1" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">The Scene</h1>
+      <p class="module-subtitle">258,000 pushpins, a dark map, and one very deliberate architectural choice.</p>
+    </header>
+
+    <div class="module-body stagger-children">
+
+      <!-- Orientation: what this course is -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Before we start</h2>
+        <p>
+          This is a six-part tour of a real codebase called <strong>Strange Signals</strong> &mdash; an interactive map of paranormal sightings. The goal isn&rsquo;t to make you a programmer. It&rsquo;s to give a &ldquo;vibe coder&rdquo; &mdash; someone who builds with AI but doesn&rsquo;t read code &mdash; the vocabulary and mental map to steer a project like this with confidence.
+        </p>
+        <p>
+          By the end you&rsquo;ll know what every file in the project is for, why the app is structured the way it is, and what tradeoffs the authors picked. We&rsquo;ll move like a detective working an evidence board: pin things up, connect them with string, step back, and finally see the pattern.
+        </p>
+      </section>
+
+      <!-- Screen 1: The moment of use -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The moment you open it</h2>
+        <p>
+          You open Strange Signals. A radar spins. A loading bar fills. Then <strong>258,000 pushpins</strong> drop onto a dark map of the United States. You click a green <span class="term" data-definition="On this map, a clump of pins that have been visually grouped into one circle with a count, because they&rsquo;re too close to show separately.">cluster</span> in Washington state &mdash; 3,536 UFO sightings live inside that one shape. How did a quarter of a million records from five different websites end up clickable on your laptop?
+        </p>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">?</div>
+          <div class="callout-content">
+            <strong class="callout-title">The question driving this module</strong>
+            <p>Who did the work of gathering, cleaning, and stitching these sightings together &mdash; and <em>when</em> did that work happen? The answer tells you almost everything about how the app is built.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 2: What this thing actually does -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">What this thing actually does</h2>
+        <p>
+          Three jobs, one screen. Everything else in the project exists to serve one of these three.
+        </p>
+
+        <div class="icon-rows">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-1)">1</div>
+            <div>
+              <strong>Plots 258K paranormal reports on a map</strong>
+              <p>UFO / UAP sightings, Bigfoot encounters, and haunted places &mdash; all visible at once, filterable by year, state, and keyword.</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">2</div>
+            <div>
+              <strong>Overlays real-world things nearby</strong>
+              <p>Military bases, earthquakes, caves, fireballs, restricted airspace &mdash; toggleable layers to see what lines up with the sightings.</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-3)">3</div>
+            <div>
+              <strong>Hands you the steering wheel &mdash; and an AI co-pilot</strong>
+              <p>An assistant named SIGNAL can drive the map for you: filter, zoom, correlate, and even write an investigation report.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 3: The four ways to see the data -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Four ways to see the same data</h2>
+        <p>
+          The bar across the top has four buttons. Each one is a different &ldquo;lens&rdquo; on the exact same 258,000 records &mdash; same data, four very different pictures.
+        </p>
+
+        <div class="pattern-cards">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">M</div>
+            <h4 class="pattern-title">MARKERS</h4>
+            <p class="pattern-desc">One pin per sighting. Click any pin for the full report text.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">H</div>
+            <h4 class="pattern-title">HEATMAP</h4>
+            <p class="pattern-desc">Blurs everything into hot/cold zones. Good for &ldquo;where are the hotspots?&rdquo;</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-3)">
+            <div class="pattern-icon" style="background: var(--color-actor-3)">X</div>
+            <h4 class="pattern-title">HEX DENSITY</h4>
+            <p class="pattern-desc">Counts sightings into honeycomb tiles. Answers &ldquo;how many per area?&rdquo;</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">C</div>
+            <h4 class="pattern-title">CORRELATION</h4>
+            <p class="pattern-desc">Does the math. Checks if UFO hotspots line up with, say, military bases.</p>
+          </div>
+        </div>
+
+        <p>
+          Those four buttons are just four words in the HTML of the page. Here&rsquo;s the exact code, with a plain-English translation.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+<pre><code><span class="code-line"><span class="code-operator">&lt;</span><span class="code-tag">nav</span> <span class="code-attr">class</span>=<span class="code-value">"header-nav"</span><span class="code-operator">&gt;</span></span>
+<span class="code-line">  <span class="code-operator">&lt;</span><span class="code-tag">button</span> <span class="code-attr">class</span>=<span class="code-value">"nav-btn active"</span> <span class="code-attr">data-view</span>=<span class="code-value">"markers"</span><span class="code-operator">&gt;</span>MARKERS<span class="code-operator">&lt;/</span><span class="code-tag">button</span><span class="code-operator">&gt;</span></span>
+<span class="code-line">  <span class="code-operator">&lt;</span><span class="code-tag">button</span> <span class="code-attr">class</span>=<span class="code-value">"nav-btn"</span> <span class="code-attr">data-view</span>=<span class="code-value">"heatmap"</span><span class="code-operator">&gt;</span>HEATMAP<span class="code-operator">&lt;/</span><span class="code-tag">button</span><span class="code-operator">&gt;</span></span>
+<span class="code-line">  <span class="code-operator">&lt;</span><span class="code-tag">button</span> <span class="code-attr">class</span>=<span class="code-value">"nav-btn"</span> <span class="code-attr">data-view</span>=<span class="code-value">"hexbin"</span><span class="code-operator">&gt;</span>HEX DENSITY<span class="code-operator">&lt;/</span><span class="code-tag">button</span><span class="code-operator">&gt;</span></span>
+<span class="code-line">  <span class="code-operator">&lt;</span><span class="code-tag">button</span> <span class="code-attr">class</span>=<span class="code-value">"nav-btn"</span> <span class="code-attr">data-view</span>=<span class="code-value">"correlation"</span><span class="code-operator">&gt;</span>CORRELATION<span class="code-operator">&lt;/</span><span class="code-tag">button</span><span class="code-operator">&gt;</span></span>
+<span class="code-line"><span class="code-operator">&lt;/</span><span class="code-tag">nav</span><span class="code-operator">&gt;</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">This is the bar of buttons across the top of the app.</p>
+              <p class="tl">A button labeled MARKERS. The <code>data-view</code> tag is a little note stuck on the button so the JavaScript knows which view to switch to when it&rsquo;s clicked. The word <code>active</code> means this one is currently selected &mdash; it&rsquo;ll look highlighted.</p>
+              <p class="tl">A button labeled HEATMAP, tagged with its view name.</p>
+              <p class="tl">A button labeled HEX DENSITY, tagged <code>hexbin</code> (the technical name for honeycomb grids).</p>
+              <p class="tl">A button labeled CORRELATION, tagged with its view name.</p>
+              <p class="tl">End of the button bar.</p>
+            </div>
+          </div>
+        </div>
+
+        <p>
+          The four views are also four slightly different opinions about how to show data. Listen in on the argument.
+        </p>
+
+        <!-- Group chat animation -->
+        <div class="chat-window" id="chat-module1">
+          <div class="chat-messages">
+
+            <div class="chat-message" data-msg="0" data-sender="markers" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">M</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Markers</span>
+                <p>Let me draw one pin per sighting. Every report gets its own click.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="1" data-sender="heatmap" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">H</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-2)">Heatmap</span>
+                <p>You&rsquo;ll melt the user&rsquo;s laptop. I can blur it all into hot and cold zones instead.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="2" data-sender="hex" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">X</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Hex</span>
+                <p>Neither of you answers the real question: how many sightings per X square kilometers? That&rsquo;s my job &mdash; I count them into honeycomb tiles.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="3" data-sender="correlation" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Correlation</span>
+                <p>All three of you are just drawing. I do the math &mdash; whether UFO hotspots actually line up with military bases.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="4" data-sender="markers" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">M</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Markers</span>
+                <p>Fine. We each get a button in the top nav. User picks.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="5" data-sender="correlation" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Correlation</span>
+                <p>Deal. But when the user asks a real question, they&rsquo;ll come to me.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar">&hellip;</div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+
+        <p>
+          The whole app is organized around three sighting categories. Here&rsquo;s the actual line of code that names them.
+        </p>
+
+<pre><code><span class="code-keyword">const</span> <span class="code-property">CAT_COLORS</span> = [<span class="code-string">'#00ff88'</span>,<span class="code-string">'#ff6622'</span>,<span class="code-string">'#aa44ff'</span>];
+<span class="code-keyword">const</span> <span class="code-property">CAT_NAMES</span> = [<span class="code-string">'UFO/UAP'</span>,<span class="code-string">'Bigfoot/Sasquatch'</span>,<span class="code-string">'Haunted Place'</span>];
+<span class="code-keyword">const</span> <span class="code-property">CAT_RGB</span> = [<span class="code-string">'0,255,136'</span>,<span class="code-string">'255,102,34'</span>,<span class="code-string">'170,68,255'</span>];
+<span class="code-keyword">const</span> <span class="code-property">F</span> = {<span class="code-property">LAT</span>:<span class="code-number">0</span>, <span class="code-property">LON</span>:<span class="code-number">1</span>, <span class="code-property">CAT</span>:<span class="code-number">2</span>, <span class="code-property">DATE</span>:<span class="code-number">3</span>, <span class="code-property">LOC</span>:<span class="code-number">4</span>, <span class="code-property">SUB</span>:<span class="code-number">5</span>, <span class="code-property">DESC</span>:<span class="code-number">6</span>};</code></pre>
+
+        <p>
+          Three categories, three colors. Green is UFO, orange is Bigfoot, purple is Haunted. That last line (<code>F = &hellip;</code>) is a cheat sheet we&rsquo;ll come back to in Module 3 &mdash; it&rsquo;s how the app compresses 258K records into a tiny file.
+        </p>
+      </section>
+
+      <!-- Screen 4: The big idea - it's a pipeline -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The big idea: it&rsquo;s a pipeline</h2>
+        <p>
+          Here is the single most important thing to understand about Strange Signals: it is not one program. It&rsquo;s a <span class="term" data-definition="A sequence of steps where the output of one step becomes the input of the next. Strange Signals&rsquo; data goes through six or seven pipeline stages before it reaches your screen.">pipeline</span> of small programs that each do one job. The map you see is the <em>last</em> step. Everything before it happened on someone else&rsquo;s computer, was saved as a file, and shipped to your browser.
+        </p>
+
+        <p>
+          Walk it step by step. Click <em>Next Step</em> to follow the data from raw <span class="term" data-definition="Comma-Separated Values. A plain-text spreadsheet: one row per line, columns separated by commas. The raw datasets ship as CSVs.">CSV</span> files all the way to the map on your screen.
+        </p>
+
+        <!-- Flow animation -->
+        <div class="flow-animation" id="flow-module1-pipeline" data-steps='[
+          {"highlight":"flow-actor-1","label":"5 public datasets live on GitHub — NUFORC, BFRO, Shadowlands, and two more."},
+          {"highlight":"flow-actor-2","label":"Python downloads them all, strips out junk rows, merges them.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"Then squishes 258,000 records into one compact JSON file."},
+          {"highlight":"flow-actor-3","label":"The file gets saved to disk. This is the expensive part — and it only runs once.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"Your browser downloads that single file.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-4","label":"A Web Worker parses it off the main thread so the page stays responsive."},
+          {"highlight":"flow-actor-5","label":"And the map renders 258K pins.","packet":true,"from":"actor-4","to":"actor-5"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon">CSV</div>
+              <span>Raw CSVs</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon">PY</div>
+              <span>Python Scripts</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon">{ }</div>
+              <span>One Big JSON File</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon">WWW</div>
+              <span>Your Browser</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon">MAP</div>
+              <span>Map View</span>
+            </div>
+          </div>
+
+          <div class="flow-packet" id="flow-packet"></div>
+
+          <div class="flow-step-label" id="flow-label">Click &ldquo;Next Step&rdquo; to walk the pipeline</div>
+
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <p>
+          Two terms worth pausing on. A <span class="term" data-definition="A text format for storing structured data. Think of it as a way to write down a list of records so any computer can read them. The whole dataset is one .json file.">JSON</span> file is just a text file full of records &mdash; the whole <span class="term" data-definition="A collection of records — rows of data. Five different datasets get merged into one here.">dataset</span> is one big one. And a <span class="term" data-definition="A separate thread inside your browser that can do heavy work without freezing the UI. Module 3 covers this in depth — just a quick tooltip for now.">Web Worker</span> is a helper inside your browser that can chew through that file without freezing the page. Module 3 goes deep on the worker; for now, just know it exists.
+        </p>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! The app has no backend.</strong>
+            <p>There is no <span class="term" data-definition="A server that runs code and talks to a database. Strange Signals doesn&rsquo;t have one — everything happens in your browser.">backend</span> server computing anything in real time. The JSON file was pre-computed on someone&rsquo;s laptop, committed to disk, and is served as a <span class="term" data-definition="A file that just sits on disk waiting to be downloaded, unchanged. Like a PDF or an image. Opposite of a dynamic page where the server builds it fresh every time.">static file</span>. Every feature &mdash; filters, correlations, even the AI assistant &mdash; runs on <em>your</em> computer. No server costs, no API downtime, no database. But also: no live data. Every time the datasets update, someone has to rebuild and re-publish the JSON.</p>
+          </div>
+        </div>
+
+        <p>
+          That&rsquo;s the tradeoff worth internalizing. Pre-computed data is fast, cheap, and offline-capable &mdash; but rigid. Live data is flexible but requires a server, a database, and someone to keep it all running. Strange Signals chose the first path. Knowing why helps you make the same call on your own projects.
+        </p>
+      </section>
+
+      <!-- Screen 5: Quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check yourself</h2>
+        <p>
+          Three scenarios. Pick what you&rsquo;d actually think if this happened in your own project.
+        </p>
+
+        <div class="quiz-container" id="quiz-module1">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Exactly. Strange Signals is a static app — once the JSON is downloaded, everything else runs locally in your browser. That&rsquo;s the architecture lesson: no further network calls needed for the core experience."
+               data-explanation-wrong="Close, but not quite the architecture lesson. Caching is certainly possible in general, but the real reason Strange Signals works offline after first load is that the data itself is a single static file — there&rsquo;s no backend or database to reach.">
+            <h3 class="quiz-question">You open Strange Signals on a new laptop at 2am. Your wifi is off. The map still loads and you can click pins. What does that tell you about how the app works?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The app is cached from your last visit.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The map data was downloaded as a single file when the page first loaded &mdash; no further network calls are needed to browse.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Your browser talks to a database on the server.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Right. Because the data is pre-computed, any new dataset has to go through the pipeline (Python scripts) and re-bake the JSON. Only after that does the UI work even apply."
+               data-explanation-wrong="That&rsquo;s only the very last step, and it won&rsquo;t show any data on its own. Pre-computed architectures mean every new dataset has to run through the pipeline first to be baked into the JSON file.">
+            <h3 class="quiz-question">You want to add a 20,000-record dataset of Loch Ness sightings. What kind of work is that?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Add a new button in the UI.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Run the Python pipeline with a new data source, rebuild the JSON, then update the UI.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Deploy a new API endpoint.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-a"
+               data-explanation-right="Good instinct. Since every feature depends on that one JSON file loading correctly, the Network tab is the first place to look. If the file failed to download, nothing &mdash; markers, heatmap, correlation &mdash; will work."
+               data-explanation-wrong="There is no database or server in this app &mdash; everything runs in the browser off a single static file. That&rsquo;s why checking the Network tab (did the file download?) is the right first move.">
+            <h3 class="quiz-question">A user says the correlation view &ldquo;isn&rsquo;t working.&rdquo; You know nothing else. Which tab would you check first in your browser&rsquo;s dev tools?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Network tab &mdash; maybe the big JSON file failed to download.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The database logs.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The server error page.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+        </div>
+
+        <p style="margin-top: var(--space-12);">
+          You just said it out loud: this app is a pipeline, the JSON file is the handoff, and your browser does the rest. Now let&rsquo;s meet the individual characters who make this show run &mdash; every file in the project, what it does, and why it&rsquo;s there.
+        </p>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-2" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Meet the Cast</h1>
+      <p class="module-subtitle">The writers' room behind Strange Signals — who does what, and how they pass notes.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- ================= SCREEN 1 ================= -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Who's the main character?</h2>
+
+        <p>You open the project folder. Nine JavaScript files. Eleven Python files. Three CSS files. A pile of JSON. Nobody has labeled a single one of them "start here."</p>
+
+        <p>Think of this codebase the way you'd think of a TV show's writers' room. Each writer has a specific job — one plots the mystery, one punches up the jokes, one keeps the continuity binder. An episode only works when they collaborate. The files here are the same: each has a role, and the show falls apart if you don't know which one to talk to.</p>
+
+        <p>Here's the cast list, annotated.</p>
+
+        <div class="file-tree">
+          <div class="ft-folder open">
+            <span class="ft-name">strange-signals/</span>
+            <span class="ft-desc">The project root</span>
+            <div class="ft-children">
+              <div class="ft-file">
+                <span class="ft-name">index.html</span>
+                <span class="ft-desc">The director. Loads every other script in order.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">strange-signals.js</span>
+                <span class="ft-desc">The lead. 3,061 lines. The map lives here.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">strange-signals.css</span>
+                <span class="ft-desc">Wardrobe. Colors, fonts, layout.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">parse-worker.js</span>
+                <span class="ft-desc">The stage hand. Runs off-screen so the show doesn't freeze.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">hex-worker.js</span>
+                <span class="ft-desc">The mathematician. Also off-screen.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">ai-assistant.js</span>
+                <span class="ft-desc">SIGNAL. Talks to Claude. Drives the map on command.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">signal-reports.js</span>
+                <span class="ft-desc">The writer who turns findings into HTML reports.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">signal-charts.js</span>
+                <span class="ft-desc">The inline chart artist.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">annotations.js</span>
+                <span class="ft-desc">The user's pin-notes.</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">window-manager.js</span>
+                <span class="ft-desc">The floating panels.</span>
+              </div>
+              <div class="ft-folder">
+                <span class="ft-name">data/</span>
+                <span class="ft-desc">The script — what everyone's reading from</span>
+                <div class="ft-children">
+                  <div class="ft-file">
+                    <span class="ft-name">sightings_map_data.json</span>
+                    <span class="ft-desc">258,000 sightings compressed into one file.</span>
+                  </div>
+                </div>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">build_*.py</span>
+                <span class="ft-desc">The prep crew. Python. Never runs in the browser.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 2 ================= -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The six who carry the show</h2>
+
+        <p>Out of that whole cast, six characters do the heavy lifting. Learn these names and you can point an AI coding assistant at the right file every time.</p>
+
+        <div class="icon-rows">
+
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-1)">D</div>
+            <div>
+              <strong>index.html &mdash; The Director</strong>
+              <p>Loads every other script in order. Holds the nav bar, the sidebar, and the loading screen. Nothing happens until the browser reads this file.</p>
+            </div>
+          </div>
+
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">L</div>
+            <div>
+              <strong>strange-signals.js &mdash; The Lead</strong>
+              <p>Holds all the <span class="term" data-definition="The app's current memory: what's loaded, what's selected, what filters are on. When state changes, the map re-renders.">state</span> (<code>allData</code>, <code>filteredCat</code>, <code>currentView</code>), runs the map, handles every click. Everything flows through here.</p>
+            </div>
+          </div>
+
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-3)">P</div>
+            <div>
+              <strong>parse-worker.js &mdash; The Data Receiver</strong>
+              <p>A separate <span class="term" data-definition="A single lane of execution. Your browser's main thread draws the page and handles clicks. A worker thread runs in parallel — good for heavy math that would otherwise freeze the UI.">thread</span>. Gets the raw JSON, validates it, groups records by category, ships batches back to the Lead.</p>
+            </div>
+          </div>
+
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-4)">H</div>
+            <div>
+              <strong>hex-worker.js &mdash; The Math Thread</strong>
+              <p>Another separate thread. Its only job: count how many sighting points fall inside each hexagon on the hex-density view. Pure math, no visuals.</p>
+            </div>
+          </div>
+
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-5)">A</div>
+            <div>
+              <strong>ai-assistant.js &mdash; The Agent</strong>
+              <p>Talks to Claude's API directly from the browser. Reads user messages, picks tools, executes those tools against the map.</p>
+            </div>
+          </div>
+
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-text-secondary)">Py</div>
+            <div>
+              <strong>build_*.py &mdash; The Offline Prep Crew</strong>
+              <p>Python scripts that run on a developer's laptop long before anything is shipped. They turn raw CSV files into the compact JSON the browser reads. They never run live.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 3 ================= -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">How they pass notes: the bubble trick</h2>
+
+        <p>Here's the architectural idea that matters most. In a writers' room, not every scribbled note on a whiteboard is for public consumption &mdash; most of it is private to one writer. A few deliberate things get taped to the door so anyone can read them.</p>
+
+        <p>Strange Signals does the same thing with an <span class="term" data-definition="Immediately-Invoked Function Expression. A function that runs the instant it's defined. Used here to create a private bubble so variables don't leak into the global page.">IIFE</span>. The entire Lead script is wrapped in a bubble &mdash; a private room. Variables inside stay inside. At the very end of the file, the Lead picks a small set of functions and tapes them to <code>window.StrangeSignals</code> so the other files can reach them.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+<pre><code><span class="code-line">(<span class="code-keyword">function</span>(){</span>
+<span class="code-line"><span class="code-string">'use strict'</span>;</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">/* ========== CONSTANTS ========== */</span></span>
+<span class="code-line"><span class="code-keyword">const</span> CAT_COLORS = [<span class="code-string">'#00ff88'</span>,<span class="code-string">'#ff6622'</span>,<span class="code-string">'#aa44ff'</span>];</span>
+<span class="code-line"><span class="code-keyword">const</span> CAT_NAMES = [<span class="code-string">'UFO/UAP'</span>,<span class="code-string">'Bigfoot/Sasquatch'</span>,<span class="code-string">'Haunted Place'</span>];</span>
+<span class="code-line"><span class="code-keyword">const</span> CAT_RGB = [<span class="code-string">'0,255,136'</span>,<span class="code-string">'255,102,34'</span>,<span class="code-string">'170,68,255'</span>];</span>
+<span class="code-line"><span class="code-keyword">const</span> F={<span class="code-property">LAT</span>:<span class="code-number">0</span>,<span class="code-property">LON</span>:<span class="code-number">1</span>,<span class="code-property">CAT</span>:<span class="code-number">2</span>,<span class="code-property">DATE</span>:<span class="code-number">3</span>,<span class="code-property">LOC</span>:<span class="code-number">4</span>,<span class="code-property">SUB</span>:<span class="code-number">5</span>,<span class="code-property">DESC</span>:<span class="code-number">6</span>};</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">/* ========== STATE ========== */</span></span>
+<span class="code-line"><span class="code-keyword">let</span> allData=[], catArrays=[[],[],[]];</span>
+<span class="code-line"><span class="code-keyword">let</span> filteredCat=[[],[],[]];</span>
+<span class="code-line"><span class="code-keyword">let</span> currentView=<span class="code-string">'markers'</span>;</span>
+</code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>Open a private bubble.</strong> Everything between these parentheses is invisible to the rest of the page.</p>
+              <p class="tl"><strong>Turn on strict mode.</strong> The stricter flavor of JavaScript &mdash; catches silly typos that would otherwise silently misbehave.</p>
+              <p class="tl">Three colors, three names, three RGB strings. Green for UFO, orange for Bigfoot, purple for Haunted. That's the whole visual identity.</p>
+              <p class="tl">A cheat sheet. Each sighting record is a plain array (not an object), so <code>F.LAT</code> is just the number <code>0</code> &mdash; "the first slot in the array is latitude."</p>
+              <p class="tl">An empty list waiting to be filled. By the time the page loads, <code>allData</code> holds 258,000 entries.</p>
+              <p class="tl">Right now the user is looking at the markers view. This flag flips when they click a different nav button.</p>
+            </div>
+          </div>
+        </div>
+
+        <p>That's the private side. Everything above lives inside the bubble and nobody outside can touch it directly. So how does the AI Assistant switch views? How do Annotations read the map? Through one taped-up note at the bottom of the file &mdash; the public API.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+<pre><code><span class="code-line"><span class="code-comment">/* ========== PUBLIC API (for AI assistant) ========== */</span></span>
+<span class="code-line">window.StrangeSignals={</span>
+<span class="code-line">  <span class="code-comment">// Map</span></span>
+<span class="code-line">  <span class="code-property">getMap</span>:()=&gt;map,</span>
+<span class="code-line">  <span class="code-property">setView</span>:setView,</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-comment">// Filters</span></span>
+<span class="code-line">  <span class="code-property">applyFilters</span>:applyFilters,</span>
+<span class="code-line">  <span class="code-property">setFilterValues</span>:(opts)=&gt;{</span>
+<span class="code-line">    <span class="code-keyword">if</span>(opts.yearFrom!=<span class="code-keyword">null</span>)<span class="code-function">document.getElementById</span>(<span class="code-string">'year-from'</span>).value=opts.yearFrom;</span>
+<span class="code-line">    <span class="code-keyword">if</span>(opts.yearTo!=<span class="code-keyword">null</span>)<span class="code-function">document.getElementById</span>(<span class="code-string">'year-to'</span>).value=opts.yearTo;</span>
+<span class="code-line">    <span class="code-keyword">if</span>(opts.state!=<span class="code-keyword">null</span>)<span class="code-function">document.getElementById</span>(<span class="code-string">'state-filter'</span>).value=opts.state;</span>
+<span class="code-line">    ...</span>
+</code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>Open the bubble to the outside world &mdash; but only for these specific things.</strong> <code>window.StrangeSignals</code> is the <span class="term" data-definition="A container for names so they don't collide. window.StrangeSignals is a namespace — all the map's public functions live inside it instead of on the bare window.">namespace</span> everyone else uses to talk to the Lead.</p>
+              <p class="tl">Give anyone who asks a reference to the <span class="term" data-definition="A JavaScript library for interactive maps. It handles the map tiles, zoom, pan, and pin drawing. Strange Signals builds on top of it.">Leaflet</span> map object. Ask politely, receive the map.</p>
+              <p class="tl">Expose the function that switches between markers, heatmap, hex, and correlation views.</p>
+              <p class="tl">Expose the function that re-runs every filter across the dataset.</p>
+              <p class="tl">A shortcut the AI uses to poke the actual form inputs. When SIGNAL wants to filter 1990&ndash;2005, it calls <code>setFilterValues({yearFrom: 1990, yearTo: 2005})</code> and this function types it into the sidebar for it.</p>
+              <p class="tl">This is the handshake. The AI Assistant says <code>SS.setView('hexbin')</code> and the map changes. No imports. No requires. Just a shared note taped to the door.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! This is how files communicate without imports.</strong>
+            <p>Modern web apps use <span class="term" data-definition="The modern way JavaScript files share code — one file says 'export foo', another says 'import { foo } from ./file.js'. This app doesn't use them; it uses the shared window object instead.">import/export</span> syntax to share code between files. Zero-build apps like Strange Signals skip that entirely and use the shared <code>window</code> object as their <span class="term" data-definition="The shared pool of names that every script on a page can see. In this app, all scripts write their public stuff to window.* — one shared whiteboard.">global namespace</span>. Older, simpler, and every script on the page shares one giant whiteboard.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 4: DND ================= -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Match the job to the writer</h2>
+
+        <p>Drag each file name onto the job description that fits it. If you've read the last three screens, this should feel like casting the pilot episode.</p>
+
+        <div class="dnd-container" id="dnd-module2">
+          <div class="dnd-chips">
+            <div class="dnd-chip" draggable="true" data-answer="ss-js">strange-signals.js</div>
+            <div class="dnd-chip" draggable="true" data-answer="parse">parse-worker.js</div>
+            <div class="dnd-chip" draggable="true" data-answer="hex">hex-worker.js</div>
+            <div class="dnd-chip" draggable="true" data-answer="ai">ai-assistant.js</div>
+            <div class="dnd-chip" draggable="true" data-answer="index">index.html</div>
+          </div>
+
+          <div class="dnd-zones">
+            <div class="dnd-zone" data-correct="ss-js">
+              <p class="dnd-zone-label">Holds the list of 258,000 sightings in memory.</p>
+              <div class="dnd-zone-target">Drop here</div>
+            </div>
+            <div class="dnd-zone" data-correct="parse">
+              <p class="dnd-zone-label">Runs in a background thread so parsing doesn't freeze the page.</p>
+              <div class="dnd-zone-target">Drop here</div>
+            </div>
+            <div class="dnd-zone" data-correct="hex">
+              <p class="dnd-zone-label">Counts points inside hexagons without blocking the UI.</p>
+              <div class="dnd-zone-target">Drop here</div>
+            </div>
+            <div class="dnd-zone" data-correct="ai">
+              <p class="dnd-zone-label">Sends messages to Claude and executes the tools Claude picks.</p>
+              <div class="dnd-zone-target">Drop here</div>
+            </div>
+            <div class="dnd-zone" data-correct="index">
+              <p class="dnd-zone-label">The very first file the browser loads &mdash; wires all the others together.</p>
+              <div class="dnd-zone-target">Drop here</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap: var(--space-3); margin-top: var(--space-4);">
+            <button class="btn" onclick="checkDnD('dnd-module2')">Check Matches</button>
+            <button class="btn" onclick="resetDnD('dnd-module2')">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 5: QUIZ ================= -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Pilot episode pop quiz</h2>
+
+        <p>Three scenarios. Each tests whether you can point an AI at the right actor in the writers' room.</p>
+
+        <div class="quiz-container" id="quiz-module2">
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Exactly. Layer behavior — when things pulsate, fade, or glow in response to state — lives with the layer logic itself. That's the Lead file. CSS could do a static pulse animation, but the 'when it's selected' part is behavioral state that only the Lead knows about."
+               data-explanation-wrong="Not quite. 'Pulsate when selected' is behavior over time that depends on which layer is currently selected — which is state the Lead file manages. CSS can animate, but it can't know what the user picked. The structure file (index.html) and the background thread (parse-worker.js) don't touch visuals at all.">
+            <h3 class="quiz-question">You ask AI to "make the 'bigfoot' layer pulsate when it's selected." Which file is the right place to send AI to?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span><code>index.html</code> &mdash; structure is defined here</span>
+              </button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span><code>strange-signals.css</code> &mdash; animations are styling</span>
+              </button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span><code>strange-signals.js</code> &mdash; layer state and behavior live here</span>
+              </button>
+              <button class="quiz-option" data-value="d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span><code>parse-worker.js</code> &mdash; it handles the data</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Right. Typing into the console is exactly like any other outside file calling into the Lead — you're just another voice in the writers' room. The fact that it worked proves setView got deliberately taped to window.StrangeSignals. If it weren't exposed, the console wouldn't see it either."
+               data-explanation-wrong="Not quite. The console has no magic — it runs JavaScript in the same scope as everything else on the page. It can only see things the bubble has chosen to expose. There's no hidden backend here; Strange Signals is a static-file app with no server.">
+            <h3 class="quiz-question">You open the browser console and type <code>StrangeSignals.setView('heatmap')</code>. The view changes. What does that prove about the app?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>That the view logic is deliberately open to the outside world via <code>window.StrangeSignals</code>.</span>
+              </button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>That the console is privileged and can bypass the bubble.</span>
+              </button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>That there's a hidden backend endpoint being called.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Exactly. setFilterValues is the handshake point — the one taped-to-the-door note that lets the AI touch filters. If the AI is trying and nothing happens, either it's not calling that function, or the function isn't receiving the shape of input it expects. That's always where the bug lives in a zero-build, window-based app."
+               data-explanation-wrong="Not quite. The Python pipeline already ran — it built the JSON months ago and doesn't run in the browser at all. And CSS couldn't block a filter from applying; it only styles things. When the AI talks to the map, it goes through the public API on window.StrangeSignals. Start there.">
+            <h3 class="quiz-question">A bug: when the AI tries to apply a year filter, nothing happens. Where would you look first?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The <code>setFilterValues</code> function exposed on <code>window.StrangeSignals</code> &mdash; is it actually being called?</span>
+              </button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The Python build pipeline &mdash; the data might be wrong.</span>
+              </button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The CSS file &mdash; maybe something is hidden visually.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div style="display:flex; gap: var(--space-3); margin-top: var(--space-4);">
+            <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Check Answers</button>
+            <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Try Again</button>
+          </div>
+        </div>
+
+        <p style="margin-top: var(--space-10); color: var(--color-text-secondary);">Now that you know who the cast is, the next module watches them do the opening scene: loading 258,000 records into the browser without freezing the page.</p>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-3" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">The Pipeline</h1>
+      <p class="module-subtitle">From five scattered CSVs to 258,000 pins in your browser — without freezing the page.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1 — The journey in one picture -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The journey, in one picture</h2>
+
+        <p>The dataset for this app is 258,000 records. A naive <span class="term" data-definition="JavaScript Object Notation — a plain-text format for storing data. It's the default way data moves between a server and a browser.">JSON</span> file of all of them is around 70 MB. Dropped raw onto a page, you'd stare at a frozen tab for half a minute. Strange Signals loads it in a handful of seconds, and the page never freezes — even during parsing.</p>
+
+        <p>Think of it like a shipping warehouse the week before a holiday sale. Goods arrive from five different suppliers in five different formats. They get sorted, labeled, packed efficiently, loaded onto one truck, and delivered. Then a helper on the receiving end unloads the truck in the background — the shopkeeper never has to stop serving customers.</p>
+
+        <div class="flow-animation animate-in" id="flow-module3-journey" data-steps='[
+          {"highlight":"flow-actor-1","label":"Five Raw CSVs arrive from five sources: NUFORC, BFRO detailed, BFRO locations, Shadowlands haunted places, and UFO planetsig. Each one uses a different column layout."},
+          {"highlight":"flow-actor-1","label":"The developer runs setup_sightings.sh. Python fetches every CSV onto a laptop.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"Python merges, cleans, and dedupes the five files. Around 258,000 usable records survive."},
+          {"highlight":"flow-actor-2","label":"Records get written as compact arrays — [lat, lon, cat, date, ...] — with no field names repeated per row.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-3","label":"One big JSON file sits in the repo, ready to ship."},
+          {"highlight":"flow-actor-3","label":"You open the page. The browser downloads the single JSON file.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-4","label":"Main thread hands the raw bytes straight to the Parse Worker. Its hands are free again.","packet":true,"from":"actor-4","to":"actor-5"},
+          {"highlight":"flow-actor-5","label":"Worker decodes, validates, and sorts records into three category buckets."},
+          {"highlight":"flow-actor-6","label":"Worker ships results to the Main Thread in 5,000-record batches. The map stays responsive the whole time.","packet":true,"from":"actor-5","to":"actor-6"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon" style="background: var(--color-actor-4)">CSV</div>
+              <span>Five Raw CSVs</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon" style="background: var(--color-actor-5)">PY</div>
+              <span>Python Scripts</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon" style="background: var(--color-actor-3)">{ }</div>
+              <span>One Big JSON File</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon" style="background: var(--color-actor-2)">GET</div>
+              <span>Browser Fetch</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon" style="background: var(--color-actor-1)">W</div>
+              <span>Parse Worker</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-6">
+              <div class="flow-actor-icon" style="background: var(--color-actor-1)">M</div>
+              <span>Main Thread</span>
+            </div>
+          </div>
+
+          <div class="flow-packet" id="flow-packet"></div>
+
+          <div class="flow-step-label" id="flow-label">Click "Next Step" to follow a record from spreadsheet to screen.</div>
+
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">i</div>
+          <div class="callout-content">
+            <strong class="callout-title">The punchline</strong>
+            <p>The first five stops all happen on a developer's laptop <em>before</em> the app is ever shipped. Only the last two — downloading the JSON and parsing it — happen on your machine.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2 — Compact arrays -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Trick #1: the packing trick</h2>
+
+        <p>Imagine labeling every single box in the warehouse with the words <em>"this is a box"</em> on all six sides. Useful? No. Wasteful? Absolutely. That's what a verbose JSON record does — it repeats the column names on every single row.</p>
+
+        <p>With 258,000 records, repeating <code>"latitude"</code> and <code>"longitude"</code> and <code>"category"</code> over and over adds up to many megabytes of dead weight. So this app strips the labels and stores every record as a plain list, knowing the code on the other end can figure out the order.</p>
+
+        <div class="pattern-cards">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-error)">
+            <div class="pattern-icon" style="background: var(--color-error)">A</div>
+            <h4 class="pattern-title">Verbose (what most AI writes first)</h4>
+            <pre style="background: var(--color-bg-code); color: #CDD6F4; padding: var(--space-3); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: var(--text-xs); line-height: 1.6; white-space: pre-wrap; word-break: break-word;">{ "latitude": 39.12,
+  "longitude": -84.56,
+  "category": "UFO/UAP",
+  "date": "2020-01-15",
+  "location": "Cincinnati, OH" }</pre>
+            <p class="pattern-desc">Every column name written out every time. Clear to read, huge on disk.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-success)">
+            <div class="pattern-icon" style="background: var(--color-success)">B</div>
+            <h4 class="pattern-title">Compact (what Strange Signals does)</h4>
+            <pre style="background: var(--color-bg-code); color: #CDD6F4; padding: var(--space-3); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: var(--text-xs); line-height: 1.6; white-space: pre-wrap; word-break: break-word;">[39.12, -84.56, 0,
+ "2020-01-15",
+ "Cincinnati, OH",
+ "triangle",
+ "Bright light..."]</pre>
+            <p class="pattern-desc">A plain list. Position 0 is always latitude. Position 1 is always longitude. Roughly half the file size.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! Array positions are the column names.</strong>
+            <p>The code knows <code>position 0 = lat</code>, <code>position 1 = lon</code>, <code>position 2 = category</code>. The <code>F = {LAT:0, LON:1, ...}</code> cheat sheet from Module 2 is exactly what reads these lists. The column names live in <em>one</em> place — in the code — not 258,000 times on disk.</p>
+          </div>
+        </div>
+
+        <h3 style="font-family: var(--font-display); font-size: var(--text-xl); margin-top: var(--space-10);">How the packing actually happens</h3>
+
+        <p>Here's the Python that does the squeezing. It runs once, on the developer's laptop, when the data pipeline rebuilds.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-comment"># Build records as list of lists (vectorized via itertuples — 10x faster than iterrows)</span></span>
+<span class="code-line">records = []</span>
+<span class="code-line"><span class="code-keyword">for</span> r <span class="code-keyword">in</span> df.itertuples(index=<span class="code-keyword">False</span>):</span>
+<span class="code-line">    records.append([</span>
+<span class="code-line">        <span class="code-function">float</span>(r.latitude),</span>
+<span class="code-line">        <span class="code-function">float</span>(r.longitude),</span>
+<span class="code-line">        <span class="code-function">int</span>(r.cat),</span>
+<span class="code-line">        r.date_str <span class="code-keyword">if</span> r.date_str != <span class="code-string">"nan"</span> <span class="code-keyword">else</span> <span class="code-string">""</span>,</span>
+<span class="code-line">        r.loc,</span>
+<span class="code-line">        r.sub <span class="code-keyword">if</span> r.sub != <span class="code-string">"nan"</span> <span class="code-keyword">else</span> <span class="code-string">""</span>,</span>
+<span class="code-line">        r.desc <span class="code-keyword">if</span> r.desc != <span class="code-string">"nan"</span> <span class="code-keyword">else</span> <span class="code-string">""</span>,</span>
+<span class="code-line">    ])</span>
+<span class="code-line"></span>
+<span class="code-line">output = {</span>
+<span class="code-line">    <span class="code-string">"categories"</span>: [<span class="code-string">"UFO/UAP"</span>, <span class="code-string">"Bigfoot/Sasquatch"</span>, <span class="code-string">"Haunted Place"</span>],</span>
+<span class="code-line">    <span class="code-string">"fields"</span>: [<span class="code-string">"lat"</span>, <span class="code-string">"lon"</span>, <span class="code-string">"cat"</span>, <span class="code-string">"date"</span>, <span class="code-string">"location"</span>, <span class="code-string">"subcategory"</span>, <span class="code-string">"description"</span>],</span>
+<span class="code-line">    <span class="code-string">"data"</span>: records,</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Start with an empty list. Every sighting in the warehouse gets added to it.</p>
+              <p class="tl">Walk every row of the cleaned <span class="term" data-definition="Pandas is a Python library for working with tables of data. A DataFrame is its table type — rows and columns, a bit like a spreadsheet in memory.">DataFrame</span> one at a time. Using <span class="term" data-definition="Doing an operation on a whole column at once instead of one row at a time. Much faster than looping — the comment says it's about 10x quicker here.">vectorized</span> iteration makes this pass fast.</p>
+              <p class="tl">For each row, throw away the column names. Keep the values in a fixed order: latitude, longitude, category code, date, location, subcategory, description.</p>
+              <p class="tl">Empty strings replace missing values so downstream code never has to check for "nan".</p>
+              <p class="tl">Wrap the giant list in a tiny header that tells the browser what each position means. This header is the decoder ring — <code>fields[0]</code> is <code>"lat"</code>, so <code>data[i][0]</code> is the latitude of record i.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3 — The Parse Worker -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Trick #2: the unfreeze trick</h2>
+
+        <p>Back to the warehouse. Your <span class="term" data-definition="The single thread that draws your page, handles clicks, and runs most JavaScript. If it gets busy, the whole user interface freezes.">main thread</span> is the shopkeeper at the counter. Smiling at customers. Ringing things up. If the shopkeeper personally unloads the delivery truck, every customer waits while they sweat through 258,000 boxes.</p>
+
+        <p>So you hire a dock worker — a <span class="term" data-definition="A background thread in your browser. Module 2 introduced them; here's one in action, doing the heavy parsing work without blocking the UI.">Web Worker</span>. They open the truck around back, sort the pallets into three bins (UFO, Bigfoot, Haunted), and pass finished boxes up to the counter in small batches. The shopkeeper keeps smiling. Nobody notices the unloading.</p>
+
+        <div class="icon-rows">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-5)">1</div>
+            <div>
+              <strong>Validate and categorize in one pass</strong>
+              <p>The worker throws out any record with a bad latitude, longitude, or category code — and groups the survivors into three lists (one per category).</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">2</div>
+            <div>
+              <strong>Ship results in 5,000-record batches</strong>
+              <p>Each small chunk crosses the thread boundary via <span class="term" data-definition="The only way a Web Worker and the main thread can talk. They can't share variables — they shove data back and forth with postMessage.">postMessage</span>. Small chunks copy fast. A giant blob would cause a visible hiccup on the main thread.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="font-family: var(--font-display); font-size: var(--text-xl); margin-top: var(--space-10);">The entire worker, in 30 lines</h3>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-comment">// Web Worker: decode, parse, validate, categorize — all off main thread.</span></span>
+<span class="code-line"><span class="code-comment">// Sends results back in small batches so the main thread never blocks on structured clone.</span></span>
+<span class="code-line">self.onmessage=<span class="code-keyword">function</span>(e){</span>
+<span class="code-line">  <span class="code-keyword">try</span>{</span>
+<span class="code-line">    <span class="code-keyword">const</span> text=<span class="code-keyword">new</span> <span class="code-function">TextDecoder</span>().<span class="code-function">decode</span>(e.data);</span>
+<span class="code-line">    <span class="code-keyword">const</span> json=JSON.<span class="code-function">parse</span>(text);</span>
+<span class="code-line">    <span class="code-keyword">const</span> raw=json.data;</span>
+<span class="code-line">    <span class="code-keyword">if</span>(!Array.<span class="code-function">isArray</span>(raw)||!raw.length){</span>
+<span class="code-line">      self.<span class="code-function">postMessage</span>({<span class="code-property">type</span>:<span class="code-string">'error'</span>,<span class="code-property">error</span>:<span class="code-string">'Invalid or empty data'</span>});</span>
+<span class="code-line">      <span class="code-keyword">return</span>;</span>
+<span class="code-line">    }</span>
+<span class="code-line">    <span class="code-comment">// Filter + categorize in one pass</span></span>
+<span class="code-line">    <span class="code-keyword">const</span> cats=[[],[],[]];</span>
+<span class="code-line">    <span class="code-keyword">for</span>(<span class="code-keyword">let</span> i=<span class="code-number">0</span>;i&lt;raw.length;i++){</span>
+<span class="code-line">      <span class="code-keyword">const</span> r=raw[i];</span>
+<span class="code-line">      <span class="code-keyword">if</span>(!Array.<span class="code-function">isArray</span>(r)||r.length&lt;<span class="code-number">7</span>)<span class="code-keyword">continue</span>;</span>
+<span class="code-line">      <span class="code-keyword">if</span>(<span class="code-keyword">typeof</span> r[<span class="code-number">0</span>]!==<span class="code-string">'number'</span>||<span class="code-function">isNaN</span>(r[<span class="code-number">0</span>]))<span class="code-keyword">continue</span>;</span>
+<span class="code-line">      <span class="code-keyword">if</span>(<span class="code-keyword">typeof</span> r[<span class="code-number">1</span>]!==<span class="code-string">'number'</span>||<span class="code-function">isNaN</span>(r[<span class="code-number">1</span>]))<span class="code-keyword">continue</span>;</span>
+<span class="code-line">      <span class="code-keyword">if</span>(r[<span class="code-number">2</span>]&lt;<span class="code-number">0</span>||r[<span class="code-number">2</span>]&gt;<span class="code-number">2</span>)<span class="code-keyword">continue</span>;</span>
+<span class="code-line">      cats[r[<span class="code-number">2</span>]].<span class="code-function">push</span>(r);</span>
+<span class="code-line">    }</span>
+<span class="code-line">    <span class="code-keyword">const</span> total=cats[<span class="code-number">0</span>].length+cats[<span class="code-number">1</span>].length+cats[<span class="code-number">2</span>].length;</span>
+<span class="code-line">    <span class="code-comment">// Send back in small batches to avoid structured clone blocking main thread</span></span>
+<span class="code-line">    <span class="code-keyword">const</span> BATCH=<span class="code-number">5000</span>;</span>
+<span class="code-line">    <span class="code-keyword">for</span>(<span class="code-keyword">let</span> cat=<span class="code-number">0</span>;cat&lt;<span class="code-number">3</span>;cat++){</span>
+<span class="code-line">      <span class="code-keyword">for</span>(<span class="code-keyword">let</span> i=<span class="code-number">0</span>;i&lt;cats[cat].length;i+=BATCH){</span>
+<span class="code-line">        self.<span class="code-function">postMessage</span>({<span class="code-property">type</span>:<span class="code-string">'batch'</span>,<span class="code-property">cat</span>:cat,<span class="code-property">records</span>:cats[cat].<span class="code-function">slice</span>(i,i+BATCH)});</span>
+<span class="code-line">      }</span>
+<span class="code-line">    }</span>
+<span class="code-line">    self.<span class="code-function">postMessage</span>({<span class="code-property">type</span>:<span class="code-string">'done'</span>,<span class="code-property">total</span>:total});</span>
+<span class="code-line">  }<span class="code-keyword">catch</span>(err){</span>
+<span class="code-line">    self.<span class="code-function">postMessage</span>({<span class="code-property">type</span>:<span class="code-string">'error'</span>,<span class="code-property">error</span>:err.message});</span>
+<span class="code-line">  }</span>
+<span class="code-line">};</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">This worker sits quietly and waits for the main thread to hand it a file. When that happens, this function runs.</p>
+              <p class="tl">Turn the raw <span class="term" data-definition="Raw file content before it's been interpreted as text. A fetched file arrives as bytes; TextDecoder turns them into a string.">bytes</span> into text, then turn the text into a JavaScript object.</p>
+              <p class="tl">Sanity check: is there actually data here? If not, send an error back and bail out.</p>
+              <p class="tl">Three empty buckets — one per category (UFO, Bigfoot, Haunted).</p>
+              <p class="tl">Walk every record. Skip the broken ones: wrong shape, bad latitude, bad longitude, or a category code outside 0 through 2.</p>
+              <p class="tl">Drop each valid record into the bucket named by its category code. All three buckets fill up in a single pass.</p>
+              <p class="tl">Now ship results back — 5,000 records at a time.</p>
+              <p class="tl">Each chunk is small enough that the browser's <span class="term" data-definition="The browser's process for deep-copying data from one thread to another. It's fast, but copying a very large blob can still pause things — which is why this app sends 5,000-record chunks instead.">structured clone</span> copy is invisible to the user.</p>
+              <p class="tl">When the last batch is out the door, send a "done" message with the final tally.</p>
+              <p class="tl">If anything blew up, send the error back to the main thread instead of crashing silently.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4 — The main thread's job -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">What the main thread actually does</h2>
+
+        <p>Now that the worker is doing the heavy lifting, the shopkeeper's job is almost embarrassingly small: receive a box, drop it in the right bin, update the progress bar, smile at the next customer. Repeat.</p>
+
+        <div class="step-cards">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>A batch message arrives</strong>
+              <p>The worker calls <code>postMessage({type:'batch', cat:0, records:[...5000 records...]})</code>. The main thread's listener wakes up for a fraction of a second.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Append to the right bucket</strong>
+              <p>The main thread has three arrays in memory: <code>catArrays[0]</code> (UFO), <code>catArrays[1]</code> (Bigfoot), <code>catArrays[2]</code> (Haunted). It pushes the batch onto the one matching <code>cat</code>. That's it.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Nudge the progress bar, then back to idle</strong>
+              <p>The UI updates. The main thread returns to its normal duties — handling clicks, scrolls, and redraws — until the next batch lands.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>"done" arrives, the map draws</strong>
+              <p>When the worker signals completion, the main thread kicks off the rendering pipeline — which is Module 4's whole job.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="font-family: var(--font-display); font-size: var(--text-xl); margin-top: var(--space-10);">Two tricks every big-data browser app should use</h3>
+
+        <div class="pattern-cards">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">{ }</div>
+            <h4 class="pattern-title">Compact array format</h4>
+            <p class="pattern-desc">Store records as plain lists, not objects with repeated keys. Half the file size. The field-order header is your decoder ring.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">W</div>
+            <h4 class="pattern-title">Web Worker + batched postMessage</h4>
+            <p class="pattern-desc">Parse and validate off the main thread. Ship results back in small chunks so the copy across threads is never a visible hiccup.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Why this matters when you're using AI</strong>
+            <p>Ask AI to "load a big JSON file in the browser" and by default it'll hand you <code><span class="term" data-definition="The browser's built-in way to download a file from a URL. fetch(url) returns a promise that resolves when the file arrives.">fetch</span>(url).then(r =&gt; r.json())</code> on the main thread — which freezes the UI for big files. Now you know the names to ask for: <em>compact array format</em> and <em>parse it in a Web Worker with batched postMessage</em>. That vocabulary is the difference between a snappy app and a frozen tab.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5 — Quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your intuition</h2>
+        <p>Three scenarios. None of them are about memorizing file names — they're about what you'd actually do when you run into these situations in your own projects.</p>
+
+        <div class="quiz-container" id="quiz-module3">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Exactly. A 50 MB JSON file parses fine memory-wise, but JSON.parse on the main thread is synchronous — it grabs the CPU and holds it. The page freezes for a second or two while it runs. The fix is to move parsing into a Web Worker and stream results back in batches, just like Strange Signals does."
+               data-explanation-wrong="Think about which part of loading a big file hurts the user experience. 50 MB isn't huge for modern memory, and fetch doesn't corrupt files. The real pain is elsewhere — what part of the process has to run in one uninterrupted blocking step?">
+            <h3 class="quiz-question">You ask AI to load a 50 MB JSON file of product listings into your e-commerce site. It writes <code>const data = await fetch(url).then(r =&gt; r.json());</code> on the main thread. What's the actual risk?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The browser will run out of memory and crash.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Parsing a file that big on the main thread will freeze the UI for a second or two.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The file will be corrupted in transit.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Right. With 258,000 records, writing out the word 'latitude' 258,000 times would add several megabytes of field-name text that carries no information. The compact format stores the column order once in a header and then stores each record as a bare list. Same data, roughly half the bytes."
+               data-explanation-wrong="Parse speed is a nice side benefit but not the main reason. And objects with keys absolutely work in JSON — that's the most common JSON shape. The core motivation is much more concrete: what's getting repeated 258,000 times in the verbose version that doesn't need to be?">
+            <h3 class="quiz-question">Why does the JSON file store records as <code>[39.12, -84.56, 0, ...]</code> instead of <code>{lat: 39.12, lon: -84.56, cat: 0, ...}</code>?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Arrays are faster to parse than objects.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It's smaller on disk and over the wire — field names aren't repeated 258,000 times.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Objects with keys don't work in JSON.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-a"
+               data-explanation-right="Yes — this is defensive programming. The category code should always be 0, 1, or 2. If a record somehow has a category of 5 (corrupted data, a bug upstream, a future category that wasn't added to the UI yet), this line quietly drops it rather than crashing the map. Silent filtering like this is common at trust boundaries between systems."
+               data-explanation-wrong="Location filtering happens much earlier — the Python pipeline handles geography. And deduplication also happens in Python, before this JSON is ever written. This single line is doing something much narrower: a sanity check on a specific field to keep bad data from reaching the map.">
+            <h3 class="quiz-question">The parse worker validates <code>if (r[2] &lt; 0 || r[2] &gt; 2) continue;</code> — what does this actually guard against?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Records with a category code that isn't 0 (UFO), 1 (Bigfoot), or 2 (Haunted) get silently dropped.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Records from outside the United States get filtered out.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Duplicate records get removed.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
+        </div>
+
+        <div class="callout callout-info" style="margin-top: var(--space-12);">
+          <div class="callout-icon">&rarr;</div>
+          <div class="callout-content">
+            <strong class="callout-title">Coming up in Module 4</strong>
+            <p>The pins are in memory. Drawing all 258,000 at once on a map would crash a mid-range laptop. Next up: how the app gets away with it — clustering, viewport culling, and the rendering tricks that make it feel instant.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-4" style="background: var(--color-bg);">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">Rendering 258K Pins Fast</h1>
+      <p class="module-subtitle">A stage magician's repertoire — six tricks that keep the page feeling instant.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- ===================== SCREEN 1 ===================== -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The problem of the frozen page</h2>
+
+        <p>Your browser has <em>one</em> painter. One. Every pixel on the page — the pins, the popup, the sidebar charts, the animated loading text — is drawn by the same single worker. Ask it to place 258,000 pins at once and it stops answering the door for ten seconds. The page freezes, the cursor stalls, clicks are ignored.</p>
+
+        <p>Modern web apps don't get around this by being <em>clever</em> with the paint. They get around it by never asking for more than the painter can handle at once. The <span class="term" data-definition="The one lane your browser uses to draw the page, handle clicks, run JavaScript, and animate things. If you hog it, everything freezes.">main thread</span> is a single lane — the trick is to never block it for long.</p>
+
+        <p>A stage magician doesn't <em>actually</em> saw the assistant in half. They make you look at the left hand while the right hand does the work. Strange Signals uses six such tricks — none of them drawing faster, all of them hiding the work.</p>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">*</div>
+          <div class="callout-content">
+            <strong class="callout-title">The timeline picture</strong>
+            <p style="margin: 0;">One unbroken 10-second render = a frozen gray zone. <strong>52 batches of 5,000</strong> with a breath in between = the page stays alive the whole time. Same total work. Totally different feel.</p>
+          </div>
+        </div>
+
+        <div class="flow-steps" style="margin-top: var(--space-8);">
+          <div class="flow-step">
+            <div class="flow-step-num" style="background: #9E9790;">!</div>
+            <p><strong>Naive:</strong> click &rarr; 10s frozen screen &rarr; all pins</p>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="flow-step-num">OK</div>
+            <p><strong>Batched:</strong> click &rarr; 52 tiny slices with gaps &rarr; all pins</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SCREEN 2 ===================== -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Trick #1 — Batched rendering</h2>
+
+        <p>The first illusion is the showpiece. <code>renderMarkers</code> loops over 258K records, but it only creates <strong>5,000</strong> markers at a time. Then it calls <code>setTimeout(addBatch, 0)</code> — a polite way of saying <em>"do this next, but not right now."</em></p>
+
+        <p>That tiny gap is the whole trick. In it, the browser gets a turn to paint a frame, handle a click, let the <span class="term" data-definition="The browser's scheduler. It picks one task at a time off a queue — a click, a timer, a paint — runs it to completion, then picks the next.">event loop</span> breathe. Then our next slice runs. Repeat 52 times. The user sees pins appear in pulses instead of waiting in the dark.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+<pre><code><span class="code-line"><span class="code-keyword">let</span> markerRenderGen=<span class="code-number">0</span>;</span>
+<span class="code-line"><span class="code-keyword">function</span> <span class="code-function">renderMarkers</span>(){</span>
+<span class="code-line">  <span class="code-keyword">const</span> myGen=++markerRenderGen;</span>
+<span class="code-line">  <span class="code-keyword">const</span> BATCH=<span class="code-number">5000</span>;</span>
+<span class="code-line">  <span class="code-keyword">for</span>(<span class="code-keyword">let</span> i=<span class="code-number">0</span>;i&lt;<span class="code-number">3</span>;i++){</span>
+<span class="code-line">    <span class="code-keyword">if</span>(!filteredCat[i].length)<span class="code-keyword">continue</span>;</span>
+<span class="code-line">    <span class="code-keyword">const</span> group=<span class="code-function">createCluster</span>(i);</span>
+<span class="code-line">    <span class="code-keyword">const</span> data=filteredCat[i];</span>
+<span class="code-line">    <span class="code-keyword">let</span> idx=<span class="code-number">0</span>;</span>
+<span class="code-line">    <span class="code-keyword">function</span> <span class="code-function">addBatch</span>(){</span>
+<span class="code-line">      <span class="code-keyword">if</span>(markerRenderGen!==myGen)<span class="code-keyword">return</span>; <span class="code-comment">// stale render — abort</span></span>
+<span class="code-line">      <span class="code-keyword">const</span> end=<span class="code-function">Math.min</span>(idx+BATCH,data.length);</span>
+<span class="code-line">      <span class="code-keyword">const</span> batch=[];</span>
+<span class="code-line">      <span class="code-keyword">for</span>(;idx&lt;end;idx++)batch.<span class="code-function">push</span>(<span class="code-function">createMarker</span>(data[idx]));</span>
+<span class="code-line">      group.<span class="code-function">addLayers</span>(batch);</span>
+<span class="code-line">      <span class="code-keyword">if</span>(idx&lt;data.length)<span class="code-function">setTimeout</span>(addBatch,<span class="code-number">0</span>);</span>
+<span class="code-line">    }</span>
+<span class="code-line">    <span class="code-function">addBatch</span>();</span>
+<span class="code-line">    group.<span class="code-function">addTo</span>(map);</span>
+<span class="code-line">    clusterGroups[i]=group;</span>
+<span class="code-line">  }</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A counter that ticks up every time a render starts. It lives outside the function so it survives between renders.</p>
+              <p class="tl">The entry point. This is what runs when the user clicks "Markers."</p>
+              <p class="tl">Capture <em>my</em> number before I start work. If a newer render comes in, it'll bump the counter past mine — and I'll know to bow out.</p>
+              <p class="tl">Do 5,000 markers per slice. Picked empirically: big enough that the loop overhead is negligible, small enough that one slice finishes in a few milliseconds.</p>
+              <p class="tl">Loop over the three categories (UFO, Bigfoot, Haunted). Skip any that have no filtered data.</p>
+              <p class="tl">Set up a Leaflet cluster group to hold this category's pins.</p>
+              <p class="tl">The inner worker function. This is the one that gets called over and over.</p>
+              <p class="tl"><strong>Am I stale?</strong> If someone newer has started, abandon the rest of my work immediately. No cleanup needed.</p>
+              <p class="tl">Grab the next 5,000 markers (or whatever's left).</p>
+              <p class="tl">Build them into a temporary array, then add them all at once — one <span class="term" data-definition="The browser's tree of HTML elements. Cheap up to a few thousand nodes; expensive past that because the browser has to track every one.">DOM</span> touch instead of 5,000.</p>
+              <p class="tl">Still more to do? Queue up the next batch with <span class="term" data-definition="A JavaScript function that means 'run this later.' setTimeout(fn, 0) is a trick: it means 'run this ASAP, but not right now — put it at the back of the queue so other waiting tasks get their turn.'"><code>setTimeout</code></span>. The <code>0</code> means "right after the browser catches up on everything else."</p>
+              <p class="tl">Kick it off the first time, attach the cluster to the map, and stash a reference so we can remove it later.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SCREEN 3 ===================== -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Screen 3 — The other five tricks</h2>
+
+        <p>Batching is just one illusion in the magician's bag. The rest of the app leans on five more, each suited to a different kind of heavy lifting. Learn their names — the next time an AI-built app feels janky, you'll know which one to ask for.</p>
+
+        <div class="pattern-cards" style="margin-top: var(--space-8);">
+
+          <div class="pattern-card" style="border-top: 3px solid var(--color-accent);">
+            <div class="pattern-icon" style="background: var(--color-accent);">1</div>
+            <h4 class="pattern-title">Batched rendering</h4>
+            <p class="pattern-desc"><strong>What:</strong> Chop a big loop into 5,000-item slices with a <code>setTimeout</code> between each.</p>
+            <p class="pattern-desc"><strong>When to ask for it:</strong> any loop over 10K+ items that runs on the main thread.</p>
+          </div>
+
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2);">
+            <div class="pattern-icon" style="background: var(--color-actor-2);">2</div>
+            <h4 class="pattern-title">Spatial index <span class="term" data-definition="A stored result of an expensive computation, keyed by its inputs. If the same inputs come in again, return the stored result instead of recomputing.">caching</span></h4>
+            <p class="pattern-desc"><strong>What:</strong> Build an expensive <span class="term" data-definition="A data structure that groups points by their location so 'find nearby points' is fast. In this app, a simple grid-cell lookup.">spatial index</span> once, reuse it on every hover and recount.</p>
+            <p class="pattern-desc"><strong>When to ask for it:</strong> the same input keeps being asked the same question (hover-hover-hover).</p>
+          </div>
+
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-3);">
+            <div class="pattern-icon" style="background: var(--color-actor-3);">3</div>
+            <h4 class="pattern-title"><span class="term" data-definition="An HTML element that's essentially a blank pixel grid your JavaScript can draw on. Fast for thousands of small shapes. Compare to DOM, where each shape is a separate tagged element.">Canvas</span> renderer</h4>
+            <p class="pattern-desc"><strong>What:</strong> Tell Leaflet <code>preferCanvas: true</code>. Pins become pixels on one canvas, not 258K DOM elements.</p>
+            <p class="pattern-desc"><strong>When to ask for it:</strong> drawing thousands of small graphical things.</p>
+          </div>
+
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4);">
+            <div class="pattern-icon" style="background: var(--color-actor-4);">4</div>
+            <h4 class="pattern-title">MarkerCluster</h4>
+            <p class="pattern-desc"><strong>What:</strong> A Leaflet plugin that lumps nearby pins into one circle-with-a-count and only renders what's visible at this zoom.</p>
+            <p class="pattern-desc"><strong>When to ask for it:</strong> data density is way higher than the screen's pixel density.</p>
+          </div>
+
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5);">
+            <div class="pattern-icon" style="background: var(--color-actor-5);">5</div>
+            <h4 class="pattern-title"><span class="term" data-definition="A pattern: if an event fires many times in a burst, only act on the last one. Wait until the burst stops, then run.">Debounced</span> zoom</h4>
+            <p class="pattern-desc"><strong>What:</strong> Ignore every <code>zoomend</code> event except the last — wait for 300ms of quiet before re-rendering.</p>
+            <p class="pattern-desc"><strong>When to ask for it:</strong> an event fires in rapid bursts and each run is expensive.</p>
+          </div>
+
+          <div class="pattern-card" style="border-top: 3px solid var(--color-accent-muted);">
+            <div class="pattern-icon" style="background: var(--color-accent-muted);">6</div>
+            <h4 class="pattern-title">Web Worker</h4>
+            <p class="pattern-desc"><strong>What:</strong> Hand the hex-count math to <code>hex-worker.js</code> — a parallel thread — so the main thread stays free to paint.</p>
+            <p class="pattern-desc"><strong>When to ask for it:</strong> pure math work that takes more than ~50ms.</p>
+          </div>
+
+        </div>
+
+        <h3 style="margin-top: var(--space-12); font-family: var(--font-display); font-size: var(--text-xl);">Trick #5 in the wild — the debounced zoom</h3>
+        <p>Scroll-zooming fires <code>zoomend</code> ten times in a second. Re-rendering a heatmap for every single one would be murderous. The fix is five extra lines:</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+<pre><code><span class="code-line"><span class="code-keyword">let</span> _zoomRenderTimer=<span class="code-keyword">null</span>;</span>
+<span class="code-line">map.<span class="code-function">on</span>(<span class="code-string">'zoomend'</span>,()=&gt;{</span>
+<span class="code-line">  <span class="code-function">document.getElementById</span>(<span class="code-string">'stat-zoom'</span>).textContent=map.<span class="code-function">getZoom</span>();</span>
+<span class="code-line">  <span class="code-keyword">if</span>(currentView===<span class="code-string">'heatmap'</span>||currentView===<span class="code-string">'hexbin'</span>){</span>
+<span class="code-line">    <span class="code-keyword">if</span>(_zoomRenderTimer)<span class="code-function">clearTimeout</span>(_zoomRenderTimer);</span>
+<span class="code-line">    _zoomRenderTimer=<span class="code-function">setTimeout</span>(()=&gt;{_zoomRenderTimer=<span class="code-keyword">null</span>;<span class="code-function">renderCurrentView</span>();},<span class="code-number">300</span>);</span>
+<span class="code-line">  }</span>
+<span class="code-line">});</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A slot to remember the <em>pending</em> re-render we've scheduled but not yet run.</p>
+              <p class="tl">Leaflet fires <code>zoomend</code> every time a zoom completes. Scroll-zooming fires it repeatedly — once per wheel tick.</p>
+              <p class="tl">Update the zoom number in the sidebar (this is cheap, always do it).</p>
+              <p class="tl">Only the expensive views — heatmap and hexbin — need the debounce dance.</p>
+              <p class="tl">If we already had a re-render queued, cancel it. We're about to queue a fresher one.</p>
+              <p class="tl">Wait 300ms. If no new zoom arrives, fire <code>renderCurrentView</code>. If another zoom <em>does</em> come in, this timer gets cancelled on the next line and replaced with a new 300ms countdown.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SCREEN 4 ===================== -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Trick #7 — The stale render problem</h2>
+
+        <p>Here's the subtle bit — the one AI almost always forgets. Batched rendering takes <em>time</em>. While one render is mid-way through its 52 slices, what happens if the user clicks "apply filter" again, with different inputs? Now there are <em>two</em> batch sequences running, both writing to the same cluster groups. Pins from the old filter mingle with pins from the new one. Chaos.</p>
+
+        <p>The fix is one integer: <code>markerRenderGen</code>. Every new render bumps the counter and captures the old value as <code>myGen</code>. At the top of every batch, it checks: <em>"Am I still the newest render?"</em> If a newer one started, the stale batch quietly bows out. No cleanup. No coordination. Just one number.</p>
+
+        <div class="step-cards" style="margin-top: var(--space-8);">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>First click lands. <code>markerRenderGen</code> goes 0 &rarr; 1.</strong>
+              <p>Render A grabs <code>myGen = 1</code>, starts chewing through 52 batches.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Halfway through, the user clicks again. <code>markerRenderGen</code> goes 1 &rarr; 2.</strong>
+              <p>Render B grabs <code>myGen = 2</code>, starts its own 52 batches.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Render A's next batch wakes up.</strong>
+              <p>It checks: <code>markerRenderGen (2) !== myGen (1)</code>. It returns. Silently. Its remaining batches never run.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Render B finishes clean.</strong>
+              <p>Only the newest filter's pins make it to the map. No mingling. No bug report.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent" style="margin-top: var(--space-10);">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! Long async work needs a stale-check.</strong>
+            <p>Any time you kick off work that spans multiple ticks of the <span class="term" data-definition="The browser's scheduler. It picks one task at a time off a queue — a click, a timer, a paint — runs it to completion, then picks the next.">event loop</span>, you need a way to detect it's been superseded. A <strong>generation counter</strong> is the cheapest version of that idea — one integer, one check per slice, done. Whenever you ask AI for batched, debounced, or streamed work, also ask: <em>"What happens if a new one starts before the old one finishes?"</em></p>
+          </div>
+        </div>
+
+        <h3 style="margin-top: var(--space-12); font-family: var(--font-display); font-size: var(--text-xl);">Bonus — what caching looks like</h3>
+        <p>Trick #2 (the spatial index) is a one-function example of caching done right. Build it once. Hand it back on every future call. The savings show up across thousands of hex recounts.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+<pre><code><span class="code-line"><span class="code-keyword">function</span> <span class="code-function">buildSpatialIndex</span>(cellDeg){</span>
+<span class="code-line">  <span class="code-keyword">if</span>(cachedSpatialIndex)<span class="code-keyword">return</span> cachedSpatialIndex;</span>
+<span class="code-line">  <span class="code-keyword">const</span> idx={};</span>
+<span class="code-line">  <span class="code-keyword">for</span>(<span class="code-keyword">let</span> cat=<span class="code-number">0</span>;cat&lt;<span class="code-number">3</span>;cat++){</span>
+<span class="code-line">    filteredCat[cat].<span class="code-function">forEach</span>(r=&gt;{</span>
+<span class="code-line">      <span class="code-keyword">const</span> key=<span class="code-function">Math.floor</span>(r[F.LAT]/cellDeg)+<span class="code-string">','</span>+<span class="code-function">Math.floor</span>(r[F.LON]/cellDeg);</span>
+<span class="code-line">      (idx[key]=idx[key]||[]).<span class="code-function">push</span>(r);</span>
+<span class="code-line">    });</span>
+<span class="code-line">  }</span>
+<span class="code-line">  cachedSpatialIndex=idx;</span>
+<span class="code-line">  <span class="code-keyword">return</span> idx;</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Take a grid-cell size in degrees as input.</p>
+              <p class="tl"><strong>Already built? Return the cached version.</strong> This is the whole point — don't rebuild.</p>
+              <p class="tl">Fresh build: start with an empty lookup table.</p>
+              <p class="tl">For each of the three categories...</p>
+              <p class="tl">...walk every point in that category...</p>
+              <p class="tl">...compute a grid-cell key like <code>"395,-845"</code>. Points in the same cell get the same key — a cheap way to group by location.</p>
+              <p class="tl">Append this point to the bucket for that key. Create the bucket if it's the first point there.</p>
+              <p class="tl">Stash the finished index. Next call gets it for free.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: var(--space-12); font-family: var(--font-display); font-size: var(--text-xl);">Two tricks in concert — debounce meets cache</h3>
+        <p>Watch what happens when the user spins the scroll wheel. Trick #5 absorbs the burst. Trick #2 answers the survivor instantly. The user feels a single, smooth redraw.</p>
+
+        <div class="flow-animation" id="flow-module4-zoom" data-steps='[
+          {"highlight":"flow-actor-1","label":"User spins the scroll wheel. Ten zoomend events fire in under a second."},
+          {"highlight":"flow-actor-2","label":"Each tick of the wheel fires a zoomend event.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"Another tick. Another zoomend.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"And another. Events keep piling up.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"Each event clears the pending timer and starts a fresh 300ms countdown.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-3","label":"The timer survives the final event. 300ms of quiet passes."},
+          {"highlight":"flow-actor-4","label":"Timer fires. The re-render asks: what points are in the visible bounds?","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-4","label":"The index is already built — return it from cache. Saves ~200ms."},
+          {"highlight":"flow-actor-5","label":"One re-render, not ten. The user feels responsiveness, not jank.","packet":true,"from":"actor-4","to":"actor-5"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon">U</div>
+              <span>User Scrolls</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon">Z</div>
+              <span>zoomend Events</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon">T</div>
+              <span>Debounce Timer</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon">C</div>
+              <span>Spatial Index Cache</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon">M</div>
+              <span>Map Redraws</span>
+            </div>
+          </div>
+          <div class="flow-packet" id="flow-packet"></div>
+          <div class="flow-step-label" id="flow-label">Click "Next Step" to watch a burst of scroll zooms collapse into a single redraw.</div>
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SCREEN 5 — QUIZ ===================== -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Pick the right trick</h2>
+        <p>Three scenarios. For each, imagine you're steering an AI agent that just produced janky code. What do you ask it to fix?</p>
+
+        <div class="quiz-container" id="quiz-module4">
+
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Exactly — this is textbook batched rendering. Chop the work, yield between slices, and the browser gets a chance to paint and stay responsive."
+               data-explanation-wrong="Think about where the bottleneck actually is. The browser has one main thread drawing everything — the fix is to not hog it in the first place. Chop the work, yield between chunks.">
+            <h3 class="quiz-question">1. You're building a feature where AI places 40,000 colored dots on a chart. The page freezes for 8 seconds the first time. What's the right fix to ask AI for?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>A more powerful computer will render it faster.</span>
+              </button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Render the dots in batches of a few thousand with <code>setTimeout</code> between them, so the browser can paint and respond mid-render.</span>
+              </button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Zoom in so only 500 dots are visible at once.</span>
+              </button>
+              <button class="quiz-option" data-value="d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Move the whole chart to a server and send back an image.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Right — debouncing. Wait for the burst to stop, then run once. The input genuinely changes on each drag, so caching won't help; and the work is already a single call, so there's nothing to batch."
+               data-explanation-wrong="Notice the symptom: the work runs too often, not that it's too big or that the same input is being asked twice. The fix is to ignore all events except the last in a burst.">
+            <h3 class="quiz-question">2. A user drags a range slider. On every tiny drag, the chart under it recomputes for 400ms, so the drag feels "sticky." What's the name for the fix?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Caching — store the chart and reuse it.</span>
+              </button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Debouncing — only recompute after the slider stops moving for N milliseconds.</span>
+              </button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Batching — chop the recompute into smaller pieces.</span>
+              </button>
+              <button class="quiz-option" data-value="d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Adding more memory to the browser.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="You got it. This is the stale-render bug. The first filter's batched render was still running when the second one started, and the old batches kept writing to the cluster. A generation counter — one integer that every batch checks before running — fixes it cleanly."
+               data-explanation-wrong="Re-read the symptom: the map shows a mix of both filters' results. That's a telltale sign that the first render didn't stop when the second one started. Think about what happens when batched work is interrupted by new batched work.">
+            <h3 class="quiz-question">3. A subtle bug — the user clicks "filter by year: 1990-2000," then immediately clicks "filter by year: 2010-2020." The map ends up showing a random mix of markers from both filters. What's the most likely cause?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The second filter started a new render, but the first render's batches were still running and kept adding old markers.</span>
+              </button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The filter function has a typo somewhere.</span>
+              </button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The map cached the old result and is refusing to let go.</span>
+              </button>
+              <button class="quiz-option" data-value="d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The user clicked too fast for the browser to handle.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module4')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module4')">Try Again</button>
+        </div>
+
+        <div class="callout callout-info" style="margin-top: var(--space-12);">
+          <div class="callout-icon">&rarr;</div>
+          <div class="callout-content">
+            <strong class="callout-title">Coming up next</strong>
+            <p>Up to now we've been about <em>drawing</em>. The next module is about <em>concluding</em>: do UFO hotspots actually correlate with military bases? Does that correlation mean anything? Now that the map feels fast, let's do the math that makes Strange Signals more than a dot plotter.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-5" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">The Correlation Math</h1>
+      <p class="module-subtitle">How the app separates a dramatic headline from actual evidence.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- ============ SCREEN 1 ============ -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Question the App Is Really Answering</h2>
+
+        <p>You zoom into the <span class="term" data-definition="A number between minus one and plus one that says how much two lists of numbers move together. Plus one equals perfectly in sync, zero equals no relationship, minus one equals perfectly opposite.">correlation</span> view and see it: a <span class="term" data-definition="The most common correlation measure. What people mean when they say &quot;correlation&quot; without qualifying it.">Pearson r</span> of 0.71 between UFO hotspots and military bases. The number feels huge. <em>It must mean something.</em></p>
+
+        <p>Before you post the screenshot to Reddit, Strange Signals shuffles the data 999 times, recomputes the correlation on each scramble, and asks: "How often does a r&nbsp;&ge;&nbsp;0.71 happen by pure dumb luck?" If the answer is "less than 1 in 1000," you have something. If it's "1 in 5," you have a coincidence.</p>
+
+        <p>This module is the math that separates the two.</p>
+
+        <div class="callout callout-info" style="margin-top: var(--space-8)">
+          <div class="callout-icon">&#9878;</div>
+          <div class="callout-content">
+            <strong class="callout-title">The courtroom frame</strong>
+            <p>The prosecution shows the jury a dramatic chart. The defense stands up and asks a single question: <em>"Could this pattern happen by pure random chance?"</em> If "yeah, pretty often," the case collapses. That question is what a <span class="term" data-definition="The probability that you would see a pattern this extreme (or more) by pure chance. Low p equals unlikely to be luck. High p equals probably just noise.">p-value</span> answers, and every correlation Strange Signals shows you has one attached.</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top: var(--space-12); font-family: var(--font-display); font-size: var(--text-xl)">The comparison is the point</h3>
+
+        <p>You have three categories of sightings and a dozen overlay datasets. The question is never <em>"are there UFO hotspots?"</em> — you can see that on the markers map. The question is always comparative:</p>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">&#9678;</div>
+          <div class="callout-content">
+            <strong class="callout-title">The question every correlation answers</strong>
+            <p>"Is there a suspicious overlap between UFO hotspots and <em>some other thing</em> — military bases, earthquakes, caves, haunted places?" Correlation is the math of overlap.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCREEN 2 ============ -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Step 1: Turn a Map Into Two Lists of Numbers</h2>
+
+        <p>You can't correlate pins directly. Correlation works on <em>pairs of numbers</em>. So the app carves the map into a <span class="term" data-definition="A honeycomb tiling of the map. Used here to bin geographic points into equal-area cells so you can count them.">hex grid</span> using <span class="term" data-definition="A JavaScript library for geographic math. Computes hex grids, distances, point-in-polygon tests.">Turf.js</span>, then counts how many sightings of each category land inside each hex.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">HEX TABLE</span>
+<pre><code><span class="code-line"><span class="code-comment">// Each row = one honeycomb tile</span></span>
+<span class="code-line">Hex #1:  [ 12 UFO,  0 Bigfoot ]</span>
+<span class="code-line">Hex #2:  [  3 UFO,  8 Bigfoot ]</span>
+<span class="code-line">Hex #3:  [  0 UFO,  0 Bigfoot ]</span>
+<span class="code-line">  ...</span>
+<span class="code-line">Hex #N:  [  5 UFO,  2 Bigfoot ]</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">// Then split into two parallel lists:</span></span>
+<span class="code-line"><span class="code-keyword">const</span> xArr = [<span class="code-number">12</span>, <span class="code-number">3</span>, <span class="code-number">0</span>, ..., <span class="code-number">5</span>];</span>
+<span class="code-line"><span class="code-keyword">const</span> yArr = [ <span class="code-number">0</span>, <span class="code-number">8</span>, <span class="code-number">0</span>, ..., <span class="code-number">2</span>];</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Every hex gets two counts — one per category.</p>
+              <p class="tl">Hex #1 caught 12 UFO pins and zero Bigfoot pins.</p>
+              <p class="tl">Hex #2 is the opposite: mostly Bigfoot, barely any UFO.</p>
+              <p class="tl">Hex #3 caught nothing — that's fine, zeros are data too.</p>
+              <p class="tl">Pull column 1 out as <code>xArr</code>, column 2 as <code>yArr</code>.</p>
+              <p class="tl">Two arrays, same length, same order. That's the raw material the math operates on.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">&#10024;</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! Spatial correlation is just two parallel lists.</strong>
+            <p>The map is for humans; the math only needs numbers in rows. Every correlation feature in the app — no matter how it looks on screen — ultimately boils down to "build two arrays the same length, then compute one number."</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCREEN 3 ============ -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Step 2: Pearson r, the Correlation Number</h2>
+
+        <p>Pearson r asks one intuitive question: <em>"When X is above its average, is Y also above its average?"</em> If yes across the board, r approaches <strong>+1</strong>. If X goes up while Y goes down, r approaches <strong>&minus;1</strong>. If there's no pattern, r hovers near <strong>0</strong>.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE — strange-signals.js</span>
+<pre><code><span class="code-line"><span class="code-keyword">function</span> <span class="code-function">pearsonR</span>(xArr,yArr){</span>
+<span class="code-line">  <span class="code-keyword">const</span> n=xArr.length;</span>
+<span class="code-line">  <span class="code-keyword">if</span>(n&lt;<span class="code-number">5</span>)<span class="code-keyword">return</span> NaN;</span>
+<span class="code-line">  <span class="code-keyword">const</span> mx=d3.<span class="code-function">mean</span>(xArr),my=d3.<span class="code-function">mean</span>(yArr);</span>
+<span class="code-line">  <span class="code-keyword">let</span> num=<span class="code-number">0</span>,dx2=<span class="code-number">0</span>,dy2=<span class="code-number">0</span>;</span>
+<span class="code-line">  <span class="code-keyword">for</span>(<span class="code-keyword">let</span> i=<span class="code-number">0</span>;i&lt;n;i++){</span>
+<span class="code-line">    <span class="code-keyword">const</span> dx=xArr[i]-mx,dy=yArr[i]-my;</span>
+<span class="code-line">    num+=dx*dy;dx2+=dx*dx;dy2+=dy*dy;</span>
+<span class="code-line">  }</span>
+<span class="code-line">  <span class="code-keyword">const</span> den=Math.<span class="code-function">sqrt</span>(dx2*dy2);</span>
+<span class="code-line">  <span class="code-keyword">return</span> den&gt;<span class="code-number">0</span>?num/den:NaN;</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Take two parallel lists of numbers.</p>
+              <p class="tl">Refuse to answer if we have fewer than 5 data points. Any correlation on 4 points is noise.</p>
+              <p class="tl">Compute the average of each list. Correlation is about deviations <em>from</em> the average, not raw values.</p>
+              <p class="tl">Set up three running totals: the "agreement" number and two "spread" numbers.</p>
+              <p class="tl">For each hex: how far above or below its average is this X? Same for Y.</p>
+              <p class="tl">Multiply the two deviations. If both are positive (both above average) or both negative (both below), this adds a positive number. If they disagree in sign, it subtracts. This is the heart of the formula.</p>
+              <p class="tl">Normalize by how spread out each list is, so the answer lives between &minus;1 and +1 no matter the scale.</p>
+              <p class="tl">If one list has zero variation (all the same value), correlation is undefined — return NaN.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: var(--space-10); font-family: var(--font-display); font-size: var(--text-xl)">A quick sanity scale</h3>
+
+        <div class="icon-rows">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: #9E9790">0</div>
+            <div><strong>r &asymp; 0.0 to 0.2</strong><p>Essentially unrelated. Whatever you're seeing is noise.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-4)">~</div>
+            <div><strong>r &asymp; 0.2 to 0.5</strong><p>Weak-to-moderate link. Interesting, but don't bet the farm.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">+</div>
+            <div><strong>r &asymp; 0.5 to 0.8</strong><p>Meaningful co-movement. The two lists really do rise and fall together.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-accent)">!</div>
+            <div><strong>r &asymp; 0.8+</strong><p>Suspiciously tight. Go look for a cause — or a confounder.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCREEN 4 ============ -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Step 3: The Permutation P-Value</h2>
+
+        <p>The defense attorney stands up. "r = 0.71 is a nice number, but so what? Could random noise have produced it too?" The app answers by simulation.</p>
+
+        <p>Imagine writing every Y value on an index card. Shuffle the cards. Now X and Y have no real relationship — Y is in random order. Compute r on this scrambled pair. Save it. Shuffle again. Recompute. 999 times. You've built a histogram of <em>"correlations that happen by pure chance."</em> Compare your observed r to that histogram.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE — strange-signals.js</span>
+<pre><code><span class="code-line"><span class="code-keyword">function</span> <span class="code-function">permutationPValue</span>(xArr,yArr,observedR,nPerms){</span>
+<span class="code-line">  nPerms=nPerms||<span class="code-number">999</span>;</span>
+<span class="code-line">  <span class="code-keyword">if</span>(xArr.length&lt;<span class="code-number">5</span>||<span class="code-function">isNaN</span>(observedR))<span class="code-keyword">return</span> <span class="code-number">1</span>;</span>
+<span class="code-line">  <span class="code-keyword">let</span> extremeCount=<span class="code-number">0</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> yCopy=yArr.<span class="code-function">slice</span>();</span>
+<span class="code-line">  <span class="code-keyword">for</span>(<span class="code-keyword">let</span> p=<span class="code-number">0</span>;p&lt;nPerms;p++){</span>
+<span class="code-line">    <span class="code-keyword">for</span>(<span class="code-keyword">let</span> i=yCopy.length-<span class="code-number">1</span>;i&gt;<span class="code-number">0</span>;i--){</span>
+<span class="code-line">      <span class="code-keyword">const</span> j=Math.<span class="code-function">floor</span>(Math.<span class="code-function">random</span>()*(i+<span class="code-number">1</span>));</span>
+<span class="code-line">      [yCopy[i],yCopy[j]]=[yCopy[j],yCopy[i]];</span>
+<span class="code-line">    }</span>
+<span class="code-line">    <span class="code-keyword">const</span> permR=<span class="code-function">pearsonR</span>(xArr,yCopy);</span>
+<span class="code-line">    <span class="code-keyword">if</span>(!<span class="code-function">isNaN</span>(permR)&amp;&amp;Math.<span class="code-function">abs</span>(permR)&gt;=Math.<span class="code-function">abs</span>(observedR))extremeCount++;</span>
+<span class="code-line">  }</span>
+<span class="code-line">  <span class="code-keyword">return</span>(extremeCount+<span class="code-number">1</span>)/(nPerms+<span class="code-number">1</span>);</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Do 999 scrambles by default. That many shuffles gives enough resolution to tell tiny p-values apart.</p>
+              <p class="tl">Bail out cleanly if there isn't enough data or the observed r failed.</p>
+              <p class="tl">Keep a counter: how many shuffles produced a correlation at least as extreme as the real one?</p>
+              <p class="tl">Don't destroy the real Y array. Make a working copy we can shuffle.</p>
+              <p class="tl">Outer loop: do the whole thing 999 times.</p>
+              <p class="tl">Inner three lines: the <span class="term" data-definition="A fast algorithm for producing a truly random permutation of an array. Walk from end to start, swap each item with a random earlier one.">Fisher-Yates shuffle</span>. Walk from the end to the start and swap each item with a random earlier one. This produces a uniform random permutation in one pass.</p>
+              <p class="tl">Correlate X with scrambled Y. Any pattern here is pure coincidence — the pairing is random.</p>
+              <p class="tl">Count the scrambles that produced a correlation as strong or stronger than what we actually observed. <code>Math.abs</code> because we care about "strong" in either direction.</p>
+              <p class="tl">Fraction of scrambles that beat or matched the real data. That fraction <em>is</em> the p-value. The +1s are a standard correction so p is never exactly zero.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: var(--space-10); font-family: var(--font-display); font-size: var(--text-xl)">Significance stars, decoded</h3>
+
+        <div class="badge-list">
+          <div class="badge-item">
+            <code class="badge-code">***</code>
+            <span class="badge-desc"><strong>p &lt; 0.001</strong> — would happen by chance less than 1 in 1000 times. Strong evidence.</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">**</code>
+            <span class="badge-desc"><strong>p &lt; 0.01</strong> — less than 1 in 100. Solid evidence.</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">*</code>
+            <span class="badge-desc"><strong>p &lt; 0.05</strong> — less than 1 in 20. The conventional bar for "publishable."</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">n.s.</code>
+            <span class="badge-desc"><strong>p &ge; 0.05</strong> — "not significant." Could be coincidence; proceed with caution.</span>
+          </div>
+        </div>
+
+        <p style="margin-top: var(--space-6); font-size: var(--text-sm); color: var(--color-text-secondary)">These are <span class="term" data-definition="Shorthand from academic papers: * = p less than 0.05, ** = p less than 0.01, *** = p less than 0.001. The more stars, the less likely it is coincidence.">significance stars</span> — shorthand you'll see in any academic paper. Strange Signals prints them right next to the r value.</p>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">&#10024;</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! Scrambling is the null hypothesis made concrete.</strong>
+            <p>The <span class="term" data-definition="The boring default: &quot;there is no real relationship; any pattern is coincidence.&quot; Statistics is the art of trying to disprove this.">null hypothesis</span> is the boring default: "there's no real link — any pattern is luck." A <span class="term" data-definition="A way to get a p-value by simulation instead of formulas. Shuffle the data many times to see what patterns random chance produces, then compare.">permutation test</span> doesn't derive a p-value from a textbook formula — it <em>simulates</em> what chance looks like by actually breaking the link 999 times. If you can shuffle an array, you never need to open a statistics textbook again.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCREEN 4.5 — end-to-end flow animation ============ -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Full Pipeline, End to End</h2>
+
+        <p>Watch what happens when you hit "Run Correlation" in the app. Map tiles become numbers, numbers become an r, and an r gets stress-tested into a p.</p>
+
+        <div class="flow-animation" id="flow-module5-correlation" data-steps='[
+          {"highlight":"flow-actor-1","label":"User is zoomed into the Pacific Northwest. We only correlate what is on screen."},
+          {"highlight":"flow-actor-2","label":"Turf.js generates a hex grid covering the visible area — say, 200 tiles, each 50km across.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"For each hex, count how many UFOs and how many Bigfeet landed inside.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"Feed the two parallel lists in. Out comes r = 0.71.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-5","label":"Same lists, 999 shuffles. Count how many shuffled runs beat r = 0.71.","packet":true,"from":"actor-3","to":"actor-5"},
+          {"highlight":"flow-actor-5","label":"Only 0 of 999 shuffles beat it. p is about 0.001."},
+          {"highlight":"flow-actor-6","label":"Report both numbers. The r is the headline; the p is the stress test.","packet":true,"from":"actor-4","to":"actor-6"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon" style="background: var(--color-actor-3)">&#9632;</div>
+              <span>Map Bounds</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon" style="background: var(--color-actor-2)">&#x2B21;</div>
+              <span>Turf Hex Grid</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon" style="background: var(--color-actor-4)">#</div>
+              <span>Per-Hex Counts</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon" style="background: var(--color-actor-5)">r</div>
+              <span>pearsonR</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon" style="background: var(--color-actor-1)">&#8652;</div>
+              <span>permutationPValue</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-6">
+              <div class="flow-actor-icon" style="background: var(--color-text)">&#9733;</div>
+              <span>r = 0.71, p &lt; 0.001 ***</span>
+            </div>
+          </div>
+
+          <div class="flow-packet" id="flow-packet"></div>
+          <div class="flow-step-label" id="flow-label">Click "Next Step" to trace the pipeline.</div>
+
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <h3 style="margin-top: var(--space-12); font-family: var(--font-display); font-size: var(--text-xl)">The detective interrogates the evidence</h3>
+
+        <p>Same idea, performed as a conversation. A detective wants to know if two datasets are "in cahoots." Pearson R offers the scale; the Permutation Test is the defense lawyer.</p>
+
+        <div class="chat-window" id="chat-module5-detective">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="detective" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">D</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Detective</span>
+                <p>I have got a suspect. Are these two datasets related?</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="hex" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">H</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-2)">Hex Grid</span>
+                <p>I will carve the map into honeycomb tiles and count sightings in each.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="pearson" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">r</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">Pearson R</span>
+                <p>Give me the two parallel lists. I will tell you whether they move together — scale from &minus;1 to +1.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="detective" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">D</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Detective</span>
+                <p>r = 0.71. That is our suspect. Case closed?</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="perm" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">P</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Permutation Test</span>
+                <p>Not so fast. Let me shuffle one of the arrays 999 times and see how often pure chance beats 0.71.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="5" data-sender="perm" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">P</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Permutation Test</span>
+                <p>&hellip;zero times. Alright, detective, you have got real evidence. p &lt; 0.001.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="6" data-sender="detective" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">D</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Detective</span>
+                <p>If <em>50</em> of the shuffles had beat it?</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="7" data-sender="perm" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">P</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Permutation Test</span>
+                <p>Then we would have p &asymp; 0.05 — borderline. And if 500 beat it, your "suspect" is just a coincidence.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar">?</div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCREEN 5 — QUIZ ============ -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check Your Thinking</h2>
+        <p>Three scenarios. None of them have a trick answer — just apply the intuition from the courtroom.</p>
+
+        <div class="quiz-container" id="quiz-module5">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Exactly. Both ice cream sales and drowning deaths are independently caused by summer heat. The r is real, the math is fine — but heat is a confounding variable, and mistaking correlation for causation is the oldest trap in data work."
+               data-explanation-wrong="Not quite. The number itself is real — the issue is what's *behind* it. A hidden third variable (summer heat) is driving both. That's called a confounding variable, and no p-value can rescue you from one.">
+            <h3 class="quiz-question">A headline reads: "SHOCKING: Ice cream sales correlate with drowning deaths, r = 0.8!" What is the right response?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Wow, eating ice cream is dangerous.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Both go up in summer. The real cause is heat; ice cream and drownings are independently caused by the same third thing — a <span class="term" data-definition="A hidden third factor that causes two things to move together even though neither causes the other. Ice cream and drowning are both caused by summer heat.">confounding variable</span>.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The r is wrong.</span>
+              </button>
+              <button class="quiz-option" data-value="option-d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Need a p-value.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Right. r = 0.4 sounds moderate on its own, but p = 0.22 says there is roughly a 22% chance this pattern happens by pure luck. Well above the 5% bar for 'publishable.' Not evidence."
+               data-explanation-wrong="Look at the p-value, not just the r. A p of 0.22 means roughly 1 in 5 random shuffles would produce a correlation at least this strong. That's coincidence territory.">
+            <h3 class="quiz-question">Your Strange Signals screen shows r = 0.4, p = 0.22 between UFO sightings and earthquake epicenters. Should you be excited?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes — r = 0.4 is moderate.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>No — the p-value says this correlation happens about 22% of the time by chance alone. Not evidence.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes — any nonzero r is meaningful.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-a"
+               data-explanation-right="Exactly. The p-value is an estimate built from how many shuffles 'beat' the observed r. More shuffles = finer resolution. With only 50 shuffles you cannot tell p = 0.02 from p = 0.001 — both show up as 'zero out of 50.' 999 gives you real resolution, while still finishing fast."
+               data-explanation-wrong="Think about what the p-value actually counts: shuffles that beat the observed r, divided by total shuffles. With only 50 trials, the smallest non-zero p you can express is about 1/51. 999 lets you distinguish very strong evidence (p ~ 0.001) from merely strong evidence (p ~ 0.02).">
+            <h3 class="quiz-question">Why does the app run 999 permutations instead of just, say, 50?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The more shuffles, the more precise the p-value estimate — especially for small p-values. With 50 shuffles you cannot tell the difference between p = 0.02 and p = 0.001.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>999 is a lucky number.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The code has a bug.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module5')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module5')">Try Again</button>
+        </div>
+
+        <div class="callout callout-info" style="margin-top: var(--space-12)">
+          <div class="callout-icon">&rarr;</div>
+          <div class="callout-content">
+            <strong class="callout-title">Coming up: SIGNAL AI</strong>
+            <p>You now know what the app can compute. The final module shows how Claude plugs in as a conversational co-pilot that knows when to pull each of these levers. Next, we meet SIGNAL — the AI that drives the whole machine in plain English.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-6" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">06</span>
+      <h1 class="module-title">SIGNAL AI — The Agent Loop</h1>
+      <p class="module-subtitle">How a text-only model gets hands — 80 lines of JavaScript that turn Claude into an air-traffic controller for your map.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1 — What SIGNAL can actually do -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">What just happened?</h2>
+
+        <p>You type <em>"show me UFO hotspots near military bases in the 90s"</em> into SIGNAL's chat box. Three seconds later the map has zoomed, the year filter is 1990&ndash;1999, the military overlay is on, and the heatmap is rendering. <strong>You didn't click anything.</strong></p>
+
+        <p>Picture an <span class="term" data-definition="An LLM (Large Language Model) is a neural network that takes text in and produces text out. On its own it cannot do anything — it can only write. Agent loops give it hands.">LLM</span> as an air-traffic controller in a tower with binoculars and a radio. The controller cannot fly the planes &mdash; all they can do is <em>see</em> (look through the binoculars) and <em>talk</em> (issue instructions over the radio). Strange Signals' AI is the same: Claude cannot touch the map directly. It can only ask to <em>see</em> something or <em>do</em> something, and the browser runs each request and reports back.</p>
+
+        <p>Those requests are called <span class="term" data-definition="A tool is a function the app exposes to the LLM. It is described in JSON with a name, a purpose, and an input schema. The LLM picks which tool to call and supplies arguments; the app runs them.">tools</span>. Strange Signals exposes about two dozen of them, grouped into four flavors:</p>
+
+        <div class="pattern-cards">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">eye</div>
+            <h4 class="pattern-title">See the map</h4>
+            <p class="pattern-desc">Read what's currently visible &mdash; bounds, zoom, which categories are on, how many records survive the filters. Example: <code>get_map_state</code>.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">drive</div>
+            <h4 class="pattern-title">Drive the map</h4>
+            <p class="pattern-desc">Change what's visible &mdash; pan, zoom, switch view, apply filters, toggle overlays. Example: <code>set_view</code>, <code>apply_filters</code>.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-3)">
+            <div class="pattern-icon" style="background: var(--color-actor-3)">math</div>
+            <h4 class="pattern-title">Analyze</h4>
+            <p class="pattern-desc">Run the Module 5 math on demand &mdash; correlations, clusters, nearest-neighbor distances, report builders. Example: <code>compute_correlation</code>.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">pin</div>
+            <h4 class="pattern-title">Annotate</h4>
+            <p class="pattern-desc">Stick pins on the map with notes and colors; draw highlight zones the user can see. Example: <code>add_annotation</code>.</p>
+          </div>
+        </div>
+
+        <p>Every one of those is just a plain JavaScript function with a JSON description attached. Claude reads the descriptions, decides which to call, and supplies the arguments.</p>
+      </section>
+
+      <!-- SCREEN 2 — The five phases of the agent loop -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The five phases of the loop</h2>
+
+        <p>An <span class="term" data-definition="An agent is an LLM wrapped in a loop that can call tools and read their results, so it can take multi-step actions instead of replying once and stopping.">agent</span> is not magic. It is a five-step cycle that keeps running until Claude decides it is done or a turn counter hits its cap. Step through the animation, then read the numbered list underneath.</p>
+
+        <div class="flow-animation animate-in" id="flow-module6-agent" data-steps='[
+          {"highlight":"flow-actor-1","label":"User types: zoom to the Pacific Northwest."},
+          {"highlight":"flow-actor-1","label":"Full history plus tool catalog sent via fetch.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"Claude picks a tool: pan_zoom({lat:47, lon:-122, zoom:6})."},
+          {"highlight":"flow-actor-2","label":"Streamed back as a tool_use content block with a unique id.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-3","label":"Browser runs executeTool(pan_zoom, args). Leaflet receives the command.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-4","label":"The map animates to the new position."},
+          {"highlight":"flow-actor-4","label":"Return value wrapped as a tool_result with the same id.","packet":true,"from":"actor-4","to":"actor-5"},
+          {"highlight":"flow-actor-5","label":"Sent back as a new user turn. Claude can now see its action succeeded.","packet":true,"from":"actor-5","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"Claude replies with text: Zoomed in. Five Bigfoot reports visible. Loop ends."}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon" style="background: var(--color-actor-4)">U</div>
+              <span>User Message</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon" style="background: var(--color-actor-3)">API</div>
+              <span>Anthropic API</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon" style="background: var(--color-actor-1)">use</div>
+              <span>tool_use Block</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon" style="background: var(--color-actor-2)">JS</div>
+              <span>executeTool + Map</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon" style="background: var(--color-actor-5)">res</div>
+              <span>tool_result Block</span>
+            </div>
+          </div>
+
+          <div class="flow-packet" id="flow-packet"></div>
+
+          <div class="flow-step-label" id="flow-label">Click "Next Step" to trace one request through the loop.</div>
+
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <div class="step-cards">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Ask</strong>
+              <p>The user types a message. The browser pushes it onto the <code>messages</code> array and calls <code>fetch</code> to the Anthropic API.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Think</strong>
+              <p>Claude reads the full history plus the tool catalog and streams back either plain text (conversational) or one or more <span class="term" data-definition="A tool_use block is a structured part of Claude's reply saying: I want to call this tool with these inputs. It carries a unique id so the matching result can be paired back to it.">tool_use blocks</span> (if it wants to act).</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Act</strong>
+              <p>The browser iterates Claude's tool requests, runs each one via <code>executeTool(name, input)</code>, and collects a <span class="term" data-definition="A tool_result block is the paired response to a tool_use block — here is what happened when you called that tool. It travels back on the next turn as a user-role message.">tool_result</span> for each.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Report</strong>
+              <p>The browser pushes those results back onto the messages array <em>as a new user turn</em>. Yes &mdash; user. That is how tool results are encoded in the API.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">5</div>
+            <div class="step-body">
+              <strong>Loop</strong>
+              <p>Back to step 2. Claude sees its own request plus the result, and decides whether to call more tools or finish with text. The <span class="term" data-definition="The tool-use loop is the cycle ask → Claude picks tools → app runs them → results go back → Claude either calls more or replies. Repeats up to a turn limit.">tool-use loop</span> caps at 10 turns.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! Tool results go back as a "user" message.</strong>
+            <p>A common bug in hand-rolled loops: developers assume tool results are their own message role. They are not &mdash; the API wraps them as the <em>user</em> turn that answers the assistant's tool_use. Miss this and Claude gets confused about who said what.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3 — The fetch call, demystified -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The fetch call, demystified</h2>
+
+        <p>There is no backend. SIGNAL's entire "server" is this one function &mdash; the browser talks to Anthropic directly, using the user's own <span class="term" data-definition="An API key is a secret string that identifies you to an API. Whoever holds the key can spend your credits, so it is treated like a password.">API key</span> stored in <span class="term" data-definition="localStorage is a small per-site key-value store in the browser. It survives page reloads. Used here to remember the API key and the conversation history.">localStorage</span>. Here is the setup half of the loop:</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">async function</span> <span class="code-function">runConversationLoop</span>(){</span>
+<span class="code-line">  <span class="code-keyword">var</span> apiKey=<span class="code-function">getApiKey</span>();</span>
+<span class="code-line">  <span class="code-keyword">var</span> model=<span class="code-function">getModel</span>();</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-comment">// Mark system prompt + last tool as cacheable (ephemeral, ~5 min TTL)</span></span>
+<span class="code-line">  <span class="code-keyword">var</span> cachedSystem=[{<span class="code-property">type</span>:<span class="code-string">'text'</span>,<span class="code-property">text</span>:SYSTEM_PROMPT,<span class="code-property">cache_control</span>:{<span class="code-property">type</span>:<span class="code-string">'ephemeral'</span>}}];</span>
+<span class="code-line">  <span class="code-keyword">var</span> cachedTools=TOOLS.<span class="code-function">map</span>(<span class="code-keyword">function</span>(t,i){</span>
+<span class="code-line">    <span class="code-keyword">return</span> i===TOOLS.length-<span class="code-number">1</span> ? Object.<span class="code-function">assign</span>({},t,{<span class="code-property">cache_control</span>:{<span class="code-property">type</span>:<span class="code-string">'ephemeral'</span>}}) : t;</span>
+<span class="code-line">  });</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">for</span>(<span class="code-keyword">var</span> turn=<span class="code-number">0</span>;turn&lt;<span class="code-number">10</span>;turn++){</span>
+<span class="code-line">    <span class="code-keyword">var</span> body={</span>
+<span class="code-line">      <span class="code-property">model</span>:model, <span class="code-property">max_tokens</span>:<span class="code-number">4096</span>,</span>
+<span class="code-line">      <span class="code-property">system</span>:cachedSystem, <span class="code-property">tools</span>:cachedTools,</span>
+<span class="code-line">      <span class="code-property">messages</span>:messages, <span class="code-property">stream</span>:<span class="code-keyword">true</span></span>
+<span class="code-line">    };</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">var</span> resp=<span class="code-keyword">await</span> <span class="code-function">fetch</span>(<span class="code-string">'https://api.anthropic.com/v1/messages'</span>,{</span>
+<span class="code-line">      <span class="code-property">method</span>:<span class="code-string">'POST'</span>,</span>
+<span class="code-line">      <span class="code-property">headers</span>:{</span>
+<span class="code-line">        <span class="code-string">'Content-Type'</span>:<span class="code-string">'application/json'</span>,</span>
+<span class="code-line">        <span class="code-string">'x-api-key'</span>:apiKey,</span>
+<span class="code-line">        <span class="code-string">'anthropic-version'</span>:<span class="code-string">'2023-06-01'</span>,</span>
+<span class="code-line">        <span class="code-string">'anthropic-dangerous-direct-browser-access'</span>:<span class="code-string">'true'</span></span>
+<span class="code-line">      },</span>
+<span class="code-line">      <span class="code-property">body</span>:JSON.<span class="code-function">stringify</span>(body)</span>
+<span class="code-line">    });</span>
+<span class="code-line">    <span class="code-comment">// (retry on 429/529 with retry-after header omitted for clarity)</span></span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">var</span> result=<span class="code-keyword">await</span> <span class="code-function">parseStream</span>(resp);</span>
+<span class="code-line">    <span class="code-comment">// ... continued in the next snippet</span></span>
+<span class="code-line">  }</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Grab the API key the user pasted in (stored in localStorage) and the model they picked from a dropdown.</p>
+              <p class="tl">Mark the system prompt as cacheable. This is <span class="term" data-definition="Prompt caching is an Anthropic feature that stores a stable prefix (system prompt, tool list) server-side for roughly five minutes, so follow-up turns do not re-charge for the same tokens.">prompt caching</span> &mdash; Anthropic will hold this text in cache for about five minutes so you are not charged for it every turn.</p>
+              <p class="tl">Do the same for the last entry in the tool catalog. Marking one tool automatically caches everything up to and including it.</p>
+              <p class="tl">Loop up to ten times. Hard cap &mdash; enough for multi-step plans but bounded so a confused model cannot run away with your bill.</p>
+              <p class="tl">Build the request body. The whole conversation goes in the <code>messages</code> array every single time &mdash; Claude has no memory between calls, so the array <em>is</em> the memory.</p>
+              <p class="tl"><span class="term" data-definition="Streaming means the server sends the reply token by token as it is generated, instead of waiting for the whole thing to finish. It makes the UI feel alive as text types in.">Streaming</span> on, so tokens show up in the chat as they arrive.</p>
+              <p class="tl">Call <code>fetch</code> straight to Anthropic. No backend. The browser is the server.</p>
+              <p class="tl">The API key goes in the <code>x-api-key</code> header. Whoever opens DevTools on this page can see it &mdash; fine for a personal tool, never for a shipped product.</p>
+              <p class="tl">The <code>anthropic-dangerous-direct-browser-access</code> header is the opt-in flag that says "yes, we really are calling the API straight from the browser." Without it, <span class="term" data-definition="CORS (Cross-Origin Resource Sharing) is a browser rule that blocks direct API calls to other domains unless the target explicitly allows it. Anthropic requires the dangerous-direct-browser-access header to opt in.">CORS</span> would block the request.</p>
+              <p class="tl">Serialize the body to JSON and send it.</p>
+              <p class="tl">In real life there is also a retry block handling <span class="term" data-definition="HTTP 429 means slow down (rate limited). HTTP 529 means overloaded. The app sleeps and retries, honoring the retry-after header if the server sends one.">429 / 529</span> errors — if the API says "too fast," the app sleeps and tries again.</p>
+              <p class="tl">Parse the streamed response into a clean object with a list of content blocks. Text blocks or tool_use blocks. That is what goes to the next snippet.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4 — The loop body: executing tools -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The loop body: executing tools</h2>
+
+        <p>Now the second half &mdash; what the browser does after Claude replies. This is where "agent" stops being mystical: it is an <code>if</code>, a <code>for</code>, and two array pushes.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">var</span> result=<span class="code-keyword">await</span> <span class="code-function">parseStream</span>(resp);</span>
+<span class="code-line"><span class="code-keyword">var</span> hasToolUse=result.content.<span class="code-function">some</span>(<span class="code-keyword">function</span>(b){<span class="code-keyword">return</span> b.type===<span class="code-string">'tool_use'</span>});</span>
+<span class="code-line"></span>
+<span class="code-line">messages.<span class="code-function">push</span>({<span class="code-property">role</span>:<span class="code-string">'assistant'</span>,<span class="code-property">content</span>:result.content});</span>
+<span class="code-line"><span class="code-function">saveConversation</span>();</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">if</span>(!hasToolUse)<span class="code-keyword">break</span>;</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">// Execute tool calls</span></span>
+<span class="code-line"><span class="code-keyword">var</span> toolResults=[];</span>
+<span class="code-line"><span class="code-keyword">for</span>(<span class="code-keyword">var</span> i=<span class="code-number">0</span>;i&lt;result.content.length;i++){</span>
+<span class="code-line">  <span class="code-keyword">var</span> block=result.content[i];</span>
+<span class="code-line">  <span class="code-keyword">if</span>(block.type!==<span class="code-string">'tool_use'</span>)<span class="code-keyword">continue</span>;</span>
+<span class="code-line">  <span class="code-keyword">try</span>{</span>
+<span class="code-line">    <span class="code-keyword">var</span> toolResult=<span class="code-keyword">await</span> <span class="code-function">executeTool</span>(block.name,block.input);</span>
+<span class="code-line">    toolResults.<span class="code-function">push</span>({<span class="code-property">type</span>:<span class="code-string">'tool_result'</span>,<span class="code-property">tool_use_id</span>:block.id,<span class="code-property">content</span>:JSON.<span class="code-function">stringify</span>(toolResult)});</span>
+<span class="code-line">  }<span class="code-keyword">catch</span>(e){</span>
+<span class="code-line">    toolResults.<span class="code-function">push</span>({<span class="code-property">type</span>:<span class="code-string">'tool_result'</span>,<span class="code-property">tool_use_id</span>:block.id,<span class="code-property">content</span>:JSON.<span class="code-function">stringify</span>({<span class="code-property">error</span>:e.message}),<span class="code-property">is_error</span>:<span class="code-keyword">true</span>});</span>
+<span class="code-line">  }</span>
+<span class="code-line">}</span>
+<span class="code-line"></span>
+<span class="code-line">messages.<span class="code-function">push</span>({<span class="code-property">role</span>:<span class="code-string">'user'</span>,<span class="code-property">content</span>:toolResults});</span>
+<span class="code-line"><span class="code-function">saveConversation</span>();</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Parse the streamed response. Claude's reply is not a single string &mdash; it is a list of blocks. Text, tool_use, sometimes thinking blocks.</p>
+              <p class="tl">Ask: did Claude request any tools? If even one block has <code>type === 'tool_use'</code>, we have work to do.</p>
+              <p class="tl">Save Claude's entire turn onto the conversation history, tool requests and all.</p>
+              <p class="tl">Write the updated messages array to localStorage. If the user refreshes the page, the conversation comes back.</p>
+              <p class="tl">If Claude's reply was pure text, there is nothing to execute &mdash; <code>break</code> out of the loop and the user sees the final answer.</p>
+              <p class="tl">Otherwise, prepare a list to collect tool results in.</p>
+              <p class="tl">Walk every block. Skip anything that is not a tool request (text blocks are passed through).</p>
+              <p class="tl">For each tool request, call <code>executeTool(name, input)</code>. This is the one function that knows how to actually drive the map &mdash; a giant switch statement over tool names.</p>
+              <p class="tl">Wrap the return value in a tool_result block, keyed by the original request's id. Claude uses the id to pair "I asked for X" with "here is the answer to X" &mdash; critical when multiple tools fire in parallel.</p>
+              <p class="tl">If a tool throws, send the error back tagged <code>is_error: true</code>. Claude reads the error and can try a different approach. Robust-agent behavior &mdash; one bad call doesn't crash the chat.</p>
+              <p class="tl">Here is the pairing from the Aha callout &mdash; tool results go back as a <em>user</em> turn, not assistant. That is how the API expects them.</p>
+              <p class="tl">Persist again. Then the outer <code>for</code> loops back to the fetch, Claude sees the results, and decides what to do next.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! Prompt caching is a 2-line optimization.</strong>
+            <p>Look back at <code>cache_control: {type: 'ephemeral'}</code> in the previous snippet. That single flag tells Anthropic "the system prompt and tool list don't change across turns &mdash; hold them for about five minutes." After the first call, subsequent calls get charged a fraction of the input tokens for the cached prefix. Tiny code change, large bill savings on multi-turn chats.</p>
+          </div>
+        </div>
+
+        <h3 class="screen-heading" style="margin-top: var(--space-10)">Watch it play out</h3>
+
+        <p>Here is the same loop as an iMessage thread between the five actors &mdash; user, Claude, the loop runtime, <code>executeTool</code>, and the map itself.</p>
+
+        <div class="chat-window" id="chat-module6-loop">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="user" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">U</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">User</span>
+                <p>Show me UFO sightings near military bases in the 1990s.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="loop" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">L</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">The Loop</span>
+                <p>Forwarding to Claude with the full tool catalog and conversation so far.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="claude" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Claude</span>
+                <p>I'll need the year filter and the military overlay. Calling <code>apply_filters({yearFrom:1990,yearTo:1999})</code> and <code>toggle_overlay({layer:'military',on:true})</code>.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="loop" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">L</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">The Loop</span>
+                <p>Two tool requests &mdash; executing both.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="exec" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">X</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-2)">executeTool</span>
+                <p><code>apply_filters</code> &rarr; ok. <code>toggle_overlay</code> &rarr; ok. Here are the JSON results.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="5" data-sender="map" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">M</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">The Map</span>
+                <p>Year filter updated. Military bases now visible. Repainting.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="6" data-sender="loop" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">L</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">The Loop</span>
+                <p>Results packaged back as a user turn. Looping to Claude.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="7" data-sender="claude" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Claude</span>
+                <p>Great &mdash; filters applied. Now <code>set_view({view:'heatmap'})</code> to show density.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="8" data-sender="map" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">M</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">The Map</span>
+                <p>Heatmap rendering.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="9" data-sender="claude" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Claude</span>
+                <p>Done. Top-right shows Nevada as the brightest cluster &mdash; Area 51 region, 847 reports in range. Anything you want me to drill into?</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="10" data-sender="loop" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">L</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">The Loop</span>
+                <p>No more tool requests. Exiting the loop. User sees the final text.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-typing" id="chat-module6-loop-typing" style="display:none">
+            <div class="chat-avatar" id="chat-module6-loop-typing-avatar">?</div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5 — Quiz + outro -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Steering check &mdash; three scenarios</h2>
+
+        <p>The whole point of this course is to make you a sharper steerer when AI writes code for you. Agent loops are where most "AI assistant" features go wrong. Three scenarios, one right answer each.</p>
+
+        <div class="quiz-container" id="quiz-module6">
+          <div class="quiz-question-block"
+               data-correct="option-a"
+               data-explanation-right="Exactly. Either the tool catalog never made it into the request body, or the loop doesn't check for tool_use blocks and invoke executeTool. Classic hand-rolled-loop bug — Claude happily describes what it 'would' do, but nothing actually runs."
+               data-explanation-wrong="Not quite. No real API call was made, so a downed weather service is not the issue, and a better prompt will not help if the loop itself is broken.">
+            <h3 class="quiz-question">AI built you a "chat with your app" feature. When you test it, the assistant's first reply says "I called the weather API" &mdash; but no API call actually happened, and the app doesn't expose a weather tool. What's the most likely bug?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Claude hallucinated a tool that doesn't exist &mdash; either the tool catalog wasn't passed, or the loop isn't checking for tool_use blocks and actually executing them.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The weather API is down.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The message needs a better system prompt.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-a"
+               data-explanation-right="Right. Claude truly has no memory between calls — the messages array is the memory. If you are not persisting it and re-sending the whole thing, every turn starts from scratch."
+               data-explanation-wrong="Close but not the fix. Yes, Claude has no built-in memory between calls, but the solution is the same either way: save the messages array and send it every time.">
+            <h3 class="quiz-question">Your AI agent runs one step, finishes, and the user's follow-up question has no memory of what was just said. What's the most likely cause?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The messages array isn't being persisted or re-sent &mdash; every call starts from a blank history.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Claude has amnesia by design.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Prompt caching is broken.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Exactly. Two lines — cache_control: {type: 'ephemeral'} on the system prompt and on the last tool. Anthropic holds them for about five minutes, and you pay a fraction of input tokens for cached prefixes on every follow-up turn."
+               data-explanation-wrong="Not the real win here. Rewriting a short prompt will not move the needle, and switching models is a different tradeoff — the fastest fix is to tell Anthropic to cache the stable prefix.">
+            <h3 class="quiz-question">You open your AI-driven app's network tab and see the same 4KB of system-prompt text sent on every turn, costing you input tokens. What's the fix?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Rewrite the system prompt to be shorter.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Add <code>cache_control: {type: 'ephemeral'}</code> to the system prompt and the last tool definition so Anthropic serves them from cache on subsequent turns.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Switch to a cheaper model.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module6')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module6')">Try Again</button>
+        </div>
+
+        <h3 class="screen-heading" style="margin-top: var(--space-12)">You now own six mental models</h3>
+
+        <p>This is the end of the course. Take a breath &mdash; you have picked up six patterns that show up, in some combination, in every data-heavy app an AI will ever build for you:</p>
+
+        <div class="icon-rows">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-4)">1</div>
+            <div>
+              <strong>The pipeline</strong>
+              <p>Raw files on a laptop get cleaned, merged, and packed once &mdash; then shipped as one compact artifact to every visitor. (Module 3)</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">2</div>
+            <div>
+              <strong>The cast</strong>
+              <p>A handful of small characters &mdash; main thread, workers, libraries, storage &mdash; each with one job, talking over clean seams. (Module 2)</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-3)">3</div>
+            <div>
+              <strong>The data journey</strong>
+              <p>User interaction in; pixels out. Every click becomes a path through the cast, and you can now trace it end to end. (Module 1)</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-5)">4</div>
+            <div>
+              <strong>The rendering tricks</strong>
+              <p>Web Workers, clustering, batched rendering &mdash; the moves that keep 258,000 pins from freezing the page. (Module 4)</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-1)">5</div>
+            <div>
+              <strong>The correlation math</strong>
+              <p>Pearson r to measure how much two grids rhyme; permutation p-values to ask "is this just luck?" Real science, two functions. (Module 5)</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-accent)">6</div>
+            <div>
+              <strong>The agent loop</strong>
+              <p>LLM plus tool catalog plus five-step cycle. A text machine grows hands. (This module)</p>
+            </div>
+          </div>
+        </div>
+
+        <p style="margin-top: var(--space-8)">Every data app AI will build for you is some mix of these six. A dashboard for your calendar? Pipeline + cast + data journey. A "chat with my spreadsheet" tool? All six. The next time an AI agent hands you code, you are no longer squinting at black boxes &mdash; you have the vocabulary to ask sharp questions, spot the classic bugs, and steer the build where you want it to go.</p>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! "AI agents" are just a loop + a tool catalog.</strong>
+            <p>Anytime someone says "AI agent" and it feels mystical, picture the five steps &mdash; ask, think, act, report, loop &mdash; plus a JSON list of things the app is willing to do. That is the entire trick. You have graduated.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+  </main>
+
+</body>
+</html>

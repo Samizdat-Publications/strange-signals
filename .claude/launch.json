@@ -7,6 +7,13 @@
       "runtimeArgs": ["-m", "http.server", "8002", "-d", "."],
       "port": 8002,
       "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "course",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8003", "-d", "strange-signals-course"],
+      "port": 8003,
+      "cwd": "${workspaceFolder}"
     }
   ]
 }

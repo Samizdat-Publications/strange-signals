@@ -1,0 +1,405 @@
+<section class="module" id="module-4" style="background: var(--color-bg);">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">Rendering 258K Pins Fast</h1>
+      <p class="module-subtitle">A stage magician's repertoire — six tricks that keep the page feeling instant.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- ===================== SCREEN 1 ===================== -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The problem of the frozen page</h2>
+
+        <p>Your browser has <em>one</em> painter. One. Every pixel on the page — the pins, the popup, the sidebar charts, the animated loading text — is drawn by the same single worker. Ask it to place 258,000 pins at once and it stops answering the door for ten seconds. The page freezes, the cursor stalls, clicks are ignored.</p>
+
+        <p>Modern web apps don't get around this by being <em>clever</em> with the paint. They get around it by never asking for more than the painter can handle at once. The <span class="term" data-definition="The one lane your browser uses to draw the page, handle clicks, run JavaScript, and animate things. If you hog it, everything freezes.">main thread</span> is a single lane — the trick is to never block it for long.</p>
+
+        <p>A stage magician doesn't <em>actually</em> saw the assistant in half. They make you look at the left hand while the right hand does the work. Strange Signals uses six such tricks — none of them drawing faster, all of them hiding the work.</p>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">*</div>
+          <div class="callout-content">
+            <strong class="callout-title">The timeline picture</strong>
+            <p style="margin: 0;">One unbroken 10-second render = a frozen gray zone. <strong>52 batches of 5,000</strong> with a breath in between = the page stays alive the whole time. Same total work. Totally different feel.</p>
+          </div>
+        </div>
+
+        <div class="flow-steps" style="margin-top: var(--space-8);">
+          <div class="flow-step">
+            <div class="flow-step-num" style="background: #9E9790;">!</div>
+            <p><strong>Naive:</strong> click &rarr; 10s frozen screen &rarr; all pins</p>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="flow-step-num">OK</div>
+            <p><strong>Batched:</strong> click &rarr; 52 tiny slices with gaps &rarr; all pins</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SCREEN 2 ===================== -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Trick #1 — Batched rendering</h2>
+
+        <p>The first illusion is the showpiece. <code>renderMarkers</code> loops over 258K records, but it only creates <strong>5,000</strong> markers at a time. Then it calls <code>setTimeout(addBatch, 0)</code> — a polite way of saying <em>"do this next, but not right now."</em></p>
+
+        <p>That tiny gap is the whole trick. In it, the browser gets a turn to paint a frame, handle a click, let the <span class="term" data-definition="The browser's scheduler. It picks one task at a time off a queue — a click, a timer, a paint — runs it to completion, then picks the next.">event loop</span> breathe. Then our next slice runs. Repeat 52 times. The user sees pins appear in pulses instead of waiting in the dark.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+<pre><code><span class="code-line"><span class="code-keyword">let</span> markerRenderGen=<span class="code-number">0</span>;</span>
+<span class="code-line"><span class="code-keyword">function</span> <span class="code-function">renderMarkers</span>(){</span>
+<span class="code-line">  <span class="code-keyword">const</span> myGen=++markerRenderGen;</span>
+<span class="code-line">  <span class="code-keyword">const</span> BATCH=<span class="code-number">5000</span>;</span>
+<span class="code-line">  <span class="code-keyword">for</span>(<span class="code-keyword">let</span> i=<span class="code-number">0</span>;i&lt;<span class="code-number">3</span>;i++){</span>
+<span class="code-line">    <span class="code-keyword">if</span>(!filteredCat[i].length)<span class="code-keyword">continue</span>;</span>
+<span class="code-line">    <span class="code-keyword">const</span> group=<span class="code-function">createCluster</span>(i);</span>
+<span class="code-line">    <span class="code-keyword">const</span> data=filteredCat[i];</span>
+<span class="code-line">    <span class="code-keyword">let</span> idx=<span class="code-number">0</span>;</span>
+<span class="code-line">    <span class="code-keyword">function</span> <span class="code-function">addBatch</span>(){</span>
+<span class="code-line">      <span class="code-keyword">if</span>(markerRenderGen!==myGen)<span class="code-keyword">return</span>; <span class="code-comment">// stale render — abort</span></span>
+<span class="code-line">      <span class="code-keyword">const</span> end=<span class="code-function">Math.min</span>(idx+BATCH,data.length);</span>
+<span class="code-line">      <span class="code-keyword">const</span> batch=[];</span>
+<span class="code-line">      <span class="code-keyword">for</span>(;idx&lt;end;idx++)batch.<span class="code-function">push</span>(<span class="code-function">createMarker</span>(data[idx]));</span>
+<span class="code-line">      group.<span class="code-function">addLayers</span>(batch);</span>
+<span class="code-line">      <span class="code-keyword">if</span>(idx&lt;data.length)<span class="code-function">setTimeout</span>(addBatch,<span class="code-number">0</span>);</span>
+<span class="code-line">    }</span>
+<span class="code-line">    <span class="code-function">addBatch</span>();</span>
+<span class="code-line">    group.<span class="code-function">addTo</span>(map);</span>
+<span class="code-line">    clusterGroups[i]=group;</span>
+<span class="code-line">  }</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A counter that ticks up every time a render starts. It lives outside the function so it survives between renders.</p>
+              <p class="tl">The entry point. This is what runs when the user clicks "Markers."</p>
+              <p class="tl">Capture <em>my</em> number before I start work. If a newer render comes in, it'll bump the counter past mine — and I'll know to bow out.</p>
+              <p class="tl">Do 5,000 markers per slice. Picked empirically: big enough that the loop overhead is negligible, small enough that one slice finishes in a few milliseconds.</p>
+              <p class="tl">Loop over the three categories (UFO, Bigfoot, Haunted). Skip any that have no filtered data.</p>
+              <p class="tl">Set up a Leaflet cluster group to hold this category's pins.</p>
+              <p class="tl">The inner worker function. This is the one that gets called over and over.</p>
+              <p class="tl"><strong>Am I stale?</strong> If someone newer has started, abandon the rest of my work immediately. No cleanup needed.</p>
+              <p class="tl">Grab the next 5,000 markers (or whatever's left).</p>
+              <p class="tl">Build them into a temporary array, then add them all at once — one <span class="term" data-definition="The browser's tree of HTML elements. Cheap up to a few thousand nodes; expensive past that because the browser has to track every one.">DOM</span> touch instead of 5,000.</p>
+              <p class="tl">Still more to do? Queue up the next batch with <span class="term" data-definition="A JavaScript function that means 'run this later.' setTimeout(fn, 0) is a trick: it means 'run this ASAP, but not right now — put it at the back of the queue so other waiting tasks get their turn.'"><code>setTimeout</code></span>. The <code>0</code> means "right after the browser catches up on everything else."</p>
+              <p class="tl">Kick it off the first time, attach the cluster to the map, and stash a reference so we can remove it later.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SCREEN 3 ===================== -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Screen 3 — The other five tricks</h2>
+
+        <p>Batching is just one illusion in the magician's bag. The rest of the app leans on five more, each suited to a different kind of heavy lifting. Learn their names — the next time an AI-built app feels janky, you'll know which one to ask for.</p>
+
+        <div class="pattern-cards" style="margin-top: var(--space-8);">
+
+          <div class="pattern-card" style="border-top: 3px solid var(--color-accent);">
+            <div class="pattern-icon" style="background: var(--color-accent);">1</div>
+            <h4 class="pattern-title">Batched rendering</h4>
+            <p class="pattern-desc"><strong>What:</strong> Chop a big loop into 5,000-item slices with a <code>setTimeout</code> between each.</p>
+            <p class="pattern-desc"><strong>When to ask for it:</strong> any loop over 10K+ items that runs on the main thread.</p>
+          </div>
+
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2);">
+            <div class="pattern-icon" style="background: var(--color-actor-2);">2</div>
+            <h4 class="pattern-title">Spatial index <span class="term" data-definition="A stored result of an expensive computation, keyed by its inputs. If the same inputs come in again, return the stored result instead of recomputing.">caching</span></h4>
+            <p class="pattern-desc"><strong>What:</strong> Build an expensive <span class="term" data-definition="A data structure that groups points by their location so 'find nearby points' is fast. In this app, a simple grid-cell lookup.">spatial index</span> once, reuse it on every hover and recount.</p>
+            <p class="pattern-desc"><strong>When to ask for it:</strong> the same input keeps being asked the same question (hover-hover-hover).</p>
+          </div>
+
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-3);">
+            <div class="pattern-icon" style="background: var(--color-actor-3);">3</div>
+            <h4 class="pattern-title"><span class="term" data-definition="An HTML element that's essentially a blank pixel grid your JavaScript can draw on. Fast for thousands of small shapes. Compare to DOM, where each shape is a separate tagged element.">Canvas</span> renderer</h4>
+            <p class="pattern-desc"><strong>What:</strong> Tell Leaflet <code>preferCanvas: true</code>. Pins become pixels on one canvas, not 258K DOM elements.</p>
+            <p class="pattern-desc"><strong>When to ask for it:</strong> drawing thousands of small graphical things.</p>
+          </div>
+
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4);">
+            <div class="pattern-icon" style="background: var(--color-actor-4);">4</div>
+            <h4 class="pattern-title">MarkerCluster</h4>
+            <p class="pattern-desc"><strong>What:</strong> A Leaflet plugin that lumps nearby pins into one circle-with-a-count and only renders what's visible at this zoom.</p>
+            <p class="pattern-desc"><strong>When to ask for it:</strong> data density is way higher than the screen's pixel density.</p>
+          </div>
+
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5);">
+            <div class="pattern-icon" style="background: var(--color-actor-5);">5</div>
+            <h4 class="pattern-title"><span class="term" data-definition="A pattern: if an event fires many times in a burst, only act on the last one. Wait until the burst stops, then run.">Debounced</span> zoom</h4>
+            <p class="pattern-desc"><strong>What:</strong> Ignore every <code>zoomend</code> event except the last — wait for 300ms of quiet before re-rendering.</p>
+            <p class="pattern-desc"><strong>When to ask for it:</strong> an event fires in rapid bursts and each run is expensive.</p>
+          </div>
+
+          <div class="pattern-card" style="border-top: 3px solid var(--color-accent-muted);">
+            <div class="pattern-icon" style="background: var(--color-accent-muted);">6</div>
+            <h4 class="pattern-title">Web Worker</h4>
+            <p class="pattern-desc"><strong>What:</strong> Hand the hex-count math to <code>hex-worker.js</code> — a parallel thread — so the main thread stays free to paint.</p>
+            <p class="pattern-desc"><strong>When to ask for it:</strong> pure math work that takes more than ~50ms.</p>
+          </div>
+
+        </div>
+
+        <h3 style="margin-top: var(--space-12); font-family: var(--font-display); font-size: var(--text-xl);">Trick #5 in the wild — the debounced zoom</h3>
+        <p>Scroll-zooming fires <code>zoomend</code> ten times in a second. Re-rendering a heatmap for every single one would be murderous. The fix is five extra lines:</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+<pre><code><span class="code-line"><span class="code-keyword">let</span> _zoomRenderTimer=<span class="code-keyword">null</span>;</span>
+<span class="code-line">map.<span class="code-function">on</span>(<span class="code-string">'zoomend'</span>,()=&gt;{</span>
+<span class="code-line">  <span class="code-function">document.getElementById</span>(<span class="code-string">'stat-zoom'</span>).textContent=map.<span class="code-function">getZoom</span>();</span>
+<span class="code-line">  <span class="code-keyword">if</span>(currentView===<span class="code-string">'heatmap'</span>||currentView===<span class="code-string">'hexbin'</span>){</span>
+<span class="code-line">    <span class="code-keyword">if</span>(_zoomRenderTimer)<span class="code-function">clearTimeout</span>(_zoomRenderTimer);</span>
+<span class="code-line">    _zoomRenderTimer=<span class="code-function">setTimeout</span>(()=&gt;{_zoomRenderTimer=<span class="code-keyword">null</span>;<span class="code-function">renderCurrentView</span>();},<span class="code-number">300</span>);</span>
+<span class="code-line">  }</span>
+<span class="code-line">});</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A slot to remember the <em>pending</em> re-render we've scheduled but not yet run.</p>
+              <p class="tl">Leaflet fires <code>zoomend</code> every time a zoom completes. Scroll-zooming fires it repeatedly — once per wheel tick.</p>
+              <p class="tl">Update the zoom number in the sidebar (this is cheap, always do it).</p>
+              <p class="tl">Only the expensive views — heatmap and hexbin — need the debounce dance.</p>
+              <p class="tl">If we already had a re-render queued, cancel it. We're about to queue a fresher one.</p>
+              <p class="tl">Wait 300ms. If no new zoom arrives, fire <code>renderCurrentView</code>. If another zoom <em>does</em> come in, this timer gets cancelled on the next line and replaced with a new 300ms countdown.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SCREEN 4 ===================== -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Trick #7 — The stale render problem</h2>
+
+        <p>Here's the subtle bit — the one AI almost always forgets. Batched rendering takes <em>time</em>. While one render is mid-way through its 52 slices, what happens if the user clicks "apply filter" again, with different inputs? Now there are <em>two</em> batch sequences running, both writing to the same cluster groups. Pins from the old filter mingle with pins from the new one. Chaos.</p>
+
+        <p>The fix is one integer: <code>markerRenderGen</code>. Every new render bumps the counter and captures the old value as <code>myGen</code>. At the top of every batch, it checks: <em>"Am I still the newest render?"</em> If a newer one started, the stale batch quietly bows out. No cleanup. No coordination. Just one number.</p>
+
+        <div class="step-cards" style="margin-top: var(--space-8);">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>First click lands. <code>markerRenderGen</code> goes 0 &rarr; 1.</strong>
+              <p>Render A grabs <code>myGen = 1</code>, starts chewing through 52 batches.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Halfway through, the user clicks again. <code>markerRenderGen</code> goes 1 &rarr; 2.</strong>
+              <p>Render B grabs <code>myGen = 2</code>, starts its own 52 batches.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Render A's next batch wakes up.</strong>
+              <p>It checks: <code>markerRenderGen (2) !== myGen (1)</code>. It returns. Silently. Its remaining batches never run.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Render B finishes clean.</strong>
+              <p>Only the newest filter's pins make it to the map. No mingling. No bug report.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent" style="margin-top: var(--space-10);">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! Long async work needs a stale-check.</strong>
+            <p>Any time you kick off work that spans multiple ticks of the <span class="term" data-definition="The browser's scheduler. It picks one task at a time off a queue — a click, a timer, a paint — runs it to completion, then picks the next.">event loop</span>, you need a way to detect it's been superseded. A <strong>generation counter</strong> is the cheapest version of that idea — one integer, one check per slice, done. Whenever you ask AI for batched, debounced, or streamed work, also ask: <em>"What happens if a new one starts before the old one finishes?"</em></p>
+          </div>
+        </div>
+
+        <h3 style="margin-top: var(--space-12); font-family: var(--font-display); font-size: var(--text-xl);">Bonus — what caching looks like</h3>
+        <p>Trick #2 (the spatial index) is a one-function example of caching done right. Build it once. Hand it back on every future call. The savings show up across thousands of hex recounts.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+<pre><code><span class="code-line"><span class="code-keyword">function</span> <span class="code-function">buildSpatialIndex</span>(cellDeg){</span>
+<span class="code-line">  <span class="code-keyword">if</span>(cachedSpatialIndex)<span class="code-keyword">return</span> cachedSpatialIndex;</span>
+<span class="code-line">  <span class="code-keyword">const</span> idx={};</span>
+<span class="code-line">  <span class="code-keyword">for</span>(<span class="code-keyword">let</span> cat=<span class="code-number">0</span>;cat&lt;<span class="code-number">3</span>;cat++){</span>
+<span class="code-line">    filteredCat[cat].<span class="code-function">forEach</span>(r=&gt;{</span>
+<span class="code-line">      <span class="code-keyword">const</span> key=<span class="code-function">Math.floor</span>(r[F.LAT]/cellDeg)+<span class="code-string">','</span>+<span class="code-function">Math.floor</span>(r[F.LON]/cellDeg);</span>
+<span class="code-line">      (idx[key]=idx[key]||[]).<span class="code-function">push</span>(r);</span>
+<span class="code-line">    });</span>
+<span class="code-line">  }</span>
+<span class="code-line">  cachedSpatialIndex=idx;</span>
+<span class="code-line">  <span class="code-keyword">return</span> idx;</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Take a grid-cell size in degrees as input.</p>
+              <p class="tl"><strong>Already built? Return the cached version.</strong> This is the whole point — don't rebuild.</p>
+              <p class="tl">Fresh build: start with an empty lookup table.</p>
+              <p class="tl">For each of the three categories...</p>
+              <p class="tl">...walk every point in that category...</p>
+              <p class="tl">...compute a grid-cell key like <code>"395,-845"</code>. Points in the same cell get the same key — a cheap way to group by location.</p>
+              <p class="tl">Append this point to the bucket for that key. Create the bucket if it's the first point there.</p>
+              <p class="tl">Stash the finished index. Next call gets it for free.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: var(--space-12); font-family: var(--font-display); font-size: var(--text-xl);">Two tricks in concert — debounce meets cache</h3>
+        <p>Watch what happens when the user spins the scroll wheel. Trick #5 absorbs the burst. Trick #2 answers the survivor instantly. The user feels a single, smooth redraw.</p>
+
+        <div class="flow-animation" id="flow-module4-zoom" data-steps='[
+          {"highlight":"flow-actor-1","label":"User spins the scroll wheel. Ten zoomend events fire in under a second."},
+          {"highlight":"flow-actor-2","label":"Each tick of the wheel fires a zoomend event.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"Another tick. Another zoomend.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"And another. Events keep piling up.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"Each event clears the pending timer and starts a fresh 300ms countdown.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-3","label":"The timer survives the final event. 300ms of quiet passes."},
+          {"highlight":"flow-actor-4","label":"Timer fires. The re-render asks: what points are in the visible bounds?","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-4","label":"The index is already built — return it from cache. Saves ~200ms."},
+          {"highlight":"flow-actor-5","label":"One re-render, not ten. The user feels responsiveness, not jank.","packet":true,"from":"actor-4","to":"actor-5"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon">U</div>
+              <span>User Scrolls</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon">Z</div>
+              <span>zoomend Events</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon">T</div>
+              <span>Debounce Timer</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon">C</div>
+              <span>Spatial Index Cache</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon">M</div>
+              <span>Map Redraws</span>
+            </div>
+          </div>
+          <div class="flow-packet" id="flow-packet"></div>
+          <div class="flow-step-label" id="flow-label">Click "Next Step" to watch a burst of scroll zooms collapse into a single redraw.</div>
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SCREEN 5 — QUIZ ===================== -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Pick the right trick</h2>
+        <p>Three scenarios. For each, imagine you're steering an AI agent that just produced janky code. What do you ask it to fix?</p>
+
+        <div class="quiz-container" id="quiz-module4">
+
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Exactly — this is textbook batched rendering. Chop the work, yield between slices, and the browser gets a chance to paint and stay responsive."
+               data-explanation-wrong="Think about where the bottleneck actually is. The browser has one main thread drawing everything — the fix is to not hog it in the first place. Chop the work, yield between chunks.">
+            <h3 class="quiz-question">1. You're building a feature where AI places 40,000 colored dots on a chart. The page freezes for 8 seconds the first time. What's the right fix to ask AI for?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>A more powerful computer will render it faster.</span>
+              </button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Render the dots in batches of a few thousand with <code>setTimeout</code> between them, so the browser can paint and respond mid-render.</span>
+              </button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Zoom in so only 500 dots are visible at once.</span>
+              </button>
+              <button class="quiz-option" data-value="d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Move the whole chart to a server and send back an image.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Right — debouncing. Wait for the burst to stop, then run once. The input genuinely changes on each drag, so caching won't help; and the work is already a single call, so there's nothing to batch."
+               data-explanation-wrong="Notice the symptom: the work runs too often, not that it's too big or that the same input is being asked twice. The fix is to ignore all events except the last in a burst.">
+            <h3 class="quiz-question">2. A user drags a range slider. On every tiny drag, the chart under it recomputes for 400ms, so the drag feels "sticky." What's the name for the fix?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Caching — store the chart and reuse it.</span>
+              </button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Debouncing — only recompute after the slider stops moving for N milliseconds.</span>
+              </button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Batching — chop the recompute into smaller pieces.</span>
+              </button>
+              <button class="quiz-option" data-value="d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Adding more memory to the browser.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="You got it. This is the stale-render bug. The first filter's batched render was still running when the second one started, and the old batches kept writing to the cluster. A generation counter — one integer that every batch checks before running — fixes it cleanly."
+               data-explanation-wrong="Re-read the symptom: the map shows a mix of both filters' results. That's a telltale sign that the first render didn't stop when the second one started. Think about what happens when batched work is interrupted by new batched work.">
+            <h3 class="quiz-question">3. A subtle bug — the user clicks "filter by year: 1990-2000," then immediately clicks "filter by year: 2010-2020." The map ends up showing a random mix of markers from both filters. What's the most likely cause?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The second filter started a new render, but the first render's batches were still running and kept adding old markers.</span>
+              </button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The filter function has a typo somewhere.</span>
+              </button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The map cached the old result and is refusing to let go.</span>
+              </button>
+              <button class="quiz-option" data-value="d" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The user clicked too fast for the browser to handle.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module4')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module4')">Try Again</button>
+        </div>
+
+        <div class="callout callout-info" style="margin-top: var(--space-12);">
+          <div class="callout-icon">&rarr;</div>
+          <div class="callout-content">
+            <strong class="callout-title">Coming up next</strong>
+            <p>Up to now we've been about <em>drawing</em>. The next module is about <em>concluding</em>: do UFO hotspots actually correlate with military bases? Does that correlation mean anything? Now that the map feels fast, let's do the math that makes Strange Signals more than a dot plotter.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>

@@ -24,10 +24,17 @@ python -m http.server 8001         # Serve from project root
 
 ```
 index.html                 HTML shell — structure, CDN refs, links CSS/JS
-strange-signals.css        All styles — CSS vars, layout, sidebar, charts
-strange-signals.js         All logic (~2800 lines) — IIFE-wrapped app code
+strange-signals.css        Main styles — CSS vars, layout, sidebar, charts
+strange-signals.js         Main app logic (~3000 lines) — IIFE-wrapped
 parse-worker.js            Web Worker for off-main-thread JSON parsing
+hex-worker.js              Web Worker for hex-grid aggregation (correlation mode)
 ai-assistant.js            SIGNAL AI assistant (Anthropic API, tool use)
+ai-assistant.css           SIGNAL panel styles
+signal-reports.js          AI-generated HTML investigation report builder
+signal-charts.js           Inline SVG chart rendering for reports/chat
+annotations.js / .css      User pin-note annotations (localStorage, import/export)
+window-manager.js / .css   Floating panel / drag-resize window system
+highlight-layer.js         Leaflet overlay for AI "highlight this area" tool
 
 DATA PIPELINE (Python 3)
   setup_sightings.sh         Downloads 5 raw CSV datasets from GitHub/TidyTuesday
@@ -80,7 +87,7 @@ const F = {LAT:0, LON:1, CAT:2, DATE:3, LOC:4, SUB:5, DESC:6};
 ```
 
 ### JS Architecture (strange-signals.js)
-Everything is wrapped in an IIFE `(function(){ 'use strict'; ... })();`
+Everything is wrapped in an IIFE `(function(){ 'use strict'; ... })();`. Cross-script communication happens via a small set of globals assigned to `window` (e.g. `window.StrangeSignals`, `window.SignalAI`, `window.Annotations`) — there are no ES modules.
 
 | Section | What It Does |
 |---------|-------------|
@@ -128,6 +135,12 @@ Everything is wrapped in an IIFE `(function(){ 'use strict'; ... })();`
 10. **Cryptid Sightings** — 105 non-Bigfoot cryptids (Mothman, Jersey Devil, Champ, etc)
 11. **Missing 411** — 71 National Park disappearance cases
 12. **Geomagnetic Storms** — 92 G3+ storms (1950-2026) as temporal timeline overlay
+
+### SIGNAL AI (ai-assistant.js)
+- Direct browser → Anthropic API call (user's API key, stored in `localStorage`, never proxied)
+- Tool-use loop: model calls tools that mutate map state (filters, layers, viewport), then the tool result is fed back on the next turn
+- Tool surface is defined inline in `ai-assistant.js` — e.g. `search_sightings`, `run_spatial_correlation`, `detect_clusters`, `toggle_overlay`, `navigate_map`, `get_nearby_overlays`, `generate_report`, `render_chart`
+- Reports (`signal-reports.js`) produce self-contained HTML files; charts (`signal-charts.js`) render inline SVG so report exports have no external asset deps
 
 ## Coding Conventions
 

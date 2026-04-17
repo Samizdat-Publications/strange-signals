@@ -1,0 +1,375 @@
+<section class="module" id="module-1" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">The Scene</h1>
+      <p class="module-subtitle">258,000 pushpins, a dark map, and one very deliberate architectural choice.</p>
+    </header>
+
+    <div class="module-body stagger-children">
+
+      <!-- Orientation: what this course is -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Before we start</h2>
+        <p>
+          This is a six-part tour of a real codebase called <strong>Strange Signals</strong> &mdash; an interactive map of paranormal sightings. The goal isn&rsquo;t to make you a programmer. It&rsquo;s to give a &ldquo;vibe coder&rdquo; &mdash; someone who builds with AI but doesn&rsquo;t read code &mdash; the vocabulary and mental map to steer a project like this with confidence.
+        </p>
+        <p>
+          By the end you&rsquo;ll know what every file in the project is for, why the app is structured the way it is, and what tradeoffs the authors picked. We&rsquo;ll move like a detective working an evidence board: pin things up, connect them with string, step back, and finally see the pattern.
+        </p>
+      </section>
+
+      <!-- Screen 1: The moment of use -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The moment you open it</h2>
+        <p>
+          You open Strange Signals. A radar spins. A loading bar fills. Then <strong>258,000 pushpins</strong> drop onto a dark map of the United States. You click a green <span class="term" data-definition="On this map, a clump of pins that have been visually grouped into one circle with a count, because they&rsquo;re too close to show separately.">cluster</span> in Washington state &mdash; 3,536 UFO sightings live inside that one shape. How did a quarter of a million records from five different websites end up clickable on your laptop?
+        </p>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">?</div>
+          <div class="callout-content">
+            <strong class="callout-title">The question driving this module</strong>
+            <p>Who did the work of gathering, cleaning, and stitching these sightings together &mdash; and <em>when</em> did that work happen? The answer tells you almost everything about how the app is built.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 2: What this thing actually does -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">What this thing actually does</h2>
+        <p>
+          Three jobs, one screen. Everything else in the project exists to serve one of these three.
+        </p>
+
+        <div class="icon-rows">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-1)">1</div>
+            <div>
+              <strong>Plots 258K paranormal reports on a map</strong>
+              <p>UFO / UAP sightings, Bigfoot encounters, and haunted places &mdash; all visible at once, filterable by year, state, and keyword.</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">2</div>
+            <div>
+              <strong>Overlays real-world things nearby</strong>
+              <p>Military bases, earthquakes, caves, fireballs, restricted airspace &mdash; toggleable layers to see what lines up with the sightings.</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-3)">3</div>
+            <div>
+              <strong>Hands you the steering wheel &mdash; and an AI co-pilot</strong>
+              <p>An assistant named SIGNAL can drive the map for you: filter, zoom, correlate, and even write an investigation report.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 3: The four ways to see the data -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Four ways to see the same data</h2>
+        <p>
+          The bar across the top has four buttons. Each one is a different &ldquo;lens&rdquo; on the exact same 258,000 records &mdash; same data, four very different pictures.
+        </p>
+
+        <div class="pattern-cards">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">M</div>
+            <h4 class="pattern-title">MARKERS</h4>
+            <p class="pattern-desc">One pin per sighting. Click any pin for the full report text.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">H</div>
+            <h4 class="pattern-title">HEATMAP</h4>
+            <p class="pattern-desc">Blurs everything into hot/cold zones. Good for &ldquo;where are the hotspots?&rdquo;</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-3)">
+            <div class="pattern-icon" style="background: var(--color-actor-3)">X</div>
+            <h4 class="pattern-title">HEX DENSITY</h4>
+            <p class="pattern-desc">Counts sightings into honeycomb tiles. Answers &ldquo;how many per area?&rdquo;</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">C</div>
+            <h4 class="pattern-title">CORRELATION</h4>
+            <p class="pattern-desc">Does the math. Checks if UFO hotspots line up with, say, military bases.</p>
+          </div>
+        </div>
+
+        <p>
+          Those four buttons are just four words in the HTML of the page. Here&rsquo;s the exact code, with a plain-English translation.
+        </p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+<pre><code><span class="code-line"><span class="code-operator">&lt;</span><span class="code-tag">nav</span> <span class="code-attr">class</span>=<span class="code-value">"header-nav"</span><span class="code-operator">&gt;</span></span>
+<span class="code-line">  <span class="code-operator">&lt;</span><span class="code-tag">button</span> <span class="code-attr">class</span>=<span class="code-value">"nav-btn active"</span> <span class="code-attr">data-view</span>=<span class="code-value">"markers"</span><span class="code-operator">&gt;</span>MARKERS<span class="code-operator">&lt;/</span><span class="code-tag">button</span><span class="code-operator">&gt;</span></span>
+<span class="code-line">  <span class="code-operator">&lt;</span><span class="code-tag">button</span> <span class="code-attr">class</span>=<span class="code-value">"nav-btn"</span> <span class="code-attr">data-view</span>=<span class="code-value">"heatmap"</span><span class="code-operator">&gt;</span>HEATMAP<span class="code-operator">&lt;/</span><span class="code-tag">button</span><span class="code-operator">&gt;</span></span>
+<span class="code-line">  <span class="code-operator">&lt;</span><span class="code-tag">button</span> <span class="code-attr">class</span>=<span class="code-value">"nav-btn"</span> <span class="code-attr">data-view</span>=<span class="code-value">"hexbin"</span><span class="code-operator">&gt;</span>HEX DENSITY<span class="code-operator">&lt;/</span><span class="code-tag">button</span><span class="code-operator">&gt;</span></span>
+<span class="code-line">  <span class="code-operator">&lt;</span><span class="code-tag">button</span> <span class="code-attr">class</span>=<span class="code-value">"nav-btn"</span> <span class="code-attr">data-view</span>=<span class="code-value">"correlation"</span><span class="code-operator">&gt;</span>CORRELATION<span class="code-operator">&lt;/</span><span class="code-tag">button</span><span class="code-operator">&gt;</span></span>
+<span class="code-line"><span class="code-operator">&lt;/</span><span class="code-tag">nav</span><span class="code-operator">&gt;</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">This is the bar of buttons across the top of the app.</p>
+              <p class="tl">A button labeled MARKERS. The <code>data-view</code> tag is a little note stuck on the button so the JavaScript knows which view to switch to when it&rsquo;s clicked. The word <code>active</code> means this one is currently selected &mdash; it&rsquo;ll look highlighted.</p>
+              <p class="tl">A button labeled HEATMAP, tagged with its view name.</p>
+              <p class="tl">A button labeled HEX DENSITY, tagged <code>hexbin</code> (the technical name for honeycomb grids).</p>
+              <p class="tl">A button labeled CORRELATION, tagged with its view name.</p>
+              <p class="tl">End of the button bar.</p>
+            </div>
+          </div>
+        </div>
+
+        <p>
+          The four views are also four slightly different opinions about how to show data. Listen in on the argument.
+        </p>
+
+        <!-- Group chat animation -->
+        <div class="chat-window" id="chat-module1">
+          <div class="chat-messages">
+
+            <div class="chat-message" data-msg="0" data-sender="markers" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">M</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Markers</span>
+                <p>Let me draw one pin per sighting. Every report gets its own click.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="1" data-sender="heatmap" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">H</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-2)">Heatmap</span>
+                <p>You&rsquo;ll melt the user&rsquo;s laptop. I can blur it all into hot and cold zones instead.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="2" data-sender="hex" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">X</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Hex</span>
+                <p>Neither of you answers the real question: how many sightings per X square kilometers? That&rsquo;s my job &mdash; I count them into honeycomb tiles.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="3" data-sender="correlation" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Correlation</span>
+                <p>All three of you are just drawing. I do the math &mdash; whether UFO hotspots actually line up with military bases.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="4" data-sender="markers" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">M</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Markers</span>
+                <p>Fine. We each get a button in the top nav. User picks.</p>
+              </div>
+            </div>
+
+            <div class="chat-message" data-msg="5" data-sender="correlation" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Correlation</span>
+                <p>Deal. But when the user asks a real question, they&rsquo;ll come to me.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar">&hellip;</div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+
+        <p>
+          The whole app is organized around three sighting categories. Here&rsquo;s the actual line of code that names them.
+        </p>
+
+<pre><code><span class="code-keyword">const</span> <span class="code-property">CAT_COLORS</span> = [<span class="code-string">'#00ff88'</span>,<span class="code-string">'#ff6622'</span>,<span class="code-string">'#aa44ff'</span>];
+<span class="code-keyword">const</span> <span class="code-property">CAT_NAMES</span> = [<span class="code-string">'UFO/UAP'</span>,<span class="code-string">'Bigfoot/Sasquatch'</span>,<span class="code-string">'Haunted Place'</span>];
+<span class="code-keyword">const</span> <span class="code-property">CAT_RGB</span> = [<span class="code-string">'0,255,136'</span>,<span class="code-string">'255,102,34'</span>,<span class="code-string">'170,68,255'</span>];
+<span class="code-keyword">const</span> <span class="code-property">F</span> = {<span class="code-property">LAT</span>:<span class="code-number">0</span>, <span class="code-property">LON</span>:<span class="code-number">1</span>, <span class="code-property">CAT</span>:<span class="code-number">2</span>, <span class="code-property">DATE</span>:<span class="code-number">3</span>, <span class="code-property">LOC</span>:<span class="code-number">4</span>, <span class="code-property">SUB</span>:<span class="code-number">5</span>, <span class="code-property">DESC</span>:<span class="code-number">6</span>};</code></pre>
+
+        <p>
+          Three categories, three colors. Green is UFO, orange is Bigfoot, purple is Haunted. That last line (<code>F = &hellip;</code>) is a cheat sheet we&rsquo;ll come back to in Module 3 &mdash; it&rsquo;s how the app compresses 258K records into a tiny file.
+        </p>
+      </section>
+
+      <!-- Screen 4: The big idea - it's a pipeline -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The big idea: it&rsquo;s a pipeline</h2>
+        <p>
+          Here is the single most important thing to understand about Strange Signals: it is not one program. It&rsquo;s a <span class="term" data-definition="A sequence of steps where the output of one step becomes the input of the next. Strange Signals&rsquo; data goes through six or seven pipeline stages before it reaches your screen.">pipeline</span> of small programs that each do one job. The map you see is the <em>last</em> step. Everything before it happened on someone else&rsquo;s computer, was saved as a file, and shipped to your browser.
+        </p>
+
+        <p>
+          Walk it step by step. Click <em>Next Step</em> to follow the data from raw <span class="term" data-definition="Comma-Separated Values. A plain-text spreadsheet: one row per line, columns separated by commas. The raw datasets ship as CSVs.">CSV</span> files all the way to the map on your screen.
+        </p>
+
+        <!-- Flow animation -->
+        <div class="flow-animation" id="flow-module1-pipeline" data-steps='[
+          {"highlight":"flow-actor-1","label":"5 public datasets live on GitHub — NUFORC, BFRO, Shadowlands, and two more."},
+          {"highlight":"flow-actor-2","label":"Python downloads them all, strips out junk rows, merges them.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"Then squishes 258,000 records into one compact JSON file."},
+          {"highlight":"flow-actor-3","label":"The file gets saved to disk. This is the expensive part — and it only runs once.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"Your browser downloads that single file.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-4","label":"A Web Worker parses it off the main thread so the page stays responsive."},
+          {"highlight":"flow-actor-5","label":"And the map renders 258K pins.","packet":true,"from":"actor-4","to":"actor-5"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon">CSV</div>
+              <span>Raw CSVs</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon">PY</div>
+              <span>Python Scripts</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon">{ }</div>
+              <span>One Big JSON File</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon">WWW</div>
+              <span>Your Browser</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon">MAP</div>
+              <span>Map View</span>
+            </div>
+          </div>
+
+          <div class="flow-packet" id="flow-packet"></div>
+
+          <div class="flow-step-label" id="flow-label">Click &ldquo;Next Step&rdquo; to walk the pipeline</div>
+
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <p>
+          Two terms worth pausing on. A <span class="term" data-definition="A text format for storing structured data. Think of it as a way to write down a list of records so any computer can read them. The whole dataset is one .json file.">JSON</span> file is just a text file full of records &mdash; the whole <span class="term" data-definition="A collection of records — rows of data. Five different datasets get merged into one here.">dataset</span> is one big one. And a <span class="term" data-definition="A separate thread inside your browser that can do heavy work without freezing the UI. Module 3 covers this in depth — just a quick tooltip for now.">Web Worker</span> is a helper inside your browser that can chew through that file without freezing the page. Module 3 goes deep on the worker; for now, just know it exists.
+        </p>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! The app has no backend.</strong>
+            <p>There is no <span class="term" data-definition="A server that runs code and talks to a database. Strange Signals doesn&rsquo;t have one — everything happens in your browser.">backend</span> server computing anything in real time. The JSON file was pre-computed on someone&rsquo;s laptop, committed to disk, and is served as a <span class="term" data-definition="A file that just sits on disk waiting to be downloaded, unchanged. Like a PDF or an image. Opposite of a dynamic page where the server builds it fresh every time.">static file</span>. Every feature &mdash; filters, correlations, even the AI assistant &mdash; runs on <em>your</em> computer. No server costs, no API downtime, no database. But also: no live data. Every time the datasets update, someone has to rebuild and re-publish the JSON.</p>
+          </div>
+        </div>
+
+        <p>
+          That&rsquo;s the tradeoff worth internalizing. Pre-computed data is fast, cheap, and offline-capable &mdash; but rigid. Live data is flexible but requires a server, a database, and someone to keep it all running. Strange Signals chose the first path. Knowing why helps you make the same call on your own projects.
+        </p>
+      </section>
+
+      <!-- Screen 5: Quiz -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check yourself</h2>
+        <p>
+          Three scenarios. Pick what you&rsquo;d actually think if this happened in your own project.
+        </p>
+
+        <div class="quiz-container" id="quiz-module1">
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Exactly. Strange Signals is a static app — once the JSON is downloaded, everything else runs locally in your browser. That&rsquo;s the architecture lesson: no further network calls needed for the core experience."
+               data-explanation-wrong="Close, but not quite the architecture lesson. Caching is certainly possible in general, but the real reason Strange Signals works offline after first load is that the data itself is a single static file — there&rsquo;s no backend or database to reach.">
+            <h3 class="quiz-question">You open Strange Signals on a new laptop at 2am. Your wifi is off. The map still loads and you can click pins. What does that tell you about how the app works?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The app is cached from your last visit.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The map data was downloaded as a single file when the page first loaded &mdash; no further network calls are needed to browse.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Your browser talks to a database on the server.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Right. Because the data is pre-computed, any new dataset has to go through the pipeline (Python scripts) and re-bake the JSON. Only after that does the UI work even apply."
+               data-explanation-wrong="That&rsquo;s only the very last step, and it won&rsquo;t show any data on its own. Pre-computed architectures mean every new dataset has to run through the pipeline first to be baked into the JSON file.">
+            <h3 class="quiz-question">You want to add a 20,000-record dataset of Loch Ness sightings. What kind of work is that?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Add a new button in the UI.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Run the Python pipeline with a new data source, rebuild the JSON, then update the UI.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Deploy a new API endpoint.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-a"
+               data-explanation-right="Good instinct. Since every feature depends on that one JSON file loading correctly, the Network tab is the first place to look. If the file failed to download, nothing &mdash; markers, heatmap, correlation &mdash; will work."
+               data-explanation-wrong="There is no database or server in this app &mdash; everything runs in the browser off a single static file. That&rsquo;s why checking the Network tab (did the file download?) is the right first move.">
+            <h3 class="quiz-question">A user says the correlation view &ldquo;isn&rsquo;t working.&rdquo; You know nothing else. Which tab would you check first in your browser&rsquo;s dev tools?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Network tab &mdash; maybe the big JSON file failed to download.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The database logs.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The server error page.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+        </div>
+
+        <p style="margin-top: var(--space-12);">
+          You just said it out loud: this app is a pipeline, the JSON file is the handoff, and your browser does the rest. Now let&rsquo;s meet the individual characters who make this show run &mdash; every file in the project, what it does, and why it&rsquo;s there.
+        </p>
+      </section>
+
+    </div>
+  </div>
+</section>

@@ -1,0 +1,511 @@
+<section class="module" id="module-6" style="background: var(--color-bg)">
+  <div class="module-content">
+
+    <header class="module-header animate-in">
+      <span class="module-number">06</span>
+      <h1 class="module-title">SIGNAL AI — The Agent Loop</h1>
+      <p class="module-subtitle">How a text-only model gets hands — 80 lines of JavaScript that turn Claude into an air-traffic controller for your map.</p>
+    </header>
+
+    <div class="module-body">
+
+      <!-- SCREEN 1 — What SIGNAL can actually do -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">What just happened?</h2>
+
+        <p>You type <em>"show me UFO hotspots near military bases in the 90s"</em> into SIGNAL's chat box. Three seconds later the map has zoomed, the year filter is 1990&ndash;1999, the military overlay is on, and the heatmap is rendering. <strong>You didn't click anything.</strong></p>
+
+        <p>Picture an <span class="term" data-definition="An LLM (Large Language Model) is a neural network that takes text in and produces text out. On its own it cannot do anything — it can only write. Agent loops give it hands.">LLM</span> as an air-traffic controller in a tower with binoculars and a radio. The controller cannot fly the planes &mdash; all they can do is <em>see</em> (look through the binoculars) and <em>talk</em> (issue instructions over the radio). Strange Signals' AI is the same: Claude cannot touch the map directly. It can only ask to <em>see</em> something or <em>do</em> something, and the browser runs each request and reports back.</p>
+
+        <p>Those requests are called <span class="term" data-definition="A tool is a function the app exposes to the LLM. It is described in JSON with a name, a purpose, and an input schema. The LLM picks which tool to call and supplies arguments; the app runs them.">tools</span>. Strange Signals exposes about two dozen of them, grouped into four flavors:</p>
+
+        <div class="pattern-cards">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">eye</div>
+            <h4 class="pattern-title">See the map</h4>
+            <p class="pattern-desc">Read what's currently visible &mdash; bounds, zoom, which categories are on, how many records survive the filters. Example: <code>get_map_state</code>.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">drive</div>
+            <h4 class="pattern-title">Drive the map</h4>
+            <p class="pattern-desc">Change what's visible &mdash; pan, zoom, switch view, apply filters, toggle overlays. Example: <code>set_view</code>, <code>apply_filters</code>.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-3)">
+            <div class="pattern-icon" style="background: var(--color-actor-3)">math</div>
+            <h4 class="pattern-title">Analyze</h4>
+            <p class="pattern-desc">Run the Module 5 math on demand &mdash; correlations, clusters, nearest-neighbor distances, report builders. Example: <code>compute_correlation</code>.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">pin</div>
+            <h4 class="pattern-title">Annotate</h4>
+            <p class="pattern-desc">Stick pins on the map with notes and colors; draw highlight zones the user can see. Example: <code>add_annotation</code>.</p>
+          </div>
+        </div>
+
+        <p>Every one of those is just a plain JavaScript function with a JSON description attached. Claude reads the descriptions, decides which to call, and supplies the arguments.</p>
+      </section>
+
+      <!-- SCREEN 2 — The five phases of the agent loop -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The five phases of the loop</h2>
+
+        <p>An <span class="term" data-definition="An agent is an LLM wrapped in a loop that can call tools and read their results, so it can take multi-step actions instead of replying once and stopping.">agent</span> is not magic. It is a five-step cycle that keeps running until Claude decides it is done or a turn counter hits its cap. Step through the animation, then read the numbered list underneath.</p>
+
+        <div class="flow-animation animate-in" id="flow-module6-agent" data-steps='[
+          {"highlight":"flow-actor-1","label":"User types: zoom to the Pacific Northwest."},
+          {"highlight":"flow-actor-1","label":"Full history plus tool catalog sent via fetch.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"Claude picks a tool: pan_zoom({lat:47, lon:-122, zoom:6})."},
+          {"highlight":"flow-actor-2","label":"Streamed back as a tool_use content block with a unique id.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-3","label":"Browser runs executeTool(pan_zoom, args). Leaflet receives the command.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-4","label":"The map animates to the new position."},
+          {"highlight":"flow-actor-4","label":"Return value wrapped as a tool_result with the same id.","packet":true,"from":"actor-4","to":"actor-5"},
+          {"highlight":"flow-actor-5","label":"Sent back as a new user turn. Claude can now see its action succeeded.","packet":true,"from":"actor-5","to":"actor-2"},
+          {"highlight":"flow-actor-2","label":"Claude replies with text: Zoomed in. Five Bigfoot reports visible. Loop ends."}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon" style="background: var(--color-actor-4)">U</div>
+              <span>User Message</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon" style="background: var(--color-actor-3)">API</div>
+              <span>Anthropic API</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon" style="background: var(--color-actor-1)">use</div>
+              <span>tool_use Block</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon" style="background: var(--color-actor-2)">JS</div>
+              <span>executeTool + Map</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon" style="background: var(--color-actor-5)">res</div>
+              <span>tool_result Block</span>
+            </div>
+          </div>
+
+          <div class="flow-packet" id="flow-packet"></div>
+
+          <div class="flow-step-label" id="flow-label">Click "Next Step" to trace one request through the loop.</div>
+
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <div class="step-cards">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Ask</strong>
+              <p>The user types a message. The browser pushes it onto the <code>messages</code> array and calls <code>fetch</code> to the Anthropic API.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Think</strong>
+              <p>Claude reads the full history plus the tool catalog and streams back either plain text (conversational) or one or more <span class="term" data-definition="A tool_use block is a structured part of Claude's reply saying: I want to call this tool with these inputs. It carries a unique id so the matching result can be paired back to it.">tool_use blocks</span> (if it wants to act).</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Act</strong>
+              <p>The browser iterates Claude's tool requests, runs each one via <code>executeTool(name, input)</code>, and collects a <span class="term" data-definition="A tool_result block is the paired response to a tool_use block — here is what happened when you called that tool. It travels back on the next turn as a user-role message.">tool_result</span> for each.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Report</strong>
+              <p>The browser pushes those results back onto the messages array <em>as a new user turn</em>. Yes &mdash; user. That is how tool results are encoded in the API.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">5</div>
+            <div class="step-body">
+              <strong>Loop</strong>
+              <p>Back to step 2. Claude sees its own request plus the result, and decides whether to call more tools or finish with text. The <span class="term" data-definition="The tool-use loop is the cycle ask → Claude picks tools → app runs them → results go back → Claude either calls more or replies. Repeats up to a turn limit.">tool-use loop</span> caps at 10 turns.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! Tool results go back as a "user" message.</strong>
+            <p>A common bug in hand-rolled loops: developers assume tool results are their own message role. They are not &mdash; the API wraps them as the <em>user</em> turn that answers the assistant's tool_use. Miss this and Claude gets confused about who said what.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3 — The fetch call, demystified -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The fetch call, demystified</h2>
+
+        <p>There is no backend. SIGNAL's entire "server" is this one function &mdash; the browser talks to Anthropic directly, using the user's own <span class="term" data-definition="An API key is a secret string that identifies you to an API. Whoever holds the key can spend your credits, so it is treated like a password.">API key</span> stored in <span class="term" data-definition="localStorage is a small per-site key-value store in the browser. It survives page reloads. Used here to remember the API key and the conversation history.">localStorage</span>. Here is the setup half of the loop:</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">async function</span> <span class="code-function">runConversationLoop</span>(){</span>
+<span class="code-line">  <span class="code-keyword">var</span> apiKey=<span class="code-function">getApiKey</span>();</span>
+<span class="code-line">  <span class="code-keyword">var</span> model=<span class="code-function">getModel</span>();</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-comment">// Mark system prompt + last tool as cacheable (ephemeral, ~5 min TTL)</span></span>
+<span class="code-line">  <span class="code-keyword">var</span> cachedSystem=[{<span class="code-property">type</span>:<span class="code-string">'text'</span>,<span class="code-property">text</span>:SYSTEM_PROMPT,<span class="code-property">cache_control</span>:{<span class="code-property">type</span>:<span class="code-string">'ephemeral'</span>}}];</span>
+<span class="code-line">  <span class="code-keyword">var</span> cachedTools=TOOLS.<span class="code-function">map</span>(<span class="code-keyword">function</span>(t,i){</span>
+<span class="code-line">    <span class="code-keyword">return</span> i===TOOLS.length-<span class="code-number">1</span> ? Object.<span class="code-function">assign</span>({},t,{<span class="code-property">cache_control</span>:{<span class="code-property">type</span>:<span class="code-string">'ephemeral'</span>}}) : t;</span>
+<span class="code-line">  });</span>
+<span class="code-line"></span>
+<span class="code-line">  <span class="code-keyword">for</span>(<span class="code-keyword">var</span> turn=<span class="code-number">0</span>;turn&lt;<span class="code-number">10</span>;turn++){</span>
+<span class="code-line">    <span class="code-keyword">var</span> body={</span>
+<span class="code-line">      <span class="code-property">model</span>:model, <span class="code-property">max_tokens</span>:<span class="code-number">4096</span>,</span>
+<span class="code-line">      <span class="code-property">system</span>:cachedSystem, <span class="code-property">tools</span>:cachedTools,</span>
+<span class="code-line">      <span class="code-property">messages</span>:messages, <span class="code-property">stream</span>:<span class="code-keyword">true</span></span>
+<span class="code-line">    };</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">var</span> resp=<span class="code-keyword">await</span> <span class="code-function">fetch</span>(<span class="code-string">'https://api.anthropic.com/v1/messages'</span>,{</span>
+<span class="code-line">      <span class="code-property">method</span>:<span class="code-string">'POST'</span>,</span>
+<span class="code-line">      <span class="code-property">headers</span>:{</span>
+<span class="code-line">        <span class="code-string">'Content-Type'</span>:<span class="code-string">'application/json'</span>,</span>
+<span class="code-line">        <span class="code-string">'x-api-key'</span>:apiKey,</span>
+<span class="code-line">        <span class="code-string">'anthropic-version'</span>:<span class="code-string">'2023-06-01'</span>,</span>
+<span class="code-line">        <span class="code-string">'anthropic-dangerous-direct-browser-access'</span>:<span class="code-string">'true'</span></span>
+<span class="code-line">      },</span>
+<span class="code-line">      <span class="code-property">body</span>:JSON.<span class="code-function">stringify</span>(body)</span>
+<span class="code-line">    });</span>
+<span class="code-line">    <span class="code-comment">// (retry on 429/529 with retry-after header omitted for clarity)</span></span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="code-keyword">var</span> result=<span class="code-keyword">await</span> <span class="code-function">parseStream</span>(resp);</span>
+<span class="code-line">    <span class="code-comment">// ... continued in the next snippet</span></span>
+<span class="code-line">  }</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Grab the API key the user pasted in (stored in localStorage) and the model they picked from a dropdown.</p>
+              <p class="tl">Mark the system prompt as cacheable. This is <span class="term" data-definition="Prompt caching is an Anthropic feature that stores a stable prefix (system prompt, tool list) server-side for roughly five minutes, so follow-up turns do not re-charge for the same tokens.">prompt caching</span> &mdash; Anthropic will hold this text in cache for about five minutes so you are not charged for it every turn.</p>
+              <p class="tl">Do the same for the last entry in the tool catalog. Marking one tool automatically caches everything up to and including it.</p>
+              <p class="tl">Loop up to ten times. Hard cap &mdash; enough for multi-step plans but bounded so a confused model cannot run away with your bill.</p>
+              <p class="tl">Build the request body. The whole conversation goes in the <code>messages</code> array every single time &mdash; Claude has no memory between calls, so the array <em>is</em> the memory.</p>
+              <p class="tl"><span class="term" data-definition="Streaming means the server sends the reply token by token as it is generated, instead of waiting for the whole thing to finish. It makes the UI feel alive as text types in.">Streaming</span> on, so tokens show up in the chat as they arrive.</p>
+              <p class="tl">Call <code>fetch</code> straight to Anthropic. No backend. The browser is the server.</p>
+              <p class="tl">The API key goes in the <code>x-api-key</code> header. Whoever opens DevTools on this page can see it &mdash; fine for a personal tool, never for a shipped product.</p>
+              <p class="tl">The <code>anthropic-dangerous-direct-browser-access</code> header is the opt-in flag that says "yes, we really are calling the API straight from the browser." Without it, <span class="term" data-definition="CORS (Cross-Origin Resource Sharing) is a browser rule that blocks direct API calls to other domains unless the target explicitly allows it. Anthropic requires the dangerous-direct-browser-access header to opt in.">CORS</span> would block the request.</p>
+              <p class="tl">Serialize the body to JSON and send it.</p>
+              <p class="tl">In real life there is also a retry block handling <span class="term" data-definition="HTTP 429 means slow down (rate limited). HTTP 529 means overloaded. The app sleeps and retries, honoring the retry-after header if the server sends one.">429 / 529</span> errors — if the API says "too fast," the app sleeps and tries again.</p>
+              <p class="tl">Parse the streamed response into a clean object with a list of content blocks. Text blocks or tool_use blocks. That is what goes to the next snippet.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4 — The loop body: executing tools -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The loop body: executing tools</h2>
+
+        <p>Now the second half &mdash; what the browser does after Claude replies. This is where "agent" stops being mystical: it is an <code>if</code>, a <code>for</code>, and two array pushes.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CODE</span>
+            <pre><code><span class="code-line"><span class="code-keyword">var</span> result=<span class="code-keyword">await</span> <span class="code-function">parseStream</span>(resp);</span>
+<span class="code-line"><span class="code-keyword">var</span> hasToolUse=result.content.<span class="code-function">some</span>(<span class="code-keyword">function</span>(b){<span class="code-keyword">return</span> b.type===<span class="code-string">'tool_use'</span>});</span>
+<span class="code-line"></span>
+<span class="code-line">messages.<span class="code-function">push</span>({<span class="code-property">role</span>:<span class="code-string">'assistant'</span>,<span class="code-property">content</span>:result.content});</span>
+<span class="code-line"><span class="code-function">saveConversation</span>();</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">if</span>(!hasToolUse)<span class="code-keyword">break</span>;</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">// Execute tool calls</span></span>
+<span class="code-line"><span class="code-keyword">var</span> toolResults=[];</span>
+<span class="code-line"><span class="code-keyword">for</span>(<span class="code-keyword">var</span> i=<span class="code-number">0</span>;i&lt;result.content.length;i++){</span>
+<span class="code-line">  <span class="code-keyword">var</span> block=result.content[i];</span>
+<span class="code-line">  <span class="code-keyword">if</span>(block.type!==<span class="code-string">'tool_use'</span>)<span class="code-keyword">continue</span>;</span>
+<span class="code-line">  <span class="code-keyword">try</span>{</span>
+<span class="code-line">    <span class="code-keyword">var</span> toolResult=<span class="code-keyword">await</span> <span class="code-function">executeTool</span>(block.name,block.input);</span>
+<span class="code-line">    toolResults.<span class="code-function">push</span>({<span class="code-property">type</span>:<span class="code-string">'tool_result'</span>,<span class="code-property">tool_use_id</span>:block.id,<span class="code-property">content</span>:JSON.<span class="code-function">stringify</span>(toolResult)});</span>
+<span class="code-line">  }<span class="code-keyword">catch</span>(e){</span>
+<span class="code-line">    toolResults.<span class="code-function">push</span>({<span class="code-property">type</span>:<span class="code-string">'tool_result'</span>,<span class="code-property">tool_use_id</span>:block.id,<span class="code-property">content</span>:JSON.<span class="code-function">stringify</span>({<span class="code-property">error</span>:e.message}),<span class="code-property">is_error</span>:<span class="code-keyword">true</span>});</span>
+<span class="code-line">  }</span>
+<span class="code-line">}</span>
+<span class="code-line"></span>
+<span class="code-line">messages.<span class="code-function">push</span>({<span class="code-property">role</span>:<span class="code-string">'user'</span>,<span class="code-property">content</span>:toolResults});</span>
+<span class="code-line"><span class="code-function">saveConversation</span>();</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Parse the streamed response. Claude's reply is not a single string &mdash; it is a list of blocks. Text, tool_use, sometimes thinking blocks.</p>
+              <p class="tl">Ask: did Claude request any tools? If even one block has <code>type === 'tool_use'</code>, we have work to do.</p>
+              <p class="tl">Save Claude's entire turn onto the conversation history, tool requests and all.</p>
+              <p class="tl">Write the updated messages array to localStorage. If the user refreshes the page, the conversation comes back.</p>
+              <p class="tl">If Claude's reply was pure text, there is nothing to execute &mdash; <code>break</code> out of the loop and the user sees the final answer.</p>
+              <p class="tl">Otherwise, prepare a list to collect tool results in.</p>
+              <p class="tl">Walk every block. Skip anything that is not a tool request (text blocks are passed through).</p>
+              <p class="tl">For each tool request, call <code>executeTool(name, input)</code>. This is the one function that knows how to actually drive the map &mdash; a giant switch statement over tool names.</p>
+              <p class="tl">Wrap the return value in a tool_result block, keyed by the original request's id. Claude uses the id to pair "I asked for X" with "here is the answer to X" &mdash; critical when multiple tools fire in parallel.</p>
+              <p class="tl">If a tool throws, send the error back tagged <code>is_error: true</code>. Claude reads the error and can try a different approach. Robust-agent behavior &mdash; one bad call doesn't crash the chat.</p>
+              <p class="tl">Here is the pairing from the Aha callout &mdash; tool results go back as a <em>user</em> turn, not assistant. That is how the API expects them.</p>
+              <p class="tl">Persist again. Then the outer <code>for</code> loops back to the fetch, Claude sees the results, and decides what to do next.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! Prompt caching is a 2-line optimization.</strong>
+            <p>Look back at <code>cache_control: {type: 'ephemeral'}</code> in the previous snippet. That single flag tells Anthropic "the system prompt and tool list don't change across turns &mdash; hold them for about five minutes." After the first call, subsequent calls get charged a fraction of the input tokens for the cached prefix. Tiny code change, large bill savings on multi-turn chats.</p>
+          </div>
+        </div>
+
+        <h3 class="screen-heading" style="margin-top: var(--space-10)">Watch it play out</h3>
+
+        <p>Here is the same loop as an iMessage thread between the five actors &mdash; user, Claude, the loop runtime, <code>executeTool</code>, and the map itself.</p>
+
+        <div class="chat-window" id="chat-module6-loop">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="user" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">U</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">User</span>
+                <p>Show me UFO sightings near military bases in the 1990s.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="loop" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">L</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">The Loop</span>
+                <p>Forwarding to Claude with the full tool catalog and conversation so far.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="claude" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Claude</span>
+                <p>I'll need the year filter and the military overlay. Calling <code>apply_filters({yearFrom:1990,yearTo:1999})</code> and <code>toggle_overlay({layer:'military',on:true})</code>.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="loop" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">L</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">The Loop</span>
+                <p>Two tool requests &mdash; executing both.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="exec" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">X</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-2)">executeTool</span>
+                <p><code>apply_filters</code> &rarr; ok. <code>toggle_overlay</code> &rarr; ok. Here are the JSON results.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="5" data-sender="map" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">M</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">The Map</span>
+                <p>Year filter updated. Military bases now visible. Repainting.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="6" data-sender="loop" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">L</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">The Loop</span>
+                <p>Results packaged back as a user turn. Looping to Claude.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="7" data-sender="claude" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Claude</span>
+                <p>Great &mdash; filters applied. Now <code>set_view({view:'heatmap'})</code> to show density.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="8" data-sender="map" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">M</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">The Map</span>
+                <p>Heatmap rendering.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="9" data-sender="claude" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Claude</span>
+                <p>Done. Top-right shows Nevada as the brightest cluster &mdash; Area 51 region, 847 reports in range. Anything you want me to drill into?</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="10" data-sender="loop" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">L</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">The Loop</span>
+                <p>No more tool requests. Exiting the loop. User sees the final text.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-typing" id="chat-module6-loop-typing" style="display:none">
+            <div class="chat-avatar" id="chat-module6-loop-typing-avatar">?</div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5 — Quiz + outro -->
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Steering check &mdash; three scenarios</h2>
+
+        <p>The whole point of this course is to make you a sharper steerer when AI writes code for you. Agent loops are where most "AI assistant" features go wrong. Three scenarios, one right answer each.</p>
+
+        <div class="quiz-container" id="quiz-module6">
+          <div class="quiz-question-block"
+               data-correct="option-a"
+               data-explanation-right="Exactly. Either the tool catalog never made it into the request body, or the loop doesn't check for tool_use blocks and invoke executeTool. Classic hand-rolled-loop bug — Claude happily describes what it 'would' do, but nothing actually runs."
+               data-explanation-wrong="Not quite. No real API call was made, so a downed weather service is not the issue, and a better prompt will not help if the loop itself is broken.">
+            <h3 class="quiz-question">AI built you a "chat with your app" feature. When you test it, the assistant's first reply says "I called the weather API" &mdash; but no API call actually happened, and the app doesn't expose a weather tool. What's the most likely bug?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Claude hallucinated a tool that doesn't exist &mdash; either the tool catalog wasn't passed, or the loop isn't checking for tool_use blocks and actually executing them.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The weather API is down.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The message needs a better system prompt.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-a"
+               data-explanation-right="Right. Claude truly has no memory between calls — the messages array is the memory. If you are not persisting it and re-sending the whole thing, every turn starts from scratch."
+               data-explanation-wrong="Close but not the fix. Yes, Claude has no built-in memory between calls, but the solution is the same either way: save the messages array and send it every time.">
+            <h3 class="quiz-question">Your AI agent runs one step, finishes, and the user's follow-up question has no memory of what was just said. What's the most likely cause?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The messages array isn't being persisted or re-sent &mdash; every call starts from a blank history.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Claude has amnesia by design.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Prompt caching is broken.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="option-b"
+               data-explanation-right="Exactly. Two lines — cache_control: {type: 'ephemeral'} on the system prompt and on the last tool. Anthropic holds them for about five minutes, and you pay a fraction of input tokens for cached prefixes on every follow-up turn."
+               data-explanation-wrong="Not the real win here. Rewriting a short prompt will not move the needle, and switching models is a different tradeoff — the fastest fix is to tell Anthropic to cache the stable prefix.">
+            <h3 class="quiz-question">You open your AI-driven app's network tab and see the same 4KB of system-prompt text sent on every turn, costing you input tokens. What's the fix?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Rewrite the system prompt to be shorter.</span>
+              </button>
+              <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Add <code>cache_control: {type: 'ephemeral'}</code> to the system prompt and the last tool definition so Anthropic serves them from cache on subsequent turns.</span>
+              </button>
+              <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Switch to a cheaper model.</span>
+              </button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module6')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module6')">Try Again</button>
+        </div>
+
+        <h3 class="screen-heading" style="margin-top: var(--space-12)">You now own six mental models</h3>
+
+        <p>This is the end of the course. Take a breath &mdash; you have picked up six patterns that show up, in some combination, in every data-heavy app an AI will ever build for you:</p>
+
+        <div class="icon-rows">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-4)">1</div>
+            <div>
+              <strong>The pipeline</strong>
+              <p>Raw files on a laptop get cleaned, merged, and packed once &mdash; then shipped as one compact artifact to every visitor. (Module 3)</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">2</div>
+            <div>
+              <strong>The cast</strong>
+              <p>A handful of small characters &mdash; main thread, workers, libraries, storage &mdash; each with one job, talking over clean seams. (Module 2)</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-3)">3</div>
+            <div>
+              <strong>The data journey</strong>
+              <p>User interaction in; pixels out. Every click becomes a path through the cast, and you can now trace it end to end. (Module 1)</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-5)">4</div>
+            <div>
+              <strong>The rendering tricks</strong>
+              <p>Web Workers, clustering, batched rendering &mdash; the moves that keep 258,000 pins from freezing the page. (Module 4)</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-1)">5</div>
+            <div>
+              <strong>The correlation math</strong>
+              <p>Pearson r to measure how much two grids rhyme; permutation p-values to ask "is this just luck?" Real science, two functions. (Module 5)</p>
+            </div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-accent)">6</div>
+            <div>
+              <strong>The agent loop</strong>
+              <p>LLM plus tool catalog plus five-step cycle. A text machine grows hands. (This module)</p>
+            </div>
+          </div>
+        </div>
+
+        <p style="margin-top: var(--space-8)">Every data app AI will build for you is some mix of these six. A dashboard for your calendar? Pipeline + cast + data journey. A "chat with my spreadsheet" tool? All six. The next time an AI agent hands you code, you are no longer squinting at black boxes &mdash; you have the vocabulary to ask sharp questions, spot the classic bugs, and steer the build where you want it to go.</p>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">!</div>
+          <div class="callout-content">
+            <strong class="callout-title">Aha! "AI agents" are just a loop + a tool catalog.</strong>
+            <p>Anytime someone says "AI agent" and it feels mystical, picture the five steps &mdash; ask, think, act, report, loop &mdash; plus a JSON list of things the app is willing to do. That is the entire trick. You have graduated.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
