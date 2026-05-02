@@ -2700,44 +2700,48 @@ function parseInWorker(buffer){
       };
       w.onerror=function(err){
         w.terminate();
-        // Fallback: parse on main thread
-        try{
-          const text=new TextDecoder().decode(buffer);
-          const json=JSON.parse(text);
-          const raw=json.data;
-          for(let i=0;i<raw.length;i++){
-            const r=raw[i];
-            if(Array.isArray(r)&&r.length>=7&&typeof r[0]==='number'&&!isNaN(r[0])&&
-              typeof r[1]==='number'&&!isNaN(r[1])&&r[2]>=0&&r[2]<=2)
-              cats[r[2]].push(r);
-          }
-          resolve({cats,total:cats[0].length+cats[1].length+cats[2].length});
-        }catch(e2){reject(e2)}
+        mainThreadFallback(buffer,cats,resolve).catch(reject);
       };
       w.postMessage(buffer,[buffer]);
     }catch(e){
-      try{
-        const text=new TextDecoder().decode(buffer);
-        const json=JSON.parse(text);
-        const raw=json.data;
-        for(let i=0;i<raw.length;i++){
-          const r=raw[i];
-          if(Array.isArray(r)&&r.length>=7&&typeof r[0]==='number'&&!isNaN(r[0])&&
-            typeof r[1]==='number'&&!isNaN(r[1])&&r[2]>=0&&r[2]<=2)
-            cats[r[2]].push(r);
-        }
-        resolve({cats,total:cats[0].length+cats[1].length+cats[2].length});
-      }catch(e2){reject(e2)}
+      mainThreadFallback(buffer,cats,resolve).catch(reject);
     }
   });
+}
+
+// Fallback if Worker construction or execution fails. Mirrors parse-worker.js:
+// detect gzip magic, decompress via DecompressionStream, then parse + categorize.
+async function mainThreadFallback(buffer,cats,resolve){
+  let bytes=buffer;
+  const head=new Uint8Array(bytes,0,Math.min(2,bytes.byteLength));
+  if(head.length>=2&&head[0]===0x1f&&head[1]===0x8b){
+    if(typeof DecompressionStream==='undefined')
+      throw new Error('Browser lacks DecompressionStream — please update.');
+    const stream=new Response(bytes).body.pipeThrough(new DecompressionStream('gzip'));
+    bytes=await new Response(stream).arrayBuffer();
+  }
+  const text=new TextDecoder().decode(bytes);
+  const json=JSON.parse(text);
+  const raw=json.data;
+  for(let i=0;i<raw.length;i++){
+    const r=raw[i];
+    if(Array.isArray(r)&&r.length>=7&&typeof r[0]==='number'&&!isNaN(r[0])&&
+      typeof r[1]==='number'&&!isNaN(r[1])&&r[2]>=0&&r[2]<=2)
+      cats[r[2]].push(r);
+  }
+  resolve({cats,total:cats[0].length+cats[1].length+cats[2].length});
 }
 
 async function fetchWithProgress(url,label){
   const resp=await fetch(url);
   if(!resp.ok)throw new Error(`${label}: HTTP ${resp.status}`);
   const total=parseInt(resp.headers.get('Content-Length'))||0;
+  // If we can't stream (no body / no length), buffer the whole response and
+  // send the raw bytes to the worker. Don't call resp.json() — the payload is
+  // gzip-compressed and the worker handles decompression itself.
   if(!resp.body||!total){
-    return resp.json();
+    const buf=new Uint8Array(await resp.arrayBuffer());
+    return parseInWorker(buf.buffer);
   }
   const reader=resp.body.getReader();
   const chunks=[];
@@ -2752,7 +2756,8 @@ async function fetchWithProgress(url,label){
   const buf=new Uint8Array(loaded);
   let pos=0;
   for(const chunk of chunks){buf.set(chunk,pos);pos+=chunk.length}
-  // Send raw buffer to worker — NO TextDecoder or JSON.parse on main thread
+  // Send raw buffer to worker — NO TextDecoder or JSON.parse on main thread.
+  // Worker detects gzip magic and decompresses via DecompressionStream.
   return parseInWorker(buf.buffer);
 }
 
@@ -2765,7 +2770,7 @@ async function init(){
   let result;
   try{
     const [sightResult,popResp,milResp]=await Promise.allSettled([
-      fetchWithProgress('data/sightings_map_data.json','Sightings'),
+      fetchWithProgress('data/sightings_map_data.json.gz','Sightings'),
       fetch('data/us_population_density.json').then(r=>r.json()),
       fetch('data/military_bases.json').then(r=>r.json())
     ]);

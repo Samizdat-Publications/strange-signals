@@ -9,6 +9,7 @@ Format: { categories: [...], fields: [...], data: [[lat,lon,cat,date,loc,sub,des
 """
 
 import pandas as pd
+import gzip
 import json
 import os
 import sys
@@ -78,12 +79,23 @@ def main():
         "data": records,
     }
 
-    with open(OUTPUT, "w", encoding="utf-8") as f:
-        json.dump(output, f, separators=(",", ":"), ensure_ascii=False)
+    # Serialize to JSON bytes once, then gzip. We commit ONLY the .gz —
+    # the app fetches .json.gz and decompresses in-browser via
+    # DecompressionStream, which cuts first-load network transfer ~75%.
+    payload = json.dumps(output, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
-    size_mb = os.path.getsize(OUTPUT) / (1024 * 1024)
-    print(f"  Exported {len(records):,} records -> {OUTPUT}")
-    print(f"  File size: {size_mb:.1f} MB")
+    gz_path = OUTPUT + ".gz"
+    with gzip.open(gz_path, "wb", compresslevel=9) as f:
+        f.write(payload)
+
+    # Remove any legacy uncompressed copy so the repo only carries the .gz.
+    if os.path.exists(OUTPUT):
+        os.remove(OUTPUT)
+
+    raw_mb = len(payload) / (1024 * 1024)
+    gz_mb = os.path.getsize(gz_path) / (1024 * 1024)
+    print(f"  Exported {len(records):,} records -> {gz_path}")
+    print(f"  Raw: {raw_mb:.1f} MB  ->  gzipped: {gz_mb:.1f} MB ({gz_mb/raw_mb*100:.0f}% of original)")
 
 
 if __name__ == "__main__":

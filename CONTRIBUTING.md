@@ -70,4 +70,4 @@ The data pipeline downloads raw CSVs, consolidates them into an Excel workbook, 
 setup_sightings.sh → build_sightings_workbook.py → export_map_data.py
 ```
 
-Generated data files (`sightings_map_data.json`, `*.xlsx`, `data/raw/`) are git-ignored. Only source code, overlay JSON files, and build scripts are committed.
+The big map dataset (`data/sightings_map_data.json.gz`, ~15 MB gzipped) is committed so contributors can run the app without rebuilding the pipeline. Intermediate files (`*.xlsx`, `data/raw/`) stay git-ignored.

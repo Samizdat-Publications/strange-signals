@@ -1,8 +1,21 @@
-// Web Worker: decode, parse, validate, categorize — all off main thread.
-// Sends results back in small batches so the main thread never blocks on structured clone.
-self.onmessage=function(e){
+// Web Worker: decompress (gzip) → decode → parse → validate → categorize.
+// All off the main thread. Sends results back in small batches so structured
+// clone never blocks the UI.
+self.onmessage=async function(e){
   try{
-    const text=new TextDecoder().decode(e.data);
+    let bytes=e.data;
+    // Detect gzip magic bytes 1F 8B. If present, decompress via the platform
+    // DecompressionStream (Chromium 80+, Safari 16.4+, Firefox 113+).
+    const head=new Uint8Array(bytes,0,Math.min(2,bytes.byteLength));
+    if(head.length>=2&&head[0]===0x1f&&head[1]===0x8b){
+      if(typeof DecompressionStream==='undefined'){
+        self.postMessage({type:'error',error:'Browser lacks DecompressionStream — please update.'});
+        return;
+      }
+      const stream=new Response(bytes).body.pipeThrough(new DecompressionStream('gzip'));
+      bytes=await new Response(stream).arrayBuffer();
+    }
+    const text=new TextDecoder().decode(bytes);
     const json=JSON.parse(text);
     const raw=json.data;
     if(!Array.isArray(raw)||!raw.length){
@@ -29,6 +42,6 @@ self.onmessage=function(e){
     }
     self.postMessage({type:'done',total:total});
   }catch(err){
-    self.postMessage({type:'error',error:err.message});
+    self.postMessage({type:'error',error:err.message||String(err)});
   }
 };

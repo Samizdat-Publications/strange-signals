@@ -198,7 +198,7 @@ signal-reports.js          Report generation and HTML export
 signal-charts.js           SVG chart rendering for reports
 
 data/
-  sightings_map_data.json  Main dataset (generated, git-ignored)
+  sightings_map_data.json.gz  Main dataset, ~385K records gzipped (~15 MB; committed)
   military_bases.json      Military/DOE installations
   restricted_airspace.json Restricted airspace zones
   usgs_earthquakes.json    USGS earthquake data
