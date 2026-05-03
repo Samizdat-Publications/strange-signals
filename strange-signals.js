@@ -2761,6 +2761,15 @@ async function fetchWithProgress(url,label){
   return parseInWorker(buf.buffer);
 }
 
+// Stale-while-revalidate cache for /data/* responses. After the first visit, cold loads
+// are essentially instant — the cached response is served immediately while the network
+// fetch updates the cache in the background. See sw.js for the cache strategy.
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(function(err){
+    console.warn('Service worker registration failed:',err);
+  });
+}
+
 async function init(){
   loadState();
   setProgress(2,nextVerb()+'...');
