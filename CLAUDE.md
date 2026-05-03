@@ -16,7 +16,9 @@ bash setup_sightings.sh               # Downloads 9 CSV sources + builds Excel +
 python geocode_nuforc_hf.py --run     # OPTIONAL: geocode HuggingFace NUFORC (adds ~109K → 385K total)
 ```
 
-The HF NUFORC step is optional because its gazetteer download is slow and the app works fine at 276K records. Run it if you want worldwide city-level coverage. The pipeline writes `data/sightings_map_data.json.gz` (~15 MB compressed; gzip-only — there is no uncompressed `.json` companion). The committed gzipped file is ~3× smaller on the wire than the raw JSON; the browser decompresses it in the worker via `DecompressionStream`.
+The HF NUFORC step is optional because its gazetteer download is slow and the app works fine at 276K records. Run it if you want worldwide city-level coverage.
+
+The pipeline writes **three per-category gzipped files** instead of one combined dataset: `data/sightings_ufo.json.gz` (~14 MB, ~372K records), `data/sightings_bigfoot.json.gz` (~150 KB, ~4K), `data/sightings_haunted.json.gz` (~300 KB, ~9K). The browser fetches all three in parallel and spawns a Worker per file so decompress + parse run truly in parallel on multi-core. A Service Worker (`sw.js`) caches the responses so repeat visits load from cache instantly.
 
 ### Development
 
@@ -48,7 +50,7 @@ hex-worker.js               Web Worker: hex-grid binning via Turf.js for correla
 DATA PIPELINE (Python 3)
   setup_sightings.sh          Top-level runner. Downloads 9 CSVs, then invokes the builders below.
   build_sightings_workbook.py Consolidates raw CSVs → 10-tab Excel workbook
-  export_map_data.py          Excel → compact gzipped JSON (sightings_map_data.json.gz)
+  export_map_data.py          Excel → 3 per-category gzipped JSON files (sightings_{ufo,bigfoot,haunted}.json.gz)
   build_population_grid.py    US census tract → per-capita grid (us_population_density.json)
   build_overlay_data.py       Orchestrates the overlay builders below
     build_airspace_data.py       FAA special use airspace zones
@@ -61,7 +63,9 @@ DATA PIPELINE (Python 3)
   geocode_nuforc_hf.py        Standalone: HF NUFORC gazetteer geocoding (~109K records, optional)
 
   data/
-    sightings_map_data.json.gz Generated: ~385K records, ~15 MB gzipped (committed)
+    sightings_ufo.json.gz      Generated: ~372K UFO/UAP records, ~14 MB gzipped (committed)
+    sightings_bigfoot.json.gz  Generated: ~4K Bigfoot records, ~150 KB gzipped (committed)
+    sightings_haunted.json.gz  Generated: ~9K Haunted Place records, ~300 KB gzipped (committed)
     us_population_density.json Per-capita grid for population-adjusted correlation (committed)
     military_bases.json        98 military/DOE installations (committed)
     restricted_airspace.json   105 FAA restricted/MOA/warning zones (committed)
@@ -96,7 +100,7 @@ CONFIG
 
 ### Data Format
 
-`data/sightings_map_data.json.gz` — gzipped, compact array-based payload (the worker decompresses it on load):
+Per category, e.g. `data/sightings_ufo.json.gz` — gzipped, compact array-based payload (the worker decompresses each on load):
 
 ```json
 {
@@ -169,9 +173,9 @@ Lazy-loaded on first toggle. Each has its own Leaflet layer group and JSON sourc
 
 | Label | ID | Data file | Visual |
 |-------|-----|-----------|--------|
-| UFO / UAP | `layer-ufo` | sightings_map_data.json.gz | Clustered Tabler `ufo` marker |
-| Bigfoot / Sasquatch | `layer-bigfoot` | sightings_map_data.json.gz | Clustered Tabler `paw` marker |
-| Haunted Places | `layer-haunted` | sightings_map_data.json.gz | Clustered Tabler `ghost` marker |
+| UFO / UAP | `layer-ufo` | sightings_ufo.json.gz | Clustered Tabler `ufo` marker |
+| Bigfoot / Sasquatch | `layer-bigfoot` | sightings_bigfoot.json.gz | Clustered Tabler `paw` marker |
+| Haunted Places | `layer-haunted` | sightings_haunted.json.gz | Clustered Tabler `ghost` marker |
 | Military / DOE Sites | `layer-military` | military_bases.json | Tabler `shield`, branch-color tooltip |
 | Restricted Airspace | `layer-airspace` | restricted_airspace.json | Tabler `radar` + L.circle boundary |
 | National Parks | `layer-parks` | national_parks.json | Tabler `trees` |

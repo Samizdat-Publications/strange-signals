@@ -2677,41 +2677,51 @@ document.getElementById('shortcuts-close').addEventListener('click',()=>{
 /* ========== DATA LOADING ========== */
 function yieldThread(){return new Promise(r=>setTimeout(r,0))}
 
-// Parse, validate, filter, and categorize in a Web Worker.
-// Worker sends results in small batches so structured clone never blocks >1-2s.
+// Per-category data files. Browser fetches all three in parallel; the small
+// ones (Bigfoot, Haunted) finish near-instantly while UFO downloads. Each
+// gets its own DecompressionStream + JSON.parse in its own Worker, so on a
+// multi-core machine the parses run truly in parallel.
+const SIGHTING_FILES=[
+  {slug:'ufo',     url:'data/sightings_ufo.json.gz'},
+  {slug:'bigfoot', url:'data/sightings_bigfoot.json.gz'},
+  {slug:'haunted', url:'data/sightings_haunted.json.gz'}
+];
+
+// Parse, validate, and filter ONE category's payload in a Web Worker.
+// Worker streams results back in small batches so structured clone never
+// blocks the UI for more than a few ms at a time.
 function parseInWorker(buffer){
   return new Promise((resolve,reject)=>{
-    const cats=[[],[],[]];
+    const records=[];
     try{
       const w=new Worker('parse-worker.js');
       w.onmessage=function(e){
         const msg=e.data;
         if(msg.type==='batch'){
-          // Push batch into category array — small enough to not block
-          for(let i=0;i<msg.records.length;i++)cats[msg.cat].push(msg.records[i]);
+          for(let i=0;i<msg.records.length;i++)records.push(msg.records[i]);
           setProgress(0,nextVerb()+'...');
         } else if(msg.type==='done'){
           w.terminate();
-          resolve({cats,total:msg.total});
+          resolve(records);
         } else if(msg.type==='error'){
           w.terminate();
           reject(new Error(msg.error));
         }
       };
-      w.onerror=function(err){
+      w.onerror=function(){
         w.terminate();
-        mainThreadFallback(buffer,cats,resolve).catch(reject);
+        mainThreadFallback(buffer,records,resolve).catch(reject);
       };
       w.postMessage(buffer,[buffer]);
     }catch(e){
-      mainThreadFallback(buffer,cats,resolve).catch(reject);
+      mainThreadFallback(buffer,records,resolve).catch(reject);
     }
   });
 }
 
 // Fallback if Worker construction or execution fails. Mirrors parse-worker.js:
-// detect gzip magic, decompress via DecompressionStream, then parse + categorize.
-async function mainThreadFallback(buffer,cats,resolve){
+// detect gzip magic, decompress via DecompressionStream, then parse + validate.
+async function mainThreadFallback(buffer,records,resolve){
   let bytes=buffer;
   const head=new Uint8Array(bytes,0,Math.min(2,bytes.byteLength));
   if(head.length>=2&&head[0]===0x1f&&head[1]===0x8b){
@@ -2726,39 +2736,20 @@ async function mainThreadFallback(buffer,cats,resolve){
   for(let i=0;i<raw.length;i++){
     const r=raw[i];
     if(Array.isArray(r)&&r.length>=7&&typeof r[0]==='number'&&!isNaN(r[0])&&
-      typeof r[1]==='number'&&!isNaN(r[1])&&r[2]>=0&&r[2]<=2)
-      cats[r[2]].push(r);
+      typeof r[1]==='number'&&!isNaN(r[1]))
+      records.push(r);
   }
-  resolve({cats,total:cats[0].length+cats[1].length+cats[2].length});
+  resolve(records);
 }
 
-async function fetchWithProgress(url,label){
-  const resp=await fetch(url);
-  if(!resp.ok)throw new Error(`${label}: HTTP ${resp.status}`);
-  const total=parseInt(resp.headers.get('Content-Length'))||0;
-  // If we can't stream (no body / no length), buffer the whole response and
-  // send the raw bytes to the worker. Don't call resp.json() — the payload is
-  // gzip-compressed and the worker handles decompression itself.
-  if(!resp.body||!total){
-    const buf=new Uint8Array(await resp.arrayBuffer());
-    return parseInWorker(buf.buffer);
-  }
-  const reader=resp.body.getReader();
-  const chunks=[];
-  let loaded=0;
-  while(true){
-    const{done,value}=await reader.read();
-    if(done)break;
-    chunks.push(value);
-    loaded+=value.length;
-    setBytes(loaded,total);
-  }
-  const buf=new Uint8Array(loaded);
-  let pos=0;
-  for(const chunk of chunks){buf.set(chunk,pos);pos+=chunk.length}
-  // Send raw buffer to worker — NO TextDecoder or JSON.parse on main thread.
-  // Worker detects gzip magic and decompresses via DecompressionStream.
-  return parseInWorker(buf.buffer);
+// Fetch one category's gzipped file and parse it in a worker. Returns the
+// records array. Throws on HTTP/parse failure so callers can decide whether
+// to recover (Promise.allSettled) or bail (Promise.all).
+async function fetchCategory(file){
+  const resp=await fetch(file.url);
+  if(!resp.ok)throw new Error(`${file.slug}: HTTP ${resp.status}`);
+  const buf=await resp.arrayBuffer();
+  return parseInWorker(buf);
 }
 
 // Stale-while-revalidate cache for /data/* responses. After the first visit, cold loads
@@ -2775,54 +2766,51 @@ async function init(){
   setProgress(2,nextVerb()+'...');
   startFlavorRotation();
 
-  // Phase 1: Fetch + parse in worker (main thread stays free)
-  let result;
+  // Phase 1: Fetch + parse all 3 sighting categories in parallel, plus the
+  // small overlay JSONs. Each category gets its own Worker so parses don't
+  // serialize. If a category fetch fails, we keep going with the rest.
+  let total=0;
   try{
-    const [sightResult,popResp,milResp]=await Promise.allSettled([
-      fetchWithProgress('data/sightings_map_data.json.gz','Sightings'),
+    const settled=await Promise.allSettled([
+      fetchCategory(SIGHTING_FILES[0]),
+      fetchCategory(SIGHTING_FILES[1]),
+      fetchCategory(SIGHTING_FILES[2]),
       fetch('data/us_population_density.json').then(r=>r.json()),
       fetch('data/military_bases.json').then(r=>r.json())
     ]);
-    if(sightResult.status==='rejected'){
-      setProgress(0,'Error loading data: '+sightResult.reason);
-      stopFlavorRotation();
-      return;
-    }
-    result=sightResult.value;
-    if(popResp.status==='fulfilled'){
-      popDensityGrid=popResp.value;
-    } else {
-      console.warn('Population density data not available:',popResp.reason);
-    }
-    if(milResp.status==='fulfilled'){
-      militaryData=milResp.value;
-    } else {
-      console.warn('Military bases data not available:',milResp.reason);
-    }
+    const [ufoR,bigfootR,hauntedR,popResp,milResp]=settled;
+    catArrays[0]=ufoR.status==='fulfilled'?ufoR.value:[];
+    catArrays[1]=bigfootR.status==='fulfilled'?bigfootR.value:[];
+    catArrays[2]=hauntedR.status==='fulfilled'?hauntedR.value:[];
+    [ufoR,bigfootR,hauntedR].forEach((r,i)=>{
+      if(r.status==='rejected')console.warn(`Category ${SIGHTING_FILES[i].slug} failed:`,r.reason);
+    });
+    if(popResp.status==='fulfilled')popDensityGrid=popResp.value;
+    else console.warn('Population density data not available:',popResp.reason);
+    if(milResp.status==='fulfilled')militaryData=milResp.value;
+    else console.warn('Military bases data not available:',milResp.reason);
+    total=catArrays[0].length+catArrays[1].length+catArrays[2].length;
   }catch(err){
     setProgress(0,'Error loading data: '+err.message);
     stopFlavorRotation();
     return;
   }
 
-  if(!result.total){
+  if(!total){
     setProgress(0,'No valid records found in data');
     stopFlavorRotation();
     return;
   }
 
-  // Phase 2: Worker already parsed, filtered, and categorized.
-  // Just assign the results — no heavy main-thread processing.
-  catArrays[0]=result.cats[0];
-  catArrays[1]=result.cats[1];
-  catArrays[2]=result.cats[2];
+  // Phase 2: Workers already decompressed, parsed, and validated.
+  // Build the combined array used by the rendering pipeline.
   allData=[...catArrays[0],...catArrays[1],...catArrays[2]];
 
   // Clear the download counter — it's stale now
   const bytesEl=document.getElementById('loading-bytes');
   if(bytesEl)bytesEl.textContent='';
 
-  document.getElementById('stat-total').textContent=result.total.toLocaleString();
+  document.getElementById('stat-total').textContent=total.toLocaleString();
   document.getElementById('stat-zoom').textContent=map.getZoom();
 
   const pcToggle=document.getElementById('percapita-toggle');

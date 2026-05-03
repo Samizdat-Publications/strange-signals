@@ -70,4 +70,4 @@ The data pipeline downloads raw CSVs, consolidates them into an Excel workbook, 
 setup_sightings.sh → build_sightings_workbook.py → export_map_data.py
 ```
 
-The big map dataset (`data/sightings_map_data.json.gz`, ~15 MB gzipped) is committed so contributors can run the app without rebuilding the pipeline. Intermediate files (`*.xlsx`, `data/raw/`) stay git-ignored.
+The map dataset is split per category and committed: `data/sightings_ufo.json.gz` (~14 MB), `data/sightings_bigfoot.json.gz` (~150 KB), `data/sightings_haunted.json.gz` (~300 KB). Contributors can run the app without rebuilding the pipeline. Intermediate files (`*.xlsx`, `data/raw/`) stay git-ignored.
