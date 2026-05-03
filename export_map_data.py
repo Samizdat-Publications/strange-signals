@@ -73,29 +73,45 @@ def main():
             r.desc if r.desc != "nan" else "",
         ])
 
-    output = {
-        "categories": ["UFO/UAP", "Bigfoot/Sasquatch", "Haunted Place"],
-        "fields": ["lat", "lon", "cat", "date", "location", "subcategory", "description"],
-        "data": records,
-    }
+    # Split records by category. We write one .json.gz per category so the
+    # browser can fetch them in parallel, cache them independently, and
+    # eventually render the small ones (Bigfoot, Haunted) before the big
+    # one (UFO) finishes. The combined sightings_map_data.json.gz is no
+    # longer produced.
+    categories_full = ["UFO/UAP", "Bigfoot/Sasquatch", "Haunted Place"]
+    fields = ["lat", "lon", "cat", "date", "location", "subcategory", "description"]
+    cat_slug = ["ufo", "bigfoot", "haunted"]
+    cat_records = [[], [], []]
+    for r in records:
+        if 0 <= r[2] <= 2:
+            cat_records[r[2]].append(r)
 
-    # Serialize to JSON bytes once, then gzip. We commit ONLY the .gz —
-    # the app fetches .json.gz and decompresses in-browser via
-    # DecompressionStream, which cuts first-load network transfer ~75%.
-    payload = json.dumps(output, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    base_dir = os.path.dirname(OUTPUT)
+    print(f"  Exported {len(records):,} records, splitting by category:")
+    total_raw = 0
+    total_gz = 0
+    for idx, slug in enumerate(cat_slug):
+        out = {
+            "category": categories_full[idx],
+            "fields": fields,
+            "data": cat_records[idx],
+        }
+        payload = json.dumps(out, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        gz_path = os.path.join(base_dir, f"sightings_{slug}.json.gz")
+        with gzip.open(gz_path, "wb", compresslevel=9) as f:
+            f.write(payload)
+        raw_mb = len(payload) / (1024 * 1024)
+        gz_mb = os.path.getsize(gz_path) / (1024 * 1024)
+        total_raw += raw_mb
+        total_gz += gz_mb
+        print(f"    {os.path.basename(gz_path):<32s} {len(cat_records[idx]):>8,} rec  raw {raw_mb:5.1f} MB  gz {gz_mb:5.1f} MB")
 
-    gz_path = OUTPUT + ".gz"
-    with gzip.open(gz_path, "wb", compresslevel=9) as f:
-        f.write(payload)
+    # Remove any legacy combined files (uncompressed or gzipped).
+    for legacy in (OUTPUT, OUTPUT + ".gz"):
+        if os.path.exists(legacy):
+            os.remove(legacy)
 
-    # Remove any legacy uncompressed copy so the repo only carries the .gz.
-    if os.path.exists(OUTPUT):
-        os.remove(OUTPUT)
-
-    raw_mb = len(payload) / (1024 * 1024)
-    gz_mb = os.path.getsize(gz_path) / (1024 * 1024)
-    print(f"  Exported {len(records):,} records -> {gz_path}")
-    print(f"  Raw: {raw_mb:.1f} MB  ->  gzipped: {gz_mb:.1f} MB ({gz_mb/raw_mb*100:.0f}% of original)")
+    print(f"  Totals: raw {total_raw:.1f} MB  ->  gzipped {total_gz:.1f} MB ({total_gz/total_raw*100:.0f}% of original)")
 
 
 if __name__ == "__main__":

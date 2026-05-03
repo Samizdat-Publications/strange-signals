@@ -13,11 +13,10 @@ data/*.xlsx
 # Descriptions file (lazy-loaded, not yet implemented)
 data/sightings_descriptions.json
 
-# Pipeline writes the gzipped map data — keep that committed (along with overlay JSONs).
-# Block the uncompressed companion if someone runs `gunzip -k` locally; the app only ever
-# fetches the .gz.
-data/sightings_map_data.json
-# Keep committed: sightings_map_data.json.gz, us_population_density.json, military_bases.json, national_parks.json, historic_sites.json
+# Pipeline writes per-category gzipped map data — keep those committed (along with overlay JSONs).
+# Block uncompressed companions if someone runs `gunzip -k` locally; the app only ever fetches .gz.
+data/sightings_*.json
+# Keep committed: sightings_{ufo,bigfoot,haunted}.json.gz, us_population_density.json, military_bases.json, national_parks.json, historic_sites.json
 
 # Claude Code worktrees (ephemeral)
 .claude/worktrees/
