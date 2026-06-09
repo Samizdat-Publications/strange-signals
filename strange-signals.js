@@ -23,6 +23,7 @@ let timelineBuilt=false;
 let corrSubMode='spatial';
 let cachedHexGrid=null, cachedHexCounts=null, cachedHexSize=null, cachedBoundsKey=null;
 let cachedSpatialIndex=null;
+let anomalyLayer=null, anomalyResult=null; // SignalEngine output for current viewport
 let corrMatrix=null; // 3x3 r values
 let detectedClusters=[]; // [{indices, centroid, label, stats, color}]
 let clusterLayer=null;
@@ -75,11 +76,28 @@ document.addEventListener('click',(e)=>{
   }
 });
 
+// cockpit status bar: live cursor coordinates
+map.on('mousemove',e=>{
+  const el=document.getElementById('sb-coords');
+  if(el)el.textContent=e.latlng.lat.toFixed(3)+' , '+e.latlng.lng.toFixed(3);
+});
+
+// engine busy state: status bar text + radar sweep overlay on the map
+function setEngineBusy(busy,msg){
+  const el=document.getElementById('sb-engine');
+  if(el){
+    el.textContent=msg||(busy?'ENGINE COMPUTING':'ENGINE IDLE');
+    el.classList.toggle('busy',!!busy);
+  }
+  const mc=document.getElementById('map-container');
+  if(mc)mc.classList.toggle('computing',!!busy);
+}
+
 let _zoomRenderTimer=null;
 map.on('zoomend',()=>{
   document.getElementById('stat-zoom').textContent=map.getZoom();
   // Debounce heatmap/hexbin re-render — heavy work shouldn't fire mid-gesture
-  if(currentView==='heatmap'||currentView==='hexbin'){
+  if(currentView==='heatmap'||currentView==='hexbin'||currentView==='anomaly'){
     if(_zoomRenderTimer)clearTimeout(_zoomRenderTimer);
     _zoomRenderTimer=setTimeout(()=>{_zoomRenderTimer=null;renderCurrentView();},300);
   }
@@ -262,6 +280,33 @@ function getPopDensity(lat,lon){
   const col=Math.floor((lon-g.lon_min)/g.resolution);
   if(row<0||row>=g.rows||col<0||col>=g.cols)return 0;
   return g.grid[row][col]||0;
+}
+
+/* ========== HEX POPULATION MASS ==========
+   Relative population mass of a hex = mean census density sampled at
+   the centroid + 6 interior points, times hex area. Absolute units
+   cancel in the expected-counts model (only shares matter). Returns 0
+   when the hex falls outside the census grid (unmodeled). */
+function hexPopMass(hexFeature,cellSide){
+  if(!popDensityGrid)return 0;
+  const c=turf.centroid(hexFeature).geometry.coordinates;
+  const lat=c[1],lon=c[0];
+  // sample centroid + ring at ~60% of the hex radius
+  const rDeg=cellSide*0.6/111;
+  const lonScale=Math.cos(lat*Math.PI/180)||1;
+  let sum=0,nIn=0;
+  const offsets=[[0,0],[rDeg,0],[-rDeg,0],[0.5*rDeg,0.87*rDeg],[0.5*rDeg,-0.87*rDeg],[-0.5*rDeg,0.87*rDeg],[-0.5*rDeg,-0.87*rDeg]];
+  for(const[dlat,dlon]of offsets){
+    const sLat=lat+dlat,sLon=lon+dlon/lonScale;
+    const g=popDensityGrid;
+    if(sLat<g.lat_min||sLat>g.lat_max||sLon<g.lon_min||sLon>g.lon_max)continue;
+    sum+=getPopDensity(sLat,sLon);
+    nIn++;
+  }
+  if(nIn===0)return 0;
+  // hexagon area = (3*sqrt(3)/2) * side^2 — constant per grid, kept for interpretability
+  const area=2.598*cellSide*cellSide;
+  return(sum/nIn)*area;
 }
 
 /* ========== MILITARY BASES LAYER ========== */
@@ -476,6 +521,7 @@ function invalidateAnalysisCache(){
   corrMatrix=null;
   detectedClusters=[];
   nnResults=null;
+  anomalyResult=null;
 }
 
 function pearsonR(xArr,yArr){
@@ -1228,16 +1274,18 @@ function createCluster(catIdx){
     maxClusterRadius:50,disableClusteringAtZoom:12,
     iconCreateFunction(cluster){
       const n=cluster.getChildCount();
-      const sz=n<100?28:n<1000?36:44;
+      const sz=n<100?30:n<1000?38:46;
       const label=n+' '+CAT_NAMES[catIdx]+' sightings';
       const catIcons=['ufo','paw','ghost'];
-      const catIcon=TABLER_SVG[catIcons[catIdx]](CAT_COLORS[catIdx],12);
+      const catIcon=TABLER_SVG[catIcons[catIdx]](CAT_COLORS[catIdx],11);
+      // instrument blip: dark glass center, thin category ring, glowing count
       return L.divIcon({className:'tabler-marker',iconSize:[sz,sz],
-        html:`<div aria-label="${label}" style="background:rgba(${c},0.65);color:#fff;font-weight:700;font-size:${sz>36?12:10}px;
+        html:`<div aria-label="${label}" style="background:rgba(5,6,15,0.78);color:rgba(${c},1);font-weight:700;font-size:${sz>38?11:9.5}px;
           width:${sz}px;height:${sz}px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
-          border:2px solid rgba(${c},0.4);box-shadow:0 0 8px rgba(${c},0.3);font-family:var(--font-mono)">
-          <span style="line-height:1;margin-bottom:-1px">${catIcon}</span>
-          <span style="line-height:1">${n>=1000?Math.round(n/1000)+'k':n}</span></div>`});
+          border:1.5px solid rgba(${c},0.85);box-shadow:0 0 10px rgba(${c},0.3),inset 0 0 8px rgba(${c},0.12);
+          font-family:var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:-0.5px">
+          <span style="line-height:1;margin-bottom:-1px;opacity:0.9">${catIcon}</span>
+          <span style="line-height:1;text-shadow:0 0 6px rgba(${c},0.6)">${n>=1000?(n/1000).toFixed(n<10000?1:0)+'k':n}</span></div>`});
     }
   });
 }
@@ -1303,6 +1351,7 @@ function clearAllLayers(){
   if(corrLayer){map.removeLayer(corrLayer);corrLayer=null}
   if(clusterLayer){map.removeLayer(clusterLayer);clusterLayer=null}
   if(attractionLayer){map.removeLayer(attractionLayer);attractionLayer=null}
+  if(anomalyLayer){map.removeLayer(anomalyLayer);anomalyLayer=null}
   clearProxCircle();
 }
 
@@ -1314,6 +1363,16 @@ function updateLegend(){
     html=`<div class="legend-title">Sighting Density</div>
       <div class="legend-gradient" style="background:linear-gradient(90deg,#440154,#31688e,#35b779,#fde725)"></div>
       <div class="legend-labels"><span>Few</span><span>Many</span></div>`;
+  } else if(currentView==='anomaly'){
+    // numbers below come from the engine summary (computed values only)
+    const s=anomalyResult&&anomalyResult.res?anomalyResult.res.summary:null;
+    html=`<div class="legend-title">Anomaly Index</div>
+      <div class="legend-gradient" style="background:linear-gradient(90deg,#0a7a4a,#00ff88,#ffcc00)"></div>
+      <div class="legend-labels"><span>q&lt;0.05</span><span>extreme</span></div>
+      <div class="legend-row"><div class="legend-swatch" style="background:#1f4d7a"></div>Below expected</div>
+      <div class="legend-row"><div class="legend-swatch" style="background:rgba(255,255,255,0.06)"></div>Within expected</div>
+      <div style="margin-top:4px;font-size:9px;color:var(--text-dim)">Baseline: census population &times; regional reporting rate. Lit cells exceed it &ge;1.5&times; at FDR q&lt;0.05.</div>`+
+      (s?`<div class="legend-engine-status">${s.nSig} significant / ${s.nModeled} modeled cells</div>`:'');
   } else if(currentView==='heatmap'){
     html=`<div class="legend-title">Heat Intensity</div>`;
     for(let i=0;i<3;i++){
@@ -1352,6 +1411,7 @@ function renderCurrentView(){
   if(currentView==='markers')renderMarkers();
   else if(currentView==='heatmap')renderHeatmap();
   else if(currentView==='hexbin')renderHexbin();
+  else if(currentView==='anomaly')renderAnomaly();
   else if(currentView==='correlation')renderCorrelation();
   updateLegend();
 }
@@ -1474,6 +1534,87 @@ function renderHexbin(){
   }).addTo(map);
 }
 
+/* ========== ANOMALY VIEW (SIGNAL ENGINE) ==========
+   The flagship v2 view. Null hypothesis: sightings follow population.
+   Cells are colored by departure from census-derived expected counts,
+   with Benjamini-Hochberg FDR control — only q<0.05 cells light up. */
+let anomalyRenderGen=0;
+async function renderAnomaly(){
+  const myGen=++anomalyRenderGen;
+  if(!window.SignalEngine){console.warn('SignalEngine not loaded');return}
+  if(!popDensityGrid){
+    setEngineStatus('NO BASELINE MODEL — population grid unavailable');
+    return;
+  }
+  const zoom=map.getZoom();
+  const cellSide=Math.max(autoHexSize(zoom),parseFloat(document.getElementById('corr-hex-size').value)||20);
+  setEngineStatus('COMPUTING EXPECTED COUNTS…');
+  setEngineBusy(true);
+  const{grid,counts}=await getOrBuildHexDataAsync(cellSide);
+  if(myGen!==anomalyRenderGen){setEngineBusy(false);return} // stale — user moved on
+  const hexes=grid.features;
+  const popmass=hexes.map(h=>hexPopMass(h,cellSide));
+  const{adj}=buildHexAdjacency(hexes,cellSide);
+  const res=SignalEngine.computeAnomaly({counts,popmass,adj});
+  anomalyResult={hexes,cellSide,res,bounds:map.getBounds().toBBoxString()};
+
+  // attach engine output to features for tooltips / detail panel
+  hexes.forEach((h,i)=>{h.properties._ai=res.perHex[i]});
+
+  // index → color: green at threshold, amber at extreme. Green stays precious:
+  // only FDR-significant cells receive saturated color.
+  const sigColor=d3.scaleLinear().domain([20,60,100]).range(['#0a7a4a','#00ff88','#ffcc00']).clamp(true);
+
+  if(anomalyLayer){map.removeLayer(anomalyLayer);anomalyLayer=null}
+  anomalyLayer=L.geoJSON(turf.featureCollection(hexes),{
+    style(feature){
+      const a=feature.properties._ai;
+      if(!a||!a.modeled)return{fillOpacity:0,weight:0,interactive:false};
+      if(a.sig){
+        return{fillColor:sigColor(a.index),fillOpacity:0.3+0.45*(a.index/100),
+          weight:a.index>=60?1.2:0.6,color:a.index>=60?'rgba(255,220,120,0.8)':'rgba(0,255,136,0.35)'};
+      }
+      if(a.deficit){
+        return{fillColor:'#1f4d7a',fillOpacity:0.22,weight:0.4,color:'rgba(80,140,200,0.25)'};
+      }
+      return{fillColor:'#0b0e1a',fillOpacity:0.12,weight:0.25,color:'rgba(255,255,255,0.05)'};
+    },
+    onEachFeature(feature,layer){
+      const a=feature.properties._ai;
+      if(!a||!a.modeled||(a.O===0&&!a.deficit))return;
+      const rr=isNaN(a.RR)?'—':a.RR.toFixed(2);
+      const rrp=isNaN(a.RRpop)?'—':a.RRpop.toFixed(2);
+      const q=isNaN(a.q)?'—':(a.q<0.001?'<0.001':a.q.toFixed(3));
+      let tip='<b>'+(a.sig?'<span style="color:var(--green)">ANOMALY INDEX '+a.index+'</span>':a.deficit?'<span style="color:#6ca6dd">BELOW EXPECTED</span>':'Within expected range')+'</b><br>';
+      tip+='Observed: '+a.O.toLocaleString()+' &middot; Expected: '+(isNaN(a.E)?'—':a.E.toFixed(1))+'<br>';
+      tip+=rr+'&times; regional baseline &middot; '+rrp+'&times; population &middot; q: '+q;
+      if(a.coex>=2)tip+='<br><span style="color:#ffcc00">'+a.coex+' phenomena independently in excess</span>';
+      layer.bindTooltip(tip);
+      layer.on('click',()=>showHexDetail(feature));
+    }
+  }).addTo(map);
+
+  document.getElementById('stat-hotspots').textContent=res.summary.nSig;
+  setEngineBusy(false,'ENGINE: '+res.summary.nSig+' SIG CELLS');
+  updateLegend(); // legend shows the engine summary for the anomaly view
+}
+
+// Engine status line folded into the legend box (text only, DOM-built)
+function setEngineStatus(text){
+  const el=document.getElementById('map-legend');
+  if(!el||currentView!=='anomaly')return;
+  el.style.display='';
+  el.textContent='';
+  const title=document.createElement('div');
+  title.className='legend-title';
+  title.textContent='SIGNAL ENGINE';
+  const status=document.createElement('div');
+  status.className='legend-engine-status';
+  status.textContent=text;
+  el.appendChild(title);
+  el.appendChild(status);
+}
+
 /* ========== HEX DETAIL PANEL ========== */
 // Note: All user-supplied strings are sanitized via esc() before insertion.
 // Category names, colors, and structure come from app constants (CAT_NAMES, CAT_COLORS).
@@ -1593,6 +1734,34 @@ function buildHexDetailHTML(feature,sightings){
     <div class="hex-stat-chip"><div class="hex-stat-chip-val">${catCounts.filter(c=>c>0).length}/3</div><div class="hex-stat-chip-lbl">CATEGORIES</div></div>
   </div>`);
 
+  // Anomaly breakdown (engine output attached by renderAnomaly; numeric only)
+  const ai=feature.properties&&feature.properties._ai;
+  if(ai&&ai.modeled){
+    const rr=isNaN(ai.RR)?'—':ai.RR.toFixed(2);
+    const rrp=isNaN(ai.RRpop)?'—':ai.RRpop.toFixed(2);
+    const q=isNaN(ai.q)?'—':(ai.q<0.001?'&lt;0.001':ai.q.toFixed(3));
+    const gi=isNaN(ai.gi)?'—':ai.gi.toFixed(1);
+    const verdict=ai.sig?'<span style="color:var(--green)">SIGNIFICANT EXCESS</span>'
+      :ai.deficit?'<span style="color:#6ca6dd">SIGNIFICANT DEFICIT</span>'
+      :'<span style="color:var(--text-dim)">WITHIN EXPECTED RANGE</span>';
+    parts.push('<div class="hex-section">ANOMALY BREAKDOWN</div>');
+    parts.push(`<div class="hex-anomaly">
+      <div class="hex-anomaly-head">
+        <div class="hex-anomaly-index">${ai.index!=null?ai.index:'—'}</div>
+        <div class="hex-anomaly-meta">
+          <div>${verdict}</div>
+          <div class="hex-anomaly-sub">Observed ${ai.O.toLocaleString()} vs expected ${isNaN(ai.E)?'—':ai.E.toFixed(1)} &middot; ${rr}&times; regional baseline &middot; ${rrp}&times; population</div>
+          <div class="hex-anomaly-sub">q-value ${q} (FDR) &middot; Gi* z ${gi} &middot; ${ai.coex} phenomena in excess</div>
+        </div>
+      </div>`+
+      (ai.components?`<div class="hex-anomaly-bars">
+        <div class="hex-anomaly-bar-row"><span>EXCESS</span><div class="hex-cat-bar-track"><div class="hex-cat-bar-fill" style="width:${Math.round(ai.components.sig*100)}%;background:var(--green)"></div></div></div>
+        <div class="hex-anomaly-bar-row"><span>COHERENCE</span><div class="hex-cat-bar-track"><div class="hex-cat-bar-fill" style="width:${Math.round(ai.components.gi*100)}%;background:#00d4ff"></div></div></div>
+        <div class="hex-anomaly-bar-row"><span>CO-EXCESS</span><div class="hex-cat-bar-track"><div class="hex-cat-bar-fill" style="width:${Math.round(ai.components.coex*100)}%;background:#ffcc00"></div></div></div>
+      </div>`:'')+
+      '</div>');
+  }
+
   // Temporal chart placeholder
   parts.push('<div class="hex-section">TEMPORAL DISTRIBUTION</div>');
   parts.push('<div class="hex-temporal-chart"><svg id="hex-temporal-svg" width="100%" height="90"></svg></div>');
@@ -1615,9 +1784,27 @@ function buildHexDetailHTML(feature,sightings){
     parts.push('</div>');
   }
 
-  // Nearest military base
+  // Data-quality guard: if many records share one exact coordinate the
+  // cell may be inflated by coarse geocoding (city/state centroid dumping)
+  if(total>=30){
+    const coordFreq={};
+    let maxShare=0,maxKey='';
+    sightings.forEach(r=>{
+      const k=r[F.LAT].toFixed(3)+','+r[F.LON].toFixed(3);
+      coordFreq[k]=(coordFreq[k]||0)+1;
+      if(coordFreq[k]>maxShare){maxShare=coordFreq[k];maxKey=k}
+    });
+    if(maxShare/total>0.5){
+      parts.push(`<div class="hex-confounder">DATA QUALITY: ${Math.round(maxShare/total*100)}% of records here share one exact coordinate (${maxKey}) — likely coarse geocoding, treat the excess with suspicion.</div>`);
+    }
+  }
+
+  // Nearest military base + confounder ledger note
   if(nearestMil){
     parts.push(`<div class="hex-military"><b>${esc(nearestMil.name)}</b> (${esc(nearestMil.branch)}) &mdash; ${nearestMil.dist.toFixed(1)} km away</div>`);
+    if(nearestMil.dist<50&&catCounts[0]>catCounts[1]+catCounts[2]){
+      parts.push('<div class="hex-confounder">CONFOUNDER: within 50 km of a military installation — military aviation is a plausible mundane source for UAP reports here.</div>');
+    }
   }
 
   // Sighting list header
@@ -1970,24 +2157,52 @@ async function runCorrelation(valA,valB){
     }
   }
 
-  // Compute Pearson r and p-value using permutation test
-  const xArr=pairs.map(p=>p[0]),yArr=pairs.map(p=>p[1]);
+  // Compute Pearson r and p-value using permutation test.
+  // Counts are heavy-tailed (cities dominate) \u2014 log1p variance-stabilizes
+  // so r reflects breadth of co-occurrence, not a few megacity cells.
+  const xArr=pairs.map(p=>Math.log1p(p[0])),yArr=pairs.map(p=>Math.log1p(p[1]));
   const r=pearsonR(xArr,yArr);
   const pVal=isNaN(r)?1:permutationPValue(xArr,yArr,r,999);
+
+  // Population-adjusted correlation: partial out census population mass
+  // (log scale). The gap between raw and adjusted r is itself a finding \u2014
+  // it is the share of the co-occurrence explained by "people live here."
+  let adjR=NaN,adjP=1;
+  if(popDensityGrid&&window.SignalEngine){
+    const popArr=[];
+    for(let i=0;i<hexFeatures.length;i++){
+      if(countsA[i]>0||countsB[i]>0){
+        popArr.push(Math.log1p(hexPopMass(hexFeatures[i],cellSide)));
+      }
+    }
+    const adj=SignalEngine.partialCorrelation(xArr,yArr,popArr,499);
+    adjR=adj.r;adjP=adj.p;
+  }
 
   // Display result
   const resultEl=document.getElementById('corr-result');
   resultEl.classList.add('visible');
   const rEl=document.getElementById('corr-r-value');
-  const rDisplay=isNaN(r)?'N/A':r.toFixed(3);
+  const headlineR=isNaN(adjR)?r:adjR; // adjusted r is the honest headline
+  const rDisplay=isNaN(headlineR)?'N/A':headlineR.toFixed(3);
   rEl.textContent=rDisplay;
-  rEl.style.color=isNaN(r)?'var(--text-dim)':r>0.3?'var(--green)':r<-0.1?'var(--pink)':'var(--cyan)';
+  rEl.style.color=isNaN(headlineR)?'var(--text-dim)':headlineR>0.3?'var(--green)':headlineR<-0.1?'var(--pink)':'var(--cyan)';
 
   const detailEl=document.getElementById('corr-detail');
   detailEl.textContent='';
-  const d1=document.createElement('div');d1.textContent=interpretR(r);detailEl.appendChild(d1);
-  const d2=document.createElement('div');d2.style.cssText='margin-top:3px;font-size:10px;color:'+(pVal<0.05?'var(--green)':'var(--text-dim)');
-  d2.textContent=formatPValue(pVal);detailEl.appendChild(d2);
+  const d1=document.createElement('div');d1.textContent=interpretR(headlineR);detailEl.appendChild(d1);
+  if(!isNaN(adjR)){
+    const dAdj=document.createElement('div');
+    dAdj.style.cssText='margin-top:3px;font-size:10px;color:var(--text-dim)';
+    const popShare=!isNaN(r)&&Math.abs(r)>0.01?Math.max(0,Math.min(100,Math.round((1-Math.abs(adjR)/Math.abs(r))*100))):null;
+    dAdj.textContent='pop-adjusted (headline) \u00B7 raw r='+(isNaN(r)?'N/A':r.toFixed(3))+
+      (popShare!=null?' \u00B7 ~'+popShare+'% explained by population':'');
+    detailEl.appendChild(dAdj);
+  }
+  const d2=document.createElement('div');
+  const pShown=isNaN(adjR)?pVal:adjP;
+  d2.style.cssText='margin-top:3px;font-size:10px;color:'+(pShown<0.05?'var(--green)':'var(--text-dim)');
+  d2.textContent=formatPValue(pShown);detailEl.appendChild(d2);
   const d3el=document.createElement('div');d3el.style.marginTop='4px';
   d3el.textContent=pairs.length+' hex cells analyzed \u00B7 '+hotspotCount+' hotspots';detailEl.appendChild(d3el);
   document.getElementById('stat-hotspots').textContent=hotspotCount;
@@ -2122,6 +2337,8 @@ function setView(view){
   document.querySelectorAll('.nav-btn,.view-btn').forEach(b=>{
     b.classList.toggle('active',b.dataset.view===view);
   });
+  const sbMode=document.getElementById('sb-mode');
+  if(sbMode)sbMode.textContent=view.toUpperCase();
   // Show/hide correlation controls
   document.getElementById('corr-section').style.display=view==='correlation'?'block':'none';
   applyFilters();
@@ -2631,6 +2848,7 @@ document.addEventListener('keydown',e=>{
   else if(key==='m')setView('markers');
   else if(key==='h')setView('heatmap');
   else if(key==='x')setView('hexbin');
+  else if(key==='n')setView('anomaly');
   else if(key==='c')setView('correlation');
   // Search
   else if(key==='/'){e.preventDefault();document.getElementById('search-box').focus()}
@@ -2733,11 +2951,21 @@ async function mainThreadFallback(buffer,records,resolve){
   const text=new TextDecoder().decode(bytes);
   const json=JSON.parse(text);
   const raw=json.data;
+  const slashRe=/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/; // mirror parse-worker.js date normalization
   for(let i=0;i<raw.length;i++){
     const r=raw[i];
     if(Array.isArray(r)&&r.length>=7&&typeof r[0]==='number'&&!isNaN(r[0])&&
-      typeof r[1]==='number'&&!isNaN(r[1]))
+      typeof r[1]==='number'&&!isNaN(r[1])){
+      if(typeof r[3]==='string'){
+        const m=r[3].match(slashRe);
+        if(m){
+          let y=+m[3];
+          if(m[3].length<=2)y=y<=26?2000+y:1900+y;
+          r[3]=y+'-'+String(Math.min(12,Math.max(1,+m[1]))).padStart(2,'0')+'-'+String(Math.min(31,Math.max(1,+m[2]))).padStart(2,'0');
+        }
+      }
       records.push(r);
+    }
   }
   resolve(records);
 }
@@ -2867,6 +3095,51 @@ window.StrangeSignals={
         document.querySelector(`[data-cat="${i}"]`).checked=opts.categories.includes(i);
       });
     }
+  },
+
+  // Anomaly engine (v2)
+  runAnomaly:async()=>{
+    if(currentView!=='anomaly')setView('anomaly');
+    else await renderAnomaly();
+    // wait for the async render kicked off via setView→applyFilters
+    let tries=0;
+    while(!anomalyResult&&tries++<100)await new Promise(r=>setTimeout(r,100));
+    return window.StrangeSignals.getAnomalyData();
+  },
+  getAnomalyData:(topN)=>{
+    if(!anomalyResult)return{error:'Anomaly view not computed yet. Call runAnomaly first or switch to the anomaly view.'};
+    const{hexes,res,cellSide}=anomalyResult;
+    const cells=[];
+    res.perHex.forEach((h,i)=>{
+      if(!h.modeled||!h.sig)return;
+      const c=turf.centroid(hexes[i]).geometry.coordinates;
+      cells.push({lat:+c[1].toFixed(3),lon:+c[0].toFixed(3),index:h.index,
+        observed:h.O,expected:+h.E.toFixed(1),rate_ratio_regional:+h.RR.toFixed(2),
+        rate_ratio_population:isNaN(h.RRpop)?null:+h.RRpop.toFixed(2),
+        q_value:+h.q.toPrecision(2),gi_z:isNaN(h.gi)?null:+h.gi.toFixed(1),
+        phenomena_in_excess:h.coex});
+    });
+    cells.sort((a,b)=>b.index-a.index);
+    return{summary:res.summary,cell_km:cellSide,significant_cells:cells.slice(0,topN||25)};
+  },
+  detectFlaps:(opts)=>{
+    opts=opts||{};
+    const records=[];
+    const cats=opts.category!=null?[opts.category]:[0,1,2];
+    cats.forEach(c=>{filteredCat[c].forEach(r=>records.push(r))});
+    const events=SignalEngine.detectFlaps({records,F,cellDeg:opts.cell_deg||1.5,
+      minMonthCount:opts.min_month_count||5,pThresh:opts.p_threshold||1e-4,maxEvents:opts.max_events||40});
+    // label each flap with the nearest sighting's location name
+    events.forEach(ev=>{
+      let best=Infinity,label='Unknown';
+      for(const r of records){
+        if(!r[F.LOC])continue;
+        const d=Math.abs(r[F.LAT]-ev.lat)+Math.abs(r[F.LON]-ev.lon);
+        if(d<best){best=d;label=r[F.LOC]}
+      }
+      ev.label=label;
+    });
+    return events;
   },
 
   // Analysis
@@ -3052,6 +3325,70 @@ window.StrangeSignals={
     Object.keys(results).forEach(k=>{if(!results[k].length)delete results[k]});
     return results;
   },
+
+  // Deep-dive support (v2) — raw record access + national baselines
+  getRecordsInRadius:(lat,lon,radiusKm)=>{
+    const radiusDeg=radiusKm/111;
+    const cosLat=Math.cos(lat*Math.PI/180);
+    const byCat=[[],[],[]];
+    for(let cat=0;cat<3;cat++){
+      for(const r of filteredCat[cat]){
+        const dlat=r[F.LAT]-lat,dlon=(r[F.LON]-lon)*cosLat;
+        if(Math.abs(dlat)>radiusDeg||Math.abs(dlon)>radiusDeg)continue;
+        if(Math.sqrt(dlat*dlat+dlon*dlon)*111<=radiusKm)byCat[cat].push(r);
+      }
+    }
+    return byCat;
+  },
+  getNationalBaseline:()=>{
+    // CONUS totals under current filters + total census population mass
+    if(!popDensityGrid)return null;
+    const g=popDensityGrid;
+    const catTotals=[0,0,0];
+    for(let cat=0;cat<3;cat++){
+      for(const r of filteredCat[cat]){
+        if(r[F.LAT]>=g.lat_min&&r[F.LAT]<=g.lat_max&&r[F.LON]>=g.lon_min&&r[F.LON]<=g.lon_max)catTotals[cat]++;
+      }
+    }
+    let totalPop=0;
+    for(let row=0;row<g.rows;row++){
+      const lat=g.lat_max-(row+0.5)*g.resolution;
+      const cellArea=Math.pow(g.resolution*111,2)*Math.cos(lat*Math.PI/180);
+      for(let col=0;col<g.cols;col++)totalPop+=(g.grid[row][col]||0)*cellArea;
+    }
+    return{catTotals,total:catTotals[0]+catTotals[1]+catTotals[2],totalPop};
+  },
+  getPopMassInRadius:(lat,lon,radiusKm)=>{
+    if(!popDensityGrid)return 0;
+    const g=popDensityGrid;
+    let mass=0;
+    for(let row=0;row<g.rows;row++){
+      const cLat=g.lat_max-(row+0.5)*g.resolution;
+      if(Math.abs(cLat-lat)*111>radiusKm+14)continue;
+      const cellArea=Math.pow(g.resolution*111,2)*Math.cos(cLat*Math.PI/180);
+      const cosLat=Math.cos(lat*Math.PI/180);
+      for(let col=0;col<g.cols;col++){
+        const cLon=g.lon_min+(col+0.5)*g.resolution;
+        const dKm=Math.sqrt(Math.pow((cLat-lat)*111,2)+Math.pow((cLon-lon)*111*cosLat,2));
+        if(dKm<=radiusKm)mass+=(g.grid[row][col]||0)*cellArea;
+      }
+    }
+    return mass;
+  },
+  getMonthlyNationalSeries:()=>{
+    // 'YYYY-MM' → total count across filtered categories (CONUS-agnostic)
+    const out={};
+    for(let cat=0;cat<3;cat++){
+      for(const r of filteredCat[cat]){
+        const d=r[F.DATE];
+        if(!d||d.length<7)continue;
+        const ym=d.substring(0,7);
+        out[ym]=(out[ym]||0)+1;
+      }
+    }
+    return out;
+  },
+  ensureOverlaysLoaded:(keys)=>Promise.all((keys||['airspace','earthquakes','caves','fireballs','cryptids','missing411']).map(k=>ensureOverlayLoaded(k))),
 
   // Constants
   F,CAT_NAMES,CAT_COLORS

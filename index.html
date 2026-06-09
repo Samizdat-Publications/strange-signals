@@ -55,6 +55,7 @@
     <button class="nav-btn active" data-view="markers">MARKERS</button>
     <button class="nav-btn" data-view="heatmap">HEATMAP</button>
     <button class="nav-btn" data-view="hexbin">HEX DENSITY</button>
+    <button class="nav-btn nav-btn--anomaly" data-view="anomaly">ANOMALY</button>
     <button class="nav-btn" data-view="correlation">CORRELATION</button>
   </nav>
   <div class="header-right">
@@ -183,6 +184,7 @@
         <button class="view-btn active" data-view="markers">MARKERS</button>
         <button class="view-btn" data-view="heatmap">HEAT</button>
         <button class="view-btn" data-view="hexbin">HEX</button>
+        <button class="view-btn" data-view="anomaly">ANOM</button>
         <button class="view-btn" data-view="correlation">CORR</button>
       </div>
     </div>
@@ -375,6 +377,14 @@
       </div>
       <!-- MAP LEGEND -->
       <div id="map-legend" style="display:none"></div>
+      <!-- STATUS BAR (cockpit readout) -->
+      <div id="map-statusbar" aria-hidden="true">
+        <span id="sb-coords">--.--- , --.---</span>
+        <span class="sb-sep">|</span>
+        <span id="sb-mode">MARKERS</span>
+        <span class="sb-sep">|</span>
+        <span id="sb-engine">ENGINE IDLE</span>
+      </div>
       <!-- ANNOTATION TOOLBAR -->
       <div class="annotation-toolbar" id="annotation-toolbar">
         <button class="anno-btn" id="anno-toggle" title="Add annotation (A)" aria-label="Add annotation">&#128204;</button>
@@ -426,6 +436,7 @@
         <div class="shortcut-row"><kbd>M</kbd> Markers view</div>
         <div class="shortcut-row"><kbd>H</kbd> Heatmap view</div>
         <div class="shortcut-row"><kbd>X</kbd> Hex density</div>
+        <div class="shortcut-row"><kbd>N</kbd> Anomaly view</div>
         <div class="shortcut-row"><kbd>C</kbd> Correlation</div>
       </div>
       <div class="shortcut-group">
@@ -462,11 +473,13 @@
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"
   integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
 <!-- App Logic -->
+<script src="signal-engine.js"></script>
 <script src="highlight-layer.js"></script>
 <script src="window-manager.js"></script>
 <script src="strange-signals.js"></script>
 <script src="signal-charts.js"></script>
 <script src="signal-reports.js"></script>
+<script src="deep-dive.js"></script>
 <script src="ai-assistant.js"></script>
 <script src="annotations.js"></script>
 </body>

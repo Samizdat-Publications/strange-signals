@@ -34,6 +34,10 @@ The app is fully static — you can also open `index.html` directly, but a local
 ```
 index.html                  HTML shell — CDN refs (Leaflet, Turf, D3, html2canvas), all <link> and <script> tags
 strange-signals.js          Main app — IIFE-wrapped. Map, markers, views, correlation, timeline, filters, URL state, overlays
+signal-engine.js            v2 statistical core (window.SignalEngine) — pure math, no DOM/Leaflet deps.
+                            Poisson expected-counts model (census population baseline x regional reporting
+                            calibration), Benjamini-Hochberg FDR, Getis-Ord Gi*, population-partialed
+                            correlation, space-time flap detection. Powers the ANOMALY view.
 strange-signals.css         Main styles — CSS custom props, layout, sidebar, charts, scanline effect
 ai-assistant.js             SIGNAL AI assistant (Anthropic Messages API, tool-use loop, streaming)
 ai-assistant.css            Chat panel styles — bubbles, typing indicator, settings gear, error toast
@@ -148,14 +152,17 @@ Both workers fall back to main-thread computation if `Worker` construction fails
 
 ### Views and Correlation Modes
 
-`currentView` has four values, dispatched in `renderCurrentView()`:
+`currentView` has five values, dispatched in `renderCurrentView()`:
 
 | View | Renders |
 |------|---------|
 | `markers` | Leaflet MarkerCluster with Tabler icon divIcons |
 | `heatmap` | Three blended `leaflet-heat` layers (one per category) |
 | `hexbin` | Turf-generated hex grid with viridis scale, click for detail panel |
-| `correlation` | Dispatches on `corrSubMode` below |
+| `anomaly` | **v2 flagship.** SignalEngine output: cells colored by Anomaly Index; only FDR-significant cells (q<0.05, rate ratio ≥1.5 vs census-population × regional-reporting baseline) lit green→amber, blue = significant deficit. Hex click adds ANOMALY BREAKDOWN to the detail panel. CONUS-only (census grid coverage). |
+| `correlation` | Dispatches on `corrSubMode` below. Spatial mode's headline r is population-partialed on log1p counts; raw r and "% explained by population" shown alongside. |
+
+Anomaly engine API on `window.StrangeSignals`: `runAnomaly()`, `getAnomalyData(topN)`, `detectFlaps(opts)`. `signal-engine.js` itself is dependency-free (`window.SignalEngine`).
 
 Correlation sub-modes (`corrSubMode`):
 
@@ -244,6 +251,7 @@ Registered in `strange-signals.js` via `document.addEventListener('keydown', ...
 | `M` | Switch to markers view |
 | `H` | Switch to heatmap view |
 | `X` | Switch to hex density view |
+| `N` | Switch to anomaly view |
 | `C` | Switch to correlation view |
 | `/` | Focus the search box |
 | `S` | Toggle sidebar |

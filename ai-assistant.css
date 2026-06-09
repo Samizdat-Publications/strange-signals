@@ -19,14 +19,26 @@
 .signal-msg ul,.signal-msg ol{margin:4px 0;padding-left:16px}
 .signal-msg li{margin:2px 0}
 
-/* Tool call indicators */
-.signal-tool{display:flex;align-items:center;gap:6px;padding:4px 8px;margin:4px 0;
-  background:rgba(170,68,255,0.06);border:1px solid rgba(170,68,255,0.15);
-  border-radius:4px;font-size:10px;color:var(--purple)}
-.signal-tool.done{border-color:rgba(0,255,136,0.15);color:var(--green)}
-.signal-tool-icon{font-size:12px;animation:tool-spin 1s linear infinite}
+/* Investigation log — each tool call is an instrument line */
+.signal-tool{display:flex;align-items:baseline;gap:7px;padding:3px 8px;margin:3px 0;
+  background:rgba(170,68,255,0.05);border:1px solid rgba(170,68,255,0.12);
+  border-radius:3px;font-size:9px;color:var(--purple);font-variant-numeric:tabular-nums}
+.signal-tool.done{border-color:rgba(0,255,136,0.12);color:var(--green);background:rgba(0,255,136,0.03)}
+.signal-tool.done.err{border-color:rgba(255,51,102,0.2);color:var(--pink);background:rgba(255,51,102,0.04)}
+.signal-tool-icon{font-size:10px;animation:tool-spin 1s linear infinite;flex-shrink:0}
 .signal-tool.done .signal-tool-icon{animation:none}
+.signal-tool-name{font-family:'Orbitron',monospace;letter-spacing:1.2px;font-size:8px;flex-shrink:0}
+.signal-tool-args{color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  min-width:0;flex:1}
+.signal-tool-time{margin-left:auto;color:var(--text-dim);font-size:8px;flex-shrink:0}
 @keyframes tool-spin{to{transform:rotate(360deg)}}
+
+/* Evidence capture chips */
+.signal-evidence{margin:6px 0;border:1px solid rgba(0,255,136,0.2);border-radius:4px;
+  overflow:hidden;background:rgba(0,0,0,0.3)}
+.signal-evidence img{width:100%;display:block;opacity:0.9}
+.signal-evidence-cap{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:1.2px;
+  color:var(--green);padding:5px 8px;border-top:1px solid rgba(0,255,136,0.15)}
 
 /* Input bar */
 .signal-input-bar{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--border);flex-shrink:0}

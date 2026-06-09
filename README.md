@@ -29,14 +29,33 @@ The goal: **discover spatial and temporal patterns** hidden in the data. Do UFO 
 
 ## Features
 
-### Four Visualization Modes
+### The Signal Engine (v2)
+
+Raw sighting counts mostly tell you where people live. The **Signal Engine** models
+*expected* counts per hex cell from census population, calibrates for regional reporting
+culture, and flags only cells that statistically exceed that baseline (Poisson test,
+Benjamini–Hochberg FDR q&lt;0.05, rate ratio ≥1.5, Getis-Ord Gi* spatial coherence).
+The result is a map of **where there is more than there should be** — Sedona, Mt. Shasta,
+and the Puget Sound corridor light up; mere big cities don't.
+
+- **ANOMALY view** — the flagship visualization. Significant cells glow green→amber by
+  Anomaly Index; significant deficits show blue; everything else stays dark
+- **DEEP DIVE dossiers** — right-click anywhere on the map for a full regional workup:
+  anomaly verdict, per-category rate ratios, historical **flap episode detection**,
+  seasonality vs the national pattern, overlay context, a confounder ledger, and
+  exemplar cases — exportable as a standalone HTML report
+- **Honest correlations** — every spatial correlation now reports raw *r* alongside
+  population-adjusted *r*, so "ghosts correlate with UFOs" can't hide "cities exist"
+
+### Five Visualization Modes
 
 | Mode | Description |
 |------|-------------|
-| **Markers** | Clustered marker view with color-coded pins. Click any cluster to drill down, click a sighting for full details with proximity analysis |
+| **Markers** | Clustered instrument-blip view with color-coded pins. Click any cluster to drill down, click a sighting for full details with proximity analysis |
 | **Heatmap** | Density heatmap with per-category color blending. Instantly see where reports concentrate |
 | **Hex Density** | Hexagonal binning with viridis color scale. Click any hex for deep analysis — category breakdown, temporal distribution, top subcategories, density stats |
-| **Correlation** | Five analysis sub-modes: Spatial correlation, Correlation matrix, Temporal patterns, Cluster detection, and Nearest-neighbor distances |
+| **Anomaly** | Signal Engine output — population/reporting-corrected statistical excess, FDR-controlled. Click any cell for the full anomaly breakdown |
+| **Correlation** | Five analysis sub-modes: Spatial correlation (population-partialed), Correlation matrix, Temporal patterns, Cluster detection, and Nearest-neighbor distances |
 
 ### Overlay Datasets
 
@@ -61,12 +80,15 @@ Toggle 10+ real-world reference layers to investigate correlations:
 ### SIGNAL AI Assistant
 
 Built-in AI research assistant powered by Claude. SIGNAL can:
+- Hunt anomalies with the Signal Engine (`get_anomaly_scores`) and run full
+  deep-dive dossiers on any location (`run_deep_dive`)
+- Detect historical flap episodes (space-time bursts) automatically
+- **Capture map evidence** — screenshot the staged map mid-investigation and embed
+  the captures in illustrated, downloadable HTML reports
 - Search and filter the dataset by location, date, category, or description
-- Run spatial correlations and explain the results
-- Detect clusters and highlight them on the map
-- Toggle overlay layers and analyze nearby features
-- Generate downloadable HTML investigation reports
-- Navigate the map to areas of interest
+- Run population-adjusted spatial correlations and explain the results honestly
+- Toggle overlay layers, analyze nearby features, place annotation pins
+- Every tool call appears in a live **investigation log** with arguments and timing
 
 ### Additional Features
 
