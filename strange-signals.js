@@ -76,6 +76,23 @@ document.addEventListener('click',(e)=>{
   }
 });
 
+// cockpit status bar: live cursor coordinates
+map.on('mousemove',e=>{
+  const el=document.getElementById('sb-coords');
+  if(el)el.textContent=e.latlng.lat.toFixed(3)+' , '+e.latlng.lng.toFixed(3);
+});
+
+// engine busy state: status bar text + radar sweep overlay on the map
+function setEngineBusy(busy,msg){
+  const el=document.getElementById('sb-engine');
+  if(el){
+    el.textContent=msg||(busy?'ENGINE COMPUTING':'ENGINE IDLE');
+    el.classList.toggle('busy',!!busy);
+  }
+  const mc=document.getElementById('map-container');
+  if(mc)mc.classList.toggle('computing',!!busy);
+}
+
 let _zoomRenderTimer=null;
 map.on('zoomend',()=>{
   document.getElementById('stat-zoom').textContent=map.getZoom();
@@ -1257,16 +1274,18 @@ function createCluster(catIdx){
     maxClusterRadius:50,disableClusteringAtZoom:12,
     iconCreateFunction(cluster){
       const n=cluster.getChildCount();
-      const sz=n<100?28:n<1000?36:44;
+      const sz=n<100?30:n<1000?38:46;
       const label=n+' '+CAT_NAMES[catIdx]+' sightings';
       const catIcons=['ufo','paw','ghost'];
-      const catIcon=TABLER_SVG[catIcons[catIdx]](CAT_COLORS[catIdx],12);
+      const catIcon=TABLER_SVG[catIcons[catIdx]](CAT_COLORS[catIdx],11);
+      // instrument blip: dark glass center, thin category ring, glowing count
       return L.divIcon({className:'tabler-marker',iconSize:[sz,sz],
-        html:`<div aria-label="${label}" style="background:rgba(${c},0.65);color:#fff;font-weight:700;font-size:${sz>36?12:10}px;
+        html:`<div aria-label="${label}" style="background:rgba(5,6,15,0.78);color:rgba(${c},1);font-weight:700;font-size:${sz>38?11:9.5}px;
           width:${sz}px;height:${sz}px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
-          border:2px solid rgba(${c},0.4);box-shadow:0 0 8px rgba(${c},0.3);font-family:var(--font-mono)">
-          <span style="line-height:1;margin-bottom:-1px">${catIcon}</span>
-          <span style="line-height:1">${n>=1000?Math.round(n/1000)+'k':n}</span></div>`});
+          border:1.5px solid rgba(${c},0.85);box-shadow:0 0 10px rgba(${c},0.3),inset 0 0 8px rgba(${c},0.12);
+          font-family:var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:-0.5px">
+          <span style="line-height:1;margin-bottom:-1px;opacity:0.9">${catIcon}</span>
+          <span style="line-height:1;text-shadow:0 0 6px rgba(${c},0.6)">${n>=1000?(n/1000).toFixed(n<10000?1:0)+'k':n}</span></div>`});
     }
   });
 }
@@ -1530,8 +1549,9 @@ async function renderAnomaly(){
   const zoom=map.getZoom();
   const cellSide=Math.max(autoHexSize(zoom),parseFloat(document.getElementById('corr-hex-size').value)||20);
   setEngineStatus('COMPUTING EXPECTED COUNTS…');
+  setEngineBusy(true);
   const{grid,counts}=await getOrBuildHexDataAsync(cellSide);
-  if(myGen!==anomalyRenderGen)return; // stale — user moved on
+  if(myGen!==anomalyRenderGen){setEngineBusy(false);return} // stale — user moved on
   const hexes=grid.features;
   const popmass=hexes.map(h=>hexPopMass(h,cellSide));
   const{adj}=buildHexAdjacency(hexes,cellSide);
@@ -1575,6 +1595,7 @@ async function renderAnomaly(){
   }).addTo(map);
 
   document.getElementById('stat-hotspots').textContent=res.summary.nSig;
+  setEngineBusy(false,'ENGINE: '+res.summary.nSig+' SIG CELLS');
   updateLegend(); // legend shows the engine summary for the anomaly view
 }
 
@@ -2316,6 +2337,8 @@ function setView(view){
   document.querySelectorAll('.nav-btn,.view-btn').forEach(b=>{
     b.classList.toggle('active',b.dataset.view===view);
   });
+  const sbMode=document.getElementById('sb-mode');
+  if(sbMode)sbMode.textContent=view.toUpperCase();
   // Show/hide correlation controls
   document.getElementById('corr-section').style.display=view==='correlation'?'block':'none';
   applyFilters();
