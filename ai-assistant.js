@@ -7,6 +7,8 @@ let chatWindow=null;
 let messages=[];
 let isStreaming=false;
 let settingsVisible=false;
+let evidenceStore={};   // ev-N -> {id, label, dataUrl, ts} — session map captures
+let evidenceCounter=0;
 
 var STORAGE_KEY='signal-conversation';
 var MAX_STORED_MESSAGES=40;
@@ -84,9 +86,9 @@ const TOOLS=[
       state:{type:'string'},subcategory:{type:'string'},
       categories:{type:'array',items:{type:'integer',enum:[0,1,2]},description:'Which categories to show'}
     }}},
-  {name:'set_view_mode',description:'Switch map visualization mode.',
+  {name:'set_view_mode',description:'Switch map visualization mode. "anomaly" shows the Signal Engine view: only cells statistically above the population x regional-reporting baseline are lit.',
     input_schema:{type:'object',properties:{
-      mode:{type:'string',enum:['markers','heatmap','hexbin','correlation']}
+      mode:{type:'string',enum:['markers','heatmap','hexbin','anomaly','correlation']}
     },required:['mode']}},
   {name:'run_spatial_correlation',description:'Compute Pearson spatial correlation between two datasets using hex binning. Returns r, p-value, interpretation. Accepts sighting categories (0=UFO, 1=Bigfoot, 2=Haunted) OR overlay names (airspace, earthquakes, caves, fireballs, cryptids, missing411, military). Pass integers for sightings, strings for overlays.',
     input_schema:{type:'object',properties:{
@@ -130,7 +132,7 @@ const TOOLS=[
       }}},
       x_label:{type:'string'},y_label:{type:'string'}
     },required:['chart_type','data']}},
-  {name:'generate_report',description:'Generate a formatted investigation report with narrative sections and optional charts. Opens in a new draggable window.',
+  {name:'generate_report',description:'Generate a formatted investigation report with narrative sections, optional charts, and embedded evidence captures (from capture_evidence). Opens in a new draggable window, downloadable as standalone HTML.',
     input_schema:{type:'object',properties:{
       title:{type:'string'},
       sections:{type:'array',items:{type:'object',properties:{
@@ -138,8 +140,10 @@ const TOOLS=[
         chart:{type:'object',properties:{
           chart_type:{type:'string',enum:['bar','line','pie','scatter']},
           data:{type:'array'},title:{type:'string'}
-        }}
-      },required:['heading','text']}}
+        }},
+        evidence_id:{type:'string',description:'Embed a captured map snapshot in this section (from capture_evidence)'}
+      },required:['heading','text']}},
+      evidence_ids:{type:'array',items:{type:'string'},description:'Evidence captures to append as an EVIDENCE appendix'}
     },required:['title','sections']}},
   {name:'compare_regions',description:'Compare sighting statistics between two regions. Use named hotspot (e.g. "Pacific Northwest", "Area 51"), US state code, or lat/lon+radius.',
     input_schema:{type:'object',properties:{
@@ -202,7 +206,27 @@ const TOOLS=[
       enabled:{type:'boolean',default:true,description:'true=show, false=hide'}
     },required:['overlay']}},
   {name:'get_active_overlays',description:'List which overlay datasets are currently toggled on and loaded.',
-    input_schema:{type:'object',properties:{}}}
+    input_schema:{type:'object',properties:{}}},
+  {name:'run_deep_dive',description:'THE flagship investigation tool. Generates a full statistical dossier for a location: anomaly verdict vs population+regional baseline, per-category rate ratios, historical flap episodes, seasonality, overlay context, confounder ledger, exemplar cases. Opens a dossier window for the user and returns the machine-readable summary. Provide either place (geocoded) or lat/lon.',
+    input_schema:{type:'object',properties:{
+      place:{type:'string',description:'Place name to geocode, e.g. "Sedona, AZ"'},
+      lat:{type:'number'},lon:{type:'number'},
+      radius_km:{type:'number',default:50,description:'Survey radius in km'}
+    }}},
+  {name:'get_anomaly_scores',description:'Run the Signal Engine anomaly model over the current viewport and return the top statistically significant cells (FDR q<0.05, rate ratio >=1.5 vs census-population x regional-reporting baseline). Switches the map to the ANOMALY view. Use this FIRST when hunting for where something real might be happening.',
+    input_schema:{type:'object',properties:{
+      top_n:{type:'integer',default:15,description:'How many top cells to return'}
+    }}},
+  {name:'detect_flaps',description:'Detect space-time burst episodes ("flaps") — months where a region produced far more reports than its own baseline share of the national trend. Finds historical UFO waves automatically. Returns events sorted by excess.',
+    input_schema:{type:'object',properties:{
+      category:{type:'integer',enum:[0,1,2],description:'Restrict to one category (omit for all)'},
+      cell_deg:{type:'number',default:1.5,description:'Geographic cell size in degrees'},
+      max_events:{type:'integer',default:25}
+    }}},
+  {name:'capture_evidence',description:'Capture a screenshot of the current map view as evidence. Returns an evidence_id you can embed in generate_report (pass evidence_ids). Set up the map first (zoom, view mode, overlays), then capture. A thumbnail is shown in chat.',
+    input_schema:{type:'object',properties:{
+      label:{type:'string',description:'Short caption for this capture, e.g. "Sedona anomaly cells, 80km hex"'}
+    },required:['label']}}
 ];
 
 const SYSTEM_PROMPT=`You are the Signal Analyst, an AI analyst embedded in Strange Signals — a paranormal sightings correlation map with 385K+ geocoded records across three categories: UFO/UAP (~372K, including worldwide coverage), Bigfoot/Sasquatch (~4.2K), and Haunted Places (~8.8K).
@@ -247,7 +271,23 @@ OVERLAY DATASETS: The map has toggleable overlay layers that enrich analysis:
 
 Use toggle_overlay to activate datasets, get_nearby_overlays to find features near a point, and get_active_overlays to check what is loaded. When analyzing a region, proactively check for nearby restricted airspace, caves, military bases, and Missing 411 cases to provide richer context. For temporal correlations, enable geomagnetic storms to see if sighting spikes coincide with solar activity.
 
-You can place persistent annotation pins on the map using add_annotation. Use annotations to mark specific locations for the user — hotspots you've identified, anomaly sites, areas of interest, etc. Choose appropriate icons: 'ufo' for UFO-related, 'skull' for haunted, 'eye' for observation points, 'alert' for anomalies, 'star' for notable finds, 'pin' for general. Annotations persist across page reloads and can be exported/imported by the user. Use list_annotations to see existing pins, remove_annotation to delete specific ones, and clear_annotations to wipe the slate. When the user asks you to "pin" or "mark" a location, use add_annotation. When presenting analysis results with specific locations (like anomalies or clusters), proactively place annotation pins so the user has a persistent record.`;
+You can place persistent annotation pins on the map using add_annotation. Use annotations to mark specific locations for the user — hotspots you've identified, anomaly sites, areas of interest, etc. Choose appropriate icons: 'ufo' for UFO-related, 'skull' for haunted, 'eye' for observation points, 'alert' for anomalies, 'star' for notable finds, 'pin' for general. Annotations persist across page reloads and can be exported/imported by the user. Use list_annotations to see existing pins, remove_annotation to delete specific ones, and clear_annotations to wipe the slate. When the user asks you to "pin" or "mark" a location, use add_annotation. When presenting analysis results with specific locations (like anomalies or clusters), proactively place annotation pins so the user has a persistent record.
+
+== SIGNAL ENGINE (v2) — YOUR PRIMARY METHODOLOGY ==
+The app now has a real statistical engine. Raw sighting counts are nearly worthless — they track population and reporting culture. The engine models expected counts per cell from census population, calibrated by regional reporting rates, and flags only cells that exceed that baseline at FDR q<0.05 with rate ratio >=1.5. Use it as your default lens:
+
+1. get_anomaly_scores — START HERE when hunting for genuine hotspots. Returns the top significant cells with observed, expected, both rate ratios (vs region, vs population), q-values, Gi* spatial coherence, and how many phenomena are independently in excess. Cells where all 3 phenomena exceed baseline independently are the most interesting objects in the dataset.
+2. run_deep_dive — the full workup on any location (user's hometown, a hotspot, anywhere). Opens a beautiful dossier window for the user AND returns machine-readable stats to you. Prefer this over assembling the same picture from many small tool calls.
+3. detect_flaps — finds space-time burst episodes (historical UFO waves) automatically. Great for "when did things happen here" questions.
+4. Correlation results now report BOTH raw r and population-adjusted r. Always cite the adjusted number as the headline; the gap between them is the share explained by "people live here."
+
+INVESTIGATION DOCTRINE:
+- Always distinguish three explanations: (a) population/reporting artifacts, (b) known mundane sources (military aviation, airspace, meteors, seismic activity), (c) residual unexplained signal. Check the confounder ledger in deep-dive output and say which bucket the evidence points to.
+- Quote q-values and rate ratios, not raw counts. "897 sightings" means nothing; "4.6x its regional baseline, q<0.001" means something.
+- Note data-quality flags (geocode_duplicate_share > 0.5 means coarse geocoding may be inflating the cell).
+- For a full investigation, follow the arc: get_anomaly_scores -> run_deep_dive on the top cell(s) -> detect_flaps for temporal structure -> capture_evidence at each telling map state -> generate_report with evidence_ids embedding your captures.
+
+EVIDENCE CAPTURES: capture_evidence screenshots the current map and returns an evidence_id. Stage the map first (set_view_mode, zoom_to_region, toggle_overlay, highlight_areas), then capture. Embed captures in generate_report via evidence_ids or per-section evidence_id — this turns your reports into illustrated dossiers. Capture 2-4 pieces of evidence during a serious investigation.`;
 
 /* ===== CHART MODAL ===== */
 let chartModal=null;
@@ -311,9 +351,10 @@ function createChatWindow(){
       '</div>'+
       '<label>MODEL</label>'+
       '<select id="signal-model">'+
+        '<option value="claude-fable-5"'+(getModel()==='claude-fable-5'?' selected':'')+'>Claude Fable 5 (best)</option>'+
         '<option value="claude-sonnet-4-6"'+(getModel()==='claude-sonnet-4-6'?' selected':'')+'>Claude Sonnet 4.6 (fast)</option>'+
         '<option value="claude-haiku-4-5-20251001"'+(getModel()==='claude-haiku-4-5-20251001'?' selected':'')+'>Claude Haiku 4.5 (fastest, cheapest)</option>'+
-        '<option value="claude-opus-4-6"'+(getModel()==='claude-opus-4-6'?' selected':'')+'>Claude Opus 4.6 (best)</option>'+
+        '<option value="claude-opus-4-8"'+(getModel()==='claude-opus-4-8'?' selected':'')+'>Claude Opus 4.8</option>'+
       '</select>'+
       '<div style="font-size:9px;color:var(--text-dim);margin:-4px 0 8px;line-height:1.5">'+
         'Haiku: ~$0.001/query &middot; Sonnet: ~$0.01 &middot; Opus: ~$0.05'+
@@ -399,7 +440,7 @@ function addGreeting(){
     greeting+='To get started, click the **gear icon** above and add your Anthropic API key. Your key stays in your browser and is only sent to Anthropic.\n\n';
     greeting+='**All map features work without a key** — markers, heatmap, hex density, correlation, timeline, and overlays. The AI analyst just needs a key to answer questions.\n\n';
   }
-  greeting+='I can search the dataset, run correlation analyses, detect clusters, render charts, and highlight findings on the map. Try:\n\n- "Show me UFO hotspots in the Pacific Northwest"\n- "Are Bigfoot sightings correlated with UFO activity?"\n- "Compare Ohio vs California sightings"\n- "What are the seasonal patterns?"';
+  greeting+='I run a statistical engine that separates real anomalies from population noise — plus deep-dive dossiers, flap detection, evidence capture, and illustrated reports. Try:\n\n- "Where are the most statistically anomalous areas right now?"\n- "Run a deep dive on my town" *(or right-click anywhere on the map)*\n- "Find historical UFO flaps and report on the biggest one"\n- "Is the Bigfoot-UFO correlation real or just population?"';
   if(hasKey) greeting+='\n- "Analyze the sightings in my selected hex" *(click a hex first)*';
   appendMessage('assistant',greeting);
 }
@@ -415,20 +456,56 @@ function appendMessage(role,text){
   return msgDiv;
 }
 
-function appendToolIndicator(name){
+// Investigation log: each tool call renders as an instrument line —
+// "▸ RUN DEEP DIVE — sedona az r=50km" then "✓ 2.3s" on completion.
+function summarizeToolArgs(input){
+  if(!input||typeof input!=='object')return'';
+  const parts=[];
+  for(const k in input){
+    const v=input[k];
+    if(v==null)continue;
+    if(typeof v==='string'&&v.length<=40)parts.push(v);
+    else if(typeof v==='number')parts.push(k.replace(/_km$/,'')+'='+v+(/_km$/.test(k)?'km':''));
+    else if(typeof v==='boolean')parts.push(k+(v?'':' off'));
+    if(parts.length>=3)break;
+  }
+  return parts.join(' · ');
+}
+
+function appendToolIndicator(name,input){
   const el=document.getElementById('signal-messages');
   const toolDiv=document.createElement('div');
   toolDiv.className='signal-tool';
-  const label=name.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});
-  toolDiv.innerHTML='<span class="signal-tool-icon">&#9678;</span> '+label;
+  const label=name.replace(/_/g,' ').toUpperCase();
+  const icon=document.createElement('span');
+  icon.className='signal-tool-icon';
+  icon.textContent='▸';
+  const nameEl=document.createElement('span');
+  nameEl.className='signal-tool-name';
+  nameEl.textContent=label;
+  toolDiv.appendChild(icon);
+  toolDiv.appendChild(nameEl);
+  const args=summarizeToolArgs(input);
+  if(args){
+    const argEl=document.createElement('span');
+    argEl.className='signal-tool-args';
+    argEl.textContent=args;
+    toolDiv.appendChild(argEl);
+  }
+  const timeEl=document.createElement('span');
+  timeEl.className='signal-tool-time';
+  toolDiv.appendChild(timeEl);
   el.appendChild(toolDiv);
   el.scrollTop=el.scrollHeight;
   return toolDiv;
 }
 
-function updateToolIndicator(div){
-  div.className='signal-tool done';
-  div.querySelector('.signal-tool-icon').innerHTML='&#10003;';
+function updateToolIndicator(div,ok,ms){
+  div.className='signal-tool done'+(ok===false?' err':'');
+  const icon=div.querySelector('.signal-tool-icon');
+  if(icon)icon.textContent=ok===false?'✕':'✓';
+  const timeEl=div.querySelector('.signal-tool-time');
+  if(timeEl&&ms!=null)timeEl.textContent=(ms/1000).toFixed(1)+'s';
 }
 
 function escHtml(s){
@@ -560,7 +637,23 @@ async function executeTool(name,input){
     }
     case 'generate_report':{
       if(window.SignalReports){
-        var rpt=SignalReports.create(input);
+        // resolve evidence ids into embeddable images
+        var rptInput={title:input.title,sections:(input.sections||[]).map(function(s){
+          var sec={heading:s.heading,text:s.text,chart:s.chart};
+          if(s.evidence_id&&evidenceStore[s.evidence_id]){
+            sec.image={src:evidenceStore[s.evidence_id].dataUrl,caption:evidenceStore[s.evidence_id].label};
+          }
+          return sec;
+        })};
+        if(input.evidence_ids&&input.evidence_ids.length){
+          input.evidence_ids.forEach(function(id){
+            var ev=evidenceStore[id];
+            if(ev&&!rptInput.sections.some(function(s){return s.image&&s.image.src===ev.dataUrl})){
+              rptInput.sections.push({heading:'EVIDENCE — '+ev.label,text:'',image:{src:ev.dataUrl,caption:ev.label}});
+            }
+          });
+        }
+        var rpt=SignalReports.create(rptInput);
         // Inject inline download link in chat
         var chatMsgs=document.getElementById('signal-messages');
         if(chatMsgs){
@@ -827,6 +920,46 @@ async function executeTool(name,input){
       if(!SS.getActiveOverlays)return{error:'Overlay API not available.'};
       return{active:SS.getActiveOverlays()};
     }
+    case 'run_deep_dive':{
+      if(!window.DeepDive)return{error:'Deep dive module not loaded'};
+      if(input.place)return await DeepDive.runForPlace(input.place,input.radius_km||50);
+      if(input.lat!=null&&input.lon!=null)return await DeepDive.run({lat:input.lat,lon:input.lon,radiusKm:input.radius_km||50});
+      return{error:'Provide place or lat/lon'};
+    }
+    case 'get_anomaly_scores':{
+      if(!SS.runAnomaly)return{error:'Anomaly engine not available'};
+      await SS.runAnomaly();
+      return SS.getAnomalyData(input.top_n||15);
+    }
+    case 'detect_flaps':{
+      if(!SS.detectFlaps)return{error:'Flap detection not available'};
+      var flapEvents=SS.detectFlaps({category:input.category,cell_deg:input.cell_deg,max_events:input.max_events||25});
+      return{events:flapEvents,note:'Each event: months where the cell exceeded its baseline share of the national monthly trend at p<1e-4.'};
+    }
+    case 'capture_evidence':{
+      if(typeof html2canvas==='undefined')return{error:'html2canvas not loaded'};
+      var mapEl=document.getElementById('map');
+      var canvas=await html2canvas(mapEl,{useCORS:true,allowTaint:true,backgroundColor:'#05060f',scale:0.75,logging:false});
+      var dataUrl=canvas.toDataURL('image/jpeg',0.82);
+      var evId='ev-'+(++evidenceCounter);
+      evidenceStore[evId]={id:evId,label:input.label,dataUrl:dataUrl,ts:Date.now()};
+      // show thumbnail chip in chat (DOM-built, label is textContent)
+      var msgsEl=document.getElementById('signal-messages');
+      if(msgsEl){
+        var chip=document.createElement('div');
+        chip.className='signal-evidence';
+        var img=document.createElement('img');
+        img.src=dataUrl;
+        img.alt=input.label;
+        var cap=document.createElement('div');
+        cap.className='signal-evidence-cap';
+        cap.textContent='EVIDENCE '+evId.toUpperCase()+' — '+input.label;
+        chip.appendChild(img);chip.appendChild(cap);
+        msgsEl.appendChild(chip);
+        msgsEl.scrollTop=msgsEl.scrollHeight;
+      }
+      return{evidence_id:evId,label:input.label,note:'Captured. Pass evidence_ids:["'+evId+'"] to generate_report to embed it.'};
+    }
     default:
       return{error:'Unknown tool: '+name};
   }
@@ -984,13 +1117,14 @@ async function runConversationLoop(){
     for(var i=0;i<result.content.length;i++){
       var block=result.content[i];
       if(block.type!=='tool_use')continue;
-      var indicator=appendToolIndicator(block.name);
+      var indicator=appendToolIndicator(block.name,block.input);
+      var t0=performance.now();
       try{
         var toolResult=await executeTool(block.name,block.input);
-        updateToolIndicator(indicator);
+        updateToolIndicator(indicator,!(toolResult&&toolResult.error),performance.now()-t0);
         toolResults.push({type:'tool_result',tool_use_id:block.id,content:JSON.stringify(toolResult)});
       }catch(e){
-        updateToolIndicator(indicator);
+        updateToolIndicator(indicator,false,performance.now()-t0);
         toolResults.push({type:'tool_result',tool_use_id:block.id,content:JSON.stringify({error:e.message}),is_error:true});
       }
     }

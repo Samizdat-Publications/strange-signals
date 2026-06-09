@@ -29,6 +29,24 @@ function create(opts){
     div.innerHTML=`<h3 style="font-family:Orbitron,monospace;font-size:11px;color:#00ccff;letter-spacing:1.5px;margin:0 0 8px;border-left:3px solid #00ccff;padding-left:8px">${escHtml(sec.heading)}</h3>`+
       `<div style="color:#ccc;font-size:11px;line-height:1.7">${escHtml(sec.text).replace(/\n/g,'<br>')}</div>`;
 
+    // Optional embedded evidence image (data URL from capture_evidence)
+    if(sec.image&&sec.image.src&&/^data:image\//.test(sec.image.src)){
+      const figure=document.createElement('figure');
+      figure.style.cssText='margin:10px 0;padding:6px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:4px';
+      const img=document.createElement('img');
+      img.src=sec.image.src;
+      img.alt=sec.image.caption||'';
+      img.style.cssText='width:100%;display:block;border-radius:2px';
+      figure.appendChild(img);
+      if(sec.image.caption){
+        const figCap=document.createElement('figcaption');
+        figCap.style.cssText='font-size:9px;color:#667;letter-spacing:1px;margin-top:5px;text-align:center';
+        figCap.textContent=sec.image.caption.toUpperCase();
+        figure.appendChild(figCap);
+      }
+      div.appendChild(figure);
+    }
+
     // Optional chart
     if(sec.chart&&sec.chart.data&&window.SignalCharts){
       const chartDiv=document.createElement('div');
