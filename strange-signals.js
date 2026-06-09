@@ -2928,11 +2928,21 @@ async function mainThreadFallback(buffer,records,resolve){
   const text=new TextDecoder().decode(bytes);
   const json=JSON.parse(text);
   const raw=json.data;
+  const slashRe=/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/; // mirror parse-worker.js date normalization
   for(let i=0;i<raw.length;i++){
     const r=raw[i];
     if(Array.isArray(r)&&r.length>=7&&typeof r[0]==='number'&&!isNaN(r[0])&&
-      typeof r[1]==='number'&&!isNaN(r[1]))
+      typeof r[1]==='number'&&!isNaN(r[1])){
+      if(typeof r[3]==='string'){
+        const m=r[3].match(slashRe);
+        if(m){
+          let y=+m[3];
+          if(m[3].length<=2)y=y<=26?2000+y:1900+y;
+          r[3]=y+'-'+String(Math.min(12,Math.max(1,+m[1]))).padStart(2,'0')+'-'+String(Math.min(31,Math.max(1,+m[2]))).padStart(2,'0');
+        }
+      }
       records.push(r);
+    }
   }
   resolve(records);
 }
@@ -3292,6 +3302,70 @@ window.StrangeSignals={
     Object.keys(results).forEach(k=>{if(!results[k].length)delete results[k]});
     return results;
   },
+
+  // Deep-dive support (v2) — raw record access + national baselines
+  getRecordsInRadius:(lat,lon,radiusKm)=>{
+    const radiusDeg=radiusKm/111;
+    const cosLat=Math.cos(lat*Math.PI/180);
+    const byCat=[[],[],[]];
+    for(let cat=0;cat<3;cat++){
+      for(const r of filteredCat[cat]){
+        const dlat=r[F.LAT]-lat,dlon=(r[F.LON]-lon)*cosLat;
+        if(Math.abs(dlat)>radiusDeg||Math.abs(dlon)>radiusDeg)continue;
+        if(Math.sqrt(dlat*dlat+dlon*dlon)*111<=radiusKm)byCat[cat].push(r);
+      }
+    }
+    return byCat;
+  },
+  getNationalBaseline:()=>{
+    // CONUS totals under current filters + total census population mass
+    if(!popDensityGrid)return null;
+    const g=popDensityGrid;
+    const catTotals=[0,0,0];
+    for(let cat=0;cat<3;cat++){
+      for(const r of filteredCat[cat]){
+        if(r[F.LAT]>=g.lat_min&&r[F.LAT]<=g.lat_max&&r[F.LON]>=g.lon_min&&r[F.LON]<=g.lon_max)catTotals[cat]++;
+      }
+    }
+    let totalPop=0;
+    for(let row=0;row<g.rows;row++){
+      const lat=g.lat_max-(row+0.5)*g.resolution;
+      const cellArea=Math.pow(g.resolution*111,2)*Math.cos(lat*Math.PI/180);
+      for(let col=0;col<g.cols;col++)totalPop+=(g.grid[row][col]||0)*cellArea;
+    }
+    return{catTotals,total:catTotals[0]+catTotals[1]+catTotals[2],totalPop};
+  },
+  getPopMassInRadius:(lat,lon,radiusKm)=>{
+    if(!popDensityGrid)return 0;
+    const g=popDensityGrid;
+    let mass=0;
+    for(let row=0;row<g.rows;row++){
+      const cLat=g.lat_max-(row+0.5)*g.resolution;
+      if(Math.abs(cLat-lat)*111>radiusKm+14)continue;
+      const cellArea=Math.pow(g.resolution*111,2)*Math.cos(cLat*Math.PI/180);
+      const cosLat=Math.cos(lat*Math.PI/180);
+      for(let col=0;col<g.cols;col++){
+        const cLon=g.lon_min+(col+0.5)*g.resolution;
+        const dKm=Math.sqrt(Math.pow((cLat-lat)*111,2)+Math.pow((cLon-lon)*111*cosLat,2));
+        if(dKm<=radiusKm)mass+=(g.grid[row][col]||0)*cellArea;
+      }
+    }
+    return mass;
+  },
+  getMonthlyNationalSeries:()=>{
+    // 'YYYY-MM' → total count across filtered categories (CONUS-agnostic)
+    const out={};
+    for(let cat=0;cat<3;cat++){
+      for(const r of filteredCat[cat]){
+        const d=r[F.DATE];
+        if(!d||d.length<7)continue;
+        const ym=d.substring(0,7);
+        out[ym]=(out[ym]||0)+1;
+      }
+    }
+    return out;
+  },
+  ensureOverlaysLoaded:(keys)=>Promise.all((keys||['airspace','earthquakes','caves','fireballs','cryptids','missing411']).map(k=>ensureOverlayLoaded(k))),
 
   // Constants
   F,CAT_NAMES,CAT_COLORS
