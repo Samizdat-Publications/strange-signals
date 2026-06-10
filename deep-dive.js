@@ -132,8 +132,59 @@ function analyze(lat,lon,radiusKm){
   const coordFreq={};let maxDup=0;
   all.forEach(r=>{const k=r[F.LAT].toFixed(3)+','+r[F.LON].toFixed(3);coordFreq[k]=(coordFreq[k]||0)+1;if(coordFreq[k]>maxDup)maxDup=coordFreq[k]});
 
+  // matched-control comparison: how does this place compare to other US
+  // locations with the SAME population in the same radius? Controls are
+  // lattice sites whose disc population mass matches the target (±30%,
+  // widening if needed), at least 3 radii away. Rates are per-capita to
+  // cancel residual population differences.
+  let controls=null;
+  if(modeled&&nat){
+    const targetPop=SS.getPopMassInRadius(lat,lon,radiusKm);
+    const g=SS.getPopDensityGrid();
+    const sites=[];
+    const stepDeg=0.75;
+    for(let sLat=g.lat_min+0.5;sLat<g.lat_max-0.5;sLat+=stepDeg){
+      for(let sLon=g.lon_min+0.5;sLon<g.lon_max-0.5;sLon+=stepDeg){
+        const dKm=Math.sqrt(Math.pow((sLat-lat)*111,2)+Math.pow((sLon-lon)*111*Math.cos(lat*Math.PI/180),2));
+        if(dKm<radiusKm*3)continue; // don't let the target overlap its own controls
+        sites.push([sLat,sLon]);
+      }
+    }
+    // score every site by how closely its population matches (log ratio),
+    // keep the best 30 within a 2.5x band — symmetric in both directions,
+    // so a metro only matches other metros and a hamlet other hamlets
+    const scored=[];
+    for(const[sLat,sLon]of sites){
+      const m=SS.getPopMassInRadius(sLat,sLon,radiusKm);
+      if(m<=0)continue;
+      const d=Math.abs(Math.log(m/targetPop));
+      if(d<=Math.log(2.5))scored.push([sLat,sLon,m,d]);
+    }
+    scored.sort((x,y)=>x[3]-y[3]);
+    const matched=scored.slice(0,30);
+    if(matched.length>=8){
+      const rates=matched.map(([sLat,sLon,m])=>{
+        const rc=SS.getRecordsInRadius(sLat,sLon,radiusKm);
+        const o=rc[0].length+rc[1].length+rc[2].length;
+        return{lat:sLat,lon:sLon,pop:m,obs:o,rate:o/m};
+      });
+      const targetRate=targetPop>0?O/targetPop:NaN;
+      const below=rates.filter(r=>r.rate<targetRate).length;
+      const sortedObs=rates.map(r=>r.obs).sort((a,b)=>a-b);
+      controls={
+        n:rates.length,
+        percentile:Math.round(100*below/rates.length),
+        medianObs:sortedObs[Math.floor(sortedObs.length/2)],
+        maxObs:sortedObs[sortedObs.length-1],
+        targetObs:O,
+        targetRate,
+        rates
+      };
+    }
+  }
+
   return{lat,lon,radiusKm,label,O,catO,E_pop,E_adj,RRpop,RRreg,p,pLow,calib,modeled,
-    verdict,verdictClass,catStats,yearly,flaps,seasonal,topSubs,topLocs,
+    verdict,verdictClass,catStats,yearly,flaps,seasonal,topSubs,topLocs,controls,
     exemplars:picked,dupShare:O>0?maxDup/O:0,
     filters:SS.getStats?SS.getStats().filters:{}};
 }
@@ -186,6 +237,30 @@ function seasonalChart(container,seasonal){
     .call(g=>{g.selectAll('text').attr('fill','#556').attr('font-size',7);g.selectAll('path').attr('stroke','#223')});
 }
 
+/* strip plot: control locations as dim dots on a log scale, target as a
+   labeled green marker — "is this place actually unusual for its size?" */
+function controlsChart(container,c){
+  const W=container.clientWidth||600,H=64,m={l:34,r:14};
+  const svg=d3.select(container).append('svg').attr('width','100%').attr('height',H).attr('viewBox','0 0 '+W+' '+H);
+  const maxV=Math.max(c.targetObs,c.maxObs,10);
+  const x=d3.scaleLog().domain([1,maxV*1.3]).range([m.l,W-m.r]).clamp(true);
+  const cy=H/2-6;
+  svg.append('line').attr('x1',m.l).attr('x2',W-m.r).attr('y1',cy).attr('y2',cy)
+    .attr('stroke','#223').attr('stroke-width',1);
+  c.rates.forEach(r=>{
+    svg.append('circle').attr('cx',x(Math.max(1,r.obs))).attr('cy',cy)
+      .attr('r',3.5).attr('fill','#3a4a66').attr('opacity',0.8);
+  });
+  const tx=x(Math.max(1,c.targetObs));
+  svg.append('line').attr('x1',tx).attr('x2',tx).attr('y1',cy-13).attr('y2',cy+13)
+    .attr('stroke','#00ff88').attr('stroke-width',2);
+  svg.append('text').attr('x',tx).attr('y',cy-18).attr('text-anchor','middle')
+    .attr('fill','#00ff88').attr('font-size',8).attr('font-family','Orbitron,monospace')
+    .text('THIS AREA');
+  svg.append('text').attr('x',m.l).attr('y',H-4).attr('fill','#556').attr('font-size',7)
+    .text('reports per matched location (log scale)');
+}
+
 /* ---------- dossier rendering ---------- */
 let dossierCount=0;
 let circleLayer=null;
@@ -234,6 +309,8 @@ async function run(opts){
     if(yc)yearlyChart(yc,a.yearly,a.flaps);
     const sc=body.querySelector('.dossier-seasonal');
     if(sc)seasonalChart(sc,a.seasonal);
+    const cc=body.querySelector('.dossier-controls');
+    if(cc&&a.controls)controlsChart(cc,a.controls);
   },60);
 
   // return a machine-readable summary (for the AI assistant)
@@ -247,6 +324,8 @@ async function run(opts){
     categories:a.catStats?a.catStats.map(c=>({name:SS.CAT_NAMES[c.cat],observed:c.O,
       expected:+c.E.toFixed(1),rate_ratio:isNaN(c.RR)?null:+c.RR.toFixed(2),p:+c.p.toPrecision(2)})):null,
     flaps:a.flaps.slice(0,6).map(f=>({start:f.start,end:f.end,observed:f.obs,expected:+f.exp.toFixed(1)})),
+    matched_controls:a.controls?{n:a.controls.n,percentile:a.controls.percentile,
+      median_control_reports:a.controls.medianObs,this_location_reports:a.controls.targetObs}:null,
     top_subcategories:a.topSubs.slice(0,6).map(s=>({name:s[0],count:s[1]})),
     overlay_context:ctx,
     earthquakes:{count:quakeCount,max_magnitude:quakeMax},
@@ -319,6 +398,15 @@ function buildDossierDOM(a,label,ctx,extra){
   // seasonality
   parts.push('<div class="dossier-section">SEASONALITY <span class="dossier-section-note">cyan tick = national-pattern expectation</span></div>');
   parts.push('<div class="dossier-seasonal dossier-chart"></div>');
+
+  // matched-control comparison
+  if(a.controls){
+    const c=a.controls;
+    const pctColor=c.percentile>=90?'var(--green,#00ff88)':c.percentile>=70?'#ffcc00':'#889';
+    parts.push(`<div class="dossier-section">MATCHED CONTROLS <span class="dossier-section-note">${c.n} same-population US locations</span></div>`);
+    parts.push(`<div class="dossier-controls-verdict">More activity than <b style="color:${pctColor}">${c.percentile}%</b> of population-matched locations &middot; median control: ${c.medianObs.toLocaleString()} reports &middot; here: <b>${c.targetObs.toLocaleString()}</b></div>`);
+    parts.push('<div class="dossier-controls dossier-chart"></div>');
+  }
 
   // overlay context
   parts.push('<div class="dossier-section">PROXIMITY CONTEXT</div>');
