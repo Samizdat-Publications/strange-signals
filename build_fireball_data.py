@@ -22,10 +22,8 @@ def fetch_nasa_fireballs():
         print(f"✗ Error fetching data: {e}")
         raise
 
-def filter_continental_us(lat, lon):
-    """Check if coordinates are in continental US bounding box."""
-    # Continental US: 24-50°N, -125 to -66°W
-    return 24 <= lat <= 50 and -125 <= lon <= -66
+# Coverage is GLOBAL as of 2026-06 (see docs/superpowers/specs/fireball-surge-brief.md).
+# The old continental-US filter kept only 29 of 877 located events.
 
 def round_coord(value, decimals=4):
     """Round coordinate to specified decimal places."""
@@ -61,6 +59,7 @@ def parse_nasa_fireball_data(api_data):
             energy_idx = field_map.get('energy')
             velocity_idx = field_map.get('vel')
             altitude_idx = field_map.get('alt')
+            impact_idx = field_map.get('impact-e')
 
             # Extract raw values
             if date_idx is None or lat_idx is None or lon_idx is None:
@@ -81,10 +80,6 @@ def parse_nasa_fireball_data(api_data):
             if lon_dir_idx < len(record) and record[lon_dir_idx] == 'W':
                 lon_val = -lon_val
 
-            # Filter to continental US
-            if not filter_continental_us(lat_val, lon_val):
-                skipped += 1
-                continue
 
             # Extract energy, velocity, altitude (or None if not available)
             energy_val = None
@@ -108,6 +103,13 @@ def parse_nasa_fireball_data(api_data):
                 except (ValueError, TypeError):
                     pass
 
+            impact_val = None
+            if impact_idx is not None and impact_idx < len(record):
+                try:
+                    impact_val = float(record[impact_idx])
+                except (ValueError, TypeError):
+                    pass
+
             # Round coordinates
             lat_rounded = round_coord(lat_val, 4)
             lon_rounded = round_coord(lon_val, 4)
@@ -118,7 +120,8 @@ def parse_nasa_fireball_data(api_data):
                 date_str,
                 energy_val,
                 velocity_val,
-                altitude_val
+                altitude_val,
+                impact_val
             ])
             success += 1
 
@@ -134,7 +137,7 @@ def parse_nasa_fireball_data(api_data):
 def save_fireball_json(records, output_path):
     """Save records as compact JSON overlay file."""
     output_data = {
-        "fields": ["lat", "lon", "date", "energy_kt", "velocity_kms", "altitude_km"],
+        "fields": ["lat", "lon", "date", "energy_kt", "velocity_kms", "altitude_km", "impact_kt"],
         "data": records
     }
 

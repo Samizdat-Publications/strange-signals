@@ -2,6 +2,16 @@
 
 Future ideas not yet scoped into a plan. Promote to `docs/superpowers/plans/` when ready to build.
 
+## ~~NASA Fireball Surge Investigation~~ — RESOLVED 2026-06-10
+
+**Outcome:** investigated directly against the CNEOS API instead of via Cowork.
+The surge claim is **refuted** by primary monthly counts; dataset expanded
+29 → 877 events (global), `impact_kt` field added, recent events highlighted.
+Full findings: [docs/superpowers/specs/fireball-surge-brief.md](docs/superpowers/specs/fireball-surge-brief.md).
+Original prompt kept below for reference.
+
+<details><summary>Original investigation prompt</summary>
+
 ## NASA Fireball Surge Investigation
 
 **Trigger:** Starting in early 2026, NASA CNEOS has been logging an unusually high number of fireball / bolide detections. The community is alarmed — this is exactly the kind of "signal in the noise" the dashboard exists to surface.
@@ -30,6 +40,8 @@ I need three deliverables:
 
 Output: a single markdown brief I can drop into docs/superpowers/specs/ and turn into an implementation plan. Include exact API URLs, sample response schemas, and a rebuild command for build_fireball_data.py.
 ```
+
+</details>
 
 ---
 
