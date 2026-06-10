@@ -15,6 +15,7 @@
   --parks: #22cc66;
   --historic: #ffaa22;
   --airspace: #ff4466;
+  --airport: #8899ff;
   --earthquake: #ff8844;
   --cave: #aa8866;
   --fireball: #ffcc00;
@@ -120,6 +121,7 @@ input,select,button,textarea{font-family:inherit;font-size:inherit}
 .layer-dot--haunted{background:var(--purple)}
 .layer-dot--military{background:var(--military)}
 .layer-dot--airspace{background:var(--airspace)}
+.layer-dot--airport{background:var(--airport)}
 .layer-dot--parks{background:var(--parks)}
 .layer-dot--earthquake{background:var(--earthquake)}
 .layer-dot--cave{background:var(--cave)}

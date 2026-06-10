@@ -202,7 +202,7 @@ const TOOLS=[
     },required:['lat','lon']}},
   {name:'toggle_overlay',description:'Toggle an overlay dataset on or off. Loads data on first activation. Available overlays: military, airspace, earthquakes, caves, fireballs, cryptids, missing411, geomagnetic, parks, historic.',
     input_schema:{type:'object',properties:{
-      overlay:{type:'string',enum:['military','airspace','earthquakes','caves','fireballs','cryptids','missing411','geomagnetic','parks','historic'],description:'Overlay to toggle'},
+      overlay:{type:'string',enum:['military','airspace','airports','earthquakes','caves','fireballs','cryptids','missing411','geomagnetic','parks','historic'],description:'Overlay to toggle'},
       enabled:{type:'boolean',default:true,description:'true=show, false=hide'}
     },required:['overlay']}},
   {name:'get_active_overlays',description:'List which overlay datasets are currently toggled on and loaded.',
@@ -261,6 +261,7 @@ For region comparisons, you can use these named hotspot regions: Pacific Northwe
 
 OVERLAY DATASETS: The map has toggleable overlay layers that enrich analysis:
 - Military/DOE Sites (98 installations) — always loaded at startup
+- Airports (876 US large + medium airports from OurAirports) — THE top mundane confounder for UAP reports; always check it before calling a UAP excess unexplained
 - Restricted Airspace (105 FAA zones: Restricted, MOA, Warning, Prohibited, Alert)
 - USGS Earthquakes (20K M2.5+ events, 2019-2025) — earthquake-lights hypothesis
 - US Cave Systems (104 major caves/karst) — Bigfoot/Missing 411 correlation
@@ -900,9 +901,9 @@ async function executeTool(name,input){
     }
     case 'toggle_overlay':{
       var toggleMap={
-        military:'military-toggle',airspace:'airspace-toggle',earthquakes:'earthquakes-toggle',
-        caves:'caves-toggle',fireballs:'fireballs-toggle',cryptids:'cryptids-toggle',
-        missing411:'missing411-toggle',geomagnetic:'geomagnetic-toggle',
+        military:'military-toggle',airspace:'airspace-toggle',airports:'airports-toggle',
+        earthquakes:'earthquakes-toggle',caves:'caves-toggle',fireballs:'fireballs-toggle',
+        cryptids:'cryptids-toggle',missing411:'missing411-toggle',geomagnetic:'geomagnetic-toggle',
         parks:'parks-toggle',historic:'historic-toggle'
       };
       var tid=toggleMap[input.overlay];

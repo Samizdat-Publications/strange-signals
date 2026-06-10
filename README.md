@@ -63,7 +63,7 @@ Toggle 10+ real-world reference layers to investigate correlations:
 
 | Category | Overlays |
 |----------|----------|
-| **Infrastructure** | Military/DOE Sites, Restricted Airspace (MOAs, prohibited zones), National Parks |
+| **Infrastructure** | Military/DOE Sites, Restricted Airspace (MOAs, prohibited zones), Airports (876 US hubs — the #1 UAP confounder), National Parks |
 | **Geological** | USGS Earthquakes (20K events), US Cave Systems, NASA Fireballs |
 | **Paranormal** | Cryptid Sightings, Missing 411 Cases, Historic Sites (NRHP) |
 | **Temporal** | Geomagnetic Storms (solar activity bands on timeline) |

@@ -57,6 +57,7 @@ DATA PIPELINE (Python 3)
   export_map_data.py          Excel → 3 per-category gzipped JSON files (sightings_{ufo,bigfoot,haunted}.json.gz)
   build_population_grid.py    US census tract → per-capita grid (us_population_density.json)
   build_overlay_data.py       Orchestrates the overlay builders below
+    build_airport_data.py        US airports (OurAirports large+medium, UAP confounder)
     build_airspace_data.py       FAA special use airspace zones
     build_cave_data.py           US cave systems and karst regions
     build_cryptid_data.py        Curated non-Bigfoot cryptids
@@ -73,6 +74,7 @@ DATA PIPELINE (Python 3)
     us_population_density.json Per-capita grid for population-adjusted correlation (committed)
     military_bases.json        98 military/DOE installations (committed)
     restricted_airspace.json   105 FAA restricted/MOA/warning zones (committed)
+    us_airports.json           876 US large+medium airports, OurAirports (committed)
     national_parks.json        National Parks polygons (committed)
     historic_sites.json        NRHP historic sites (committed)
     usgs_earthquakes.json      20K USGS M2.5+ earthquakes 2019-2025 (committed)
@@ -185,6 +187,7 @@ Lazy-loaded on first toggle. Each has its own Leaflet layer group and JSON sourc
 | Haunted Places | `layer-haunted` | sightings_haunted.json.gz | Clustered Tabler `ghost` marker |
 | Military / DOE Sites | `layer-military` | military_bases.json | Tabler `shield`, branch-color tooltip |
 | Restricted Airspace | `layer-airspace` | restricted_airspace.json | Tabler `radar` + L.circle boundary |
+| Airports | `layer-airports` | us_airports.json | Tabler `plane`, sized large/medium |
 | National Parks | `layer-parks` | national_parks.json | Tabler `trees` |
 | USGS Earthquakes | `layer-earthquakes` | usgs_earthquakes.json | Tabler `activity`, sized by magnitude |
 | US Cave Systems | `layer-caves` | us_caves.json | Tabler `mountain` |
