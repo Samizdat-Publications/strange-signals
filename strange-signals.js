@@ -46,6 +46,7 @@ let historicLayer=null;
 let showHistoric=false;
 // New overlays
 let airspaceData=null,airspaceLayer=null,showAirspace=false;
+let airportData=null,airportLayer=null,showAirports=false;
 let earthquakeData=null,earthquakeLayer=null,showEarthquakes=false;
 let caveData=null,caveLayer=null,showCaves=false;
 let fireballData=null,fireballLayer=null,showFireballs=false;
@@ -185,6 +186,7 @@ const TABLER_SVG={
   ghost:(c,s=16)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11a7 7 0 0 1 14 0v7a1.78 1.78 0 0 1 -3.1 1.4a1.65 1.65 0 0 0 -2.6 0a1.65 1.65 0 0 1 -2.6 0a1.65 1.65 0 0 0 -2.6 0a1.78 1.78 0 0 1 -3.1 -1.4v-7"/><path d="M10 10l.01 0"/><path d="M14 10l.01 0"/><path d="M10 14a3.5 3.5 0 0 0 4 0"/></svg>`,
   shield:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"/></svg>`,
   radar:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12h-8a1 1 0 1 0 -1 1v8a9 9 0 0 0 9 -9"/><path d="M16 9a5 5 0 1 0 -7 7"/><path d="M20.486 9a9 9 0 1 0 -11.482 11.495"/></svg>`,
+  plane:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2 -7h-4l-2 2h-3l2 -4l-2 -4h3l2 2h4l-2 -7h3z"/></svg>`,
   trees:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5l3 3l-2 1l4 4l-3 1l4 4h-9"/><path d="M15 21l0 -3"/><path d="M8 13l-2 -2"/><path d="M8 12l2 -2"/><path d="M8 21v-13"/><path d="M5.824 16a3 3 0 0 1 -2.743 -3.69a3 3 0 0 1 .304 -4.833a3 3 0 0 1 4.615 -3.707a3 3 0 0 1 4.614 3.707a3 3 0 0 1 .305 4.833a3 3 0 0 1 -2.919 3.695h-4l-.176 -.005"/></svg>`,
   activity:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8l4 -16l3 8h4"/></svg>`,
   mountain:(c,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18l-6.921 -14.612a2.3 2.3 0 0 0 -4.158 0l-6.921 14.612"/><path d="M7.5 11l2 2.5l2.5 -2.5l2 3l2.5 -2"/></svg>`,
@@ -360,6 +362,25 @@ function renderAirspace(){
   airspaceLayer.addTo(map);
 }
 function removeAirspace(){if(airspaceLayer){map.removeLayer(airspaceLayer);airspaceLayer=null}}
+
+function renderAirports(){
+  if(airportLayer){map.removeLayer(airportLayer);airportLayer=null}
+  if(!showAirports||!airportData)return;
+  airportLayer=L.layerGroup();
+  const PF={LAT:0,LON:1,NAME:2,IATA:3,TYPE:4};
+  airportData.data.forEach(a=>{
+    const isLarge=a[PF.TYPE]==='large';
+    const icon=tablerIcon('plane','#8899ff',isLarge?16:11);
+    const marker=L.marker([a[PF.LAT],a[PF.LON]],{icon,opacity:isLarge?1:0.75});
+    marker.bindTooltip('<b style="color:var(--airport,#8899ff)">'+esc(a[PF.NAME])+'</b>'+
+      (a[PF.IATA]?' <span style="color:var(--text-dim)">('+esc(a[PF.IATA])+')</span>':'')+
+      '<br><span style="color:var(--text-dim)">'+(isLarge?'Large hub':'Regional')+' airport</span>',
+      {className:'mil-tooltip'});
+    marker.addTo(airportLayer);
+  });
+  airportLayer.addTo(map);
+}
+function removeAirports(){if(airportLayer){map.removeLayer(airportLayer);airportLayer=null}}
 
 function renderEarthquakes(){
   if(earthquakeLayer){map.removeLayer(earthquakeLayer);earthquakeLayer=null}
@@ -2028,6 +2049,7 @@ const OVERLAY_META={
   caves:{data:()=>caveData,color:'#aa8866',name:'Cave Systems',file:'data/us_caves.json',setter:d=>{caveData=d}},
   fireballs:{data:()=>fireballData,color:'#ffcc00',name:'NASA Fireballs',file:'data/nasa_fireballs.json',setter:d=>{fireballData=d}},
   cryptids:{data:()=>cryptidData,color:'#cc44ff',name:'Cryptid Sightings',file:'data/cryptid_sightings.json',setter:d=>{cryptidData=d}},
+  airports:{data:()=>airportData,color:'#8899ff',name:'Airports',file:'data/us_airports.json',setter:d=>{airportData=d}},
   missing411:{data:()=>missing411Data,color:'#ff2222',name:'Missing 411',file:'data/missing411.json',setter:d=>{missing411Data=d}},
   military:{data:()=>militaryData,color:'#4488ff',name:'Military Bases',file:null,setter:null}
 };
@@ -2368,6 +2390,7 @@ function saveState(){
   if(showAirspace)params.set('air','1');
   if(showEarthquakes)params.set('eq','1');
   if(showCaves)params.set('cav','1');
+  if(showAirports)params.set('apt','1');
   if(showFireballs)params.set('fb','1');
   if(showCryptids)params.set('cry','1');
   if(showMissing411)params.set('m411','1');
@@ -2399,6 +2422,7 @@ function loadState(){
       ['air','airspace-toggle',v=>{showAirspace=v}],
       ['eq','earthquakes-toggle',v=>{showEarthquakes=v}],
       ['cav','caves-toggle',v=>{showCaves=v}],
+      ['apt','airports-toggle',v=>{showAirports=v}],
       ['fb','fireballs-toggle',v=>{showFireballs=v}],
       ['cry','cryptids-toggle',v=>{showCryptids=v}],
       ['m411','missing411-toggle',v=>{showMissing411=v}],
@@ -2737,6 +2761,11 @@ wireOverlayToggle('caves-toggle','showCaves','data/us_caves.json','count-caves',
   {flag:false,cache:null},
   function(data){caveData=data;showCaves=true;renderCaves()},
   function(){showCaves=false;removeCaves()});
+// Airports
+wireOverlayToggle('airports-toggle','showAirports','data/us_airports.json','count-airports',
+  {flag:false,cache:null},
+  function(data){airportData=data;showAirports=true;renderAirports()},
+  function(){showAirports=false;removeAirports()});
 // Fireballs
 wireOverlayToggle('fireballs-toggle','showFireballs','data/nasa_fireballs.json','count-fireballs',
   {flag:false,cache:null},
@@ -3286,12 +3315,13 @@ window.StrangeSignals={
   getOverlayData:()=>({
     airspace:airspaceData,earthquakes:earthquakeData,caves:caveData,
     fireballs:fireballData,cryptids:cryptidData,missing411:missing411Data,
-    geomagnetic:geomagData,military:militaryData
+    geomagnetic:geomagData,military:militaryData,airports:airportData
   }),
   getActiveOverlays:()=>{
     const active=[];
     if(showMilitaryBases)active.push('military');
     if(showAirspace)active.push('airspace');
+    if(showAirports)active.push('airports');
     if(showEarthquakes)active.push('earthquakes');
     if(showCaves)active.push('caves');
     if(showFireballs)active.push('fireballs');
@@ -3321,6 +3351,9 @@ window.StrangeSignals={
       .map(c=>({name:c[2],type:c[3],state:c[4],dist:Math.round(haversine(lat,lon,c[0],c[1]))}));
     if(militaryData)results.military=militaryData.data.filter(m=>haversine(lat,lon,m[0],m[1])<=r)
       .map(m=>({name:m[2],branch:m[3],dist:Math.round(haversine(lat,lon,m[0],m[1]))}));
+    if(airportData)results.airports=airportData.data.filter(a=>haversine(lat,lon,a[0],a[1])<=r)
+      .map(a=>({name:a[2],iata:a[3],type:a[4],dist:Math.round(haversine(lat,lon,a[0],a[1]))}))
+      .sort((a,b)=>a.dist-b.dist);
     // Filter out empty arrays
     Object.keys(results).forEach(k=>{if(!results[k].length)delete results[k]});
     return results;
@@ -3388,7 +3421,7 @@ window.StrangeSignals={
     }
     return out;
   },
-  ensureOverlaysLoaded:(keys)=>Promise.all((keys||['airspace','earthquakes','caves','fireballs','cryptids','missing411']).map(k=>ensureOverlayLoaded(k))),
+  ensureOverlaysLoaded:(keys)=>Promise.all((keys||['airspace','earthquakes','caves','fireballs','cryptids','missing411','airports']).map(k=>ensureOverlayLoaded(k))),
 
   // Constants
   F,CAT_NAMES,CAT_COLORS

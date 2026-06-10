@@ -194,7 +194,7 @@ async function run(opts){
   const SS=window.StrangeSignals;
   const lat=opts.lat,lon=opts.lon;
   const radiusKm=opts.radiusKm||RADIUS_DEFAULT;
-  await SS.ensureOverlaysLoaded(['airspace','caves','fireballs','cryptids','missing411','earthquakes']);
+  await SS.ensureOverlaysLoaded(['airspace','caves','fireballs','cryptids','missing411','earthquakes','airports']);
   const a=analyze(lat,lon,radiusKm);
   const label=opts.label||a.label;
   const ctx=SS.getNearbyOverlays(lat,lon,radiusKm);
@@ -324,6 +324,7 @@ function buildDossierDOM(a,label,ctx,extra){
   parts.push('<div class="dossier-section">PROXIMITY CONTEXT</div>');
   const ctxRows=[];
   if(ctx.military)ctx.military.slice(0,3).forEach(m=>ctxRows.push(['MILITARY',esc(m.name)+' ('+esc(m.branch)+')',m.dist+' km']));
+  if(ctx.airports)ctx.airports.slice(0,3).forEach(a=>ctxRows.push(['AIRPORT',esc(a.name)+(a.iata?' ('+esc(a.iata)+')':'')+' — '+(a.type==='large'?'large hub':'regional'),a.dist+' km']));
   if(ctx.airspace)ctx.airspace.slice(0,3).forEach(x=>ctxRows.push(['AIRSPACE',esc(x.name)+' — '+esc(x.type),x.dist+' km']));
   if(ctx.caves)ctx.caves.slice(0,3).forEach(c=>ctxRows.push(['CAVES',esc(c.name),c.dist+' km']));
   if(ctx.missing411)ctx.missing411.slice(0,3).forEach(m=>ctxRows.push(['MISSING 411',esc(m.name)+' — '+esc(m.park||m.state||''),m.dist+' km']));
@@ -340,6 +341,10 @@ function buildDossierDOM(a,label,ctx,extra){
 
   // confounder ledger
   const ledger=[];
+  if(ctx.airports&&ctx.airports.length){
+    const nearest=ctx.airports[0];
+    ledger.push((nearest.type==='large'?'Major hub airport':'Airport')+' within '+nearest.dist+' km — aircraft landing lights, holding patterns and approach corridors are the most common source of misidentified UAP reports.');
+  }
   if(ctx.military&&ctx.military.length)ledger.push('Military installation within radius — aviation activity is a plausible mundane source for UAP reports.');
   if(ctx.airspace&&ctx.airspace.length)ledger.push('Special-use airspace overlaps the area — training flights, flares and drones inflate report rates.');
   if(a.dupShare>0.5)ledger.push(Math.round(a.dupShare*100)+'% of records share one exact coordinate — coarse geocoding may be concentrating a wider area\'s reports here.');
