@@ -133,45 +133,41 @@ def build_density_grid(counties, pop_by_fips):
 
     print(f"  {len(county_data)} counties with valid population + area data")
 
+    # Each county influences only cells within its own physical footprint
+    # (radius derived from land area, x1.5 margin, 0.35 deg floor). No
+    # nearest-county fallback: cells beyond every county's footprint —
+    # i.e. open ocean — stay 0 so they are excluded from per-capita
+    # baselines instead of inheriting coastal density from 500 km away.
+    for c in county_data:
+        c["radius_deg"] = max(0.35, 1.5 * math.sqrt(c["area"] * 2.59) / 111.0)
+
     # Compute grid dimensions
     n_rows = int((LAT_MAX - LAT_MIN) / RESOLUTION)
     n_cols = int((LON_MAX - LON_MIN) / RESOLUTION)
     print(f"  Grid: {n_rows} rows x {n_cols} cols = {n_rows * n_cols} cells at {RESOLUTION} degree resolution")
 
-    # For each grid cell, find the nearest county centroid
-    # and assign its density. Use inverse-distance weighting
-    # from nearby counties for smoother results.
     grid = []
     for row in range(n_rows):
         grid_row = []
         cell_lat = LAT_MAX - (row + 0.5) * RESOLUTION  # top to bottom
+        cos_lat = math.cos(math.radians(cell_lat))
         for col in range(n_cols):
             cell_lon = LON_MIN + (col + 0.5) * RESOLUTION
 
-            # Find counties within ~1 degree and do IDW
-            best_dist = float("inf")
-            best_density = 0
-            weighted_sum = 0
-            weight_total = 0
-
+            weighted_sum = 0.0
+            weight_total = 0.0
             for c in county_data:
                 dlat = c["lat"] - cell_lat
-                dlon = (c["lon"] - cell_lon) * math.cos(math.radians(cell_lat))
+                if abs(dlat) > c["radius_deg"]:
+                    continue
+                dlon = (c["lon"] - cell_lon) * cos_lat
                 dist = math.sqrt(dlat ** 2 + dlon ** 2)
-
-                if dist < 1.5:  # within ~1.5 degrees
+                if dist < c["radius_deg"]:
                     w = 1.0 / (dist + 0.01) ** 2
                     weighted_sum += c["density"] * w
                     weight_total += w
 
-                if dist < best_dist:
-                    best_dist = dist
-                    best_density = c["density"]
-
-            if weight_total > 0:
-                density = weighted_sum / weight_total
-            else:
-                density = best_density if best_dist < 5 else 0
+            density = weighted_sum / weight_total if weight_total > 0 else 0
 
             # Round to reduce file size
             grid_row.append(round(density, 1))
