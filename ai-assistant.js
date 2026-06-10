@@ -265,7 +265,7 @@ OVERLAY DATASETS: The map has toggleable overlay layers that enrich analysis:
 - Restricted Airspace (105 FAA zones: Restricted, MOA, Warning, Prohibited, Alert)
 - USGS Earthquakes (20K M2.5+ events, 2019-2025) — earthquake-lights hypothesis
 - US Cave Systems (104 major caves/karst) — Bigfoot/Missing 411 correlation
-- NASA Fireballs (29 CNEOS detections over US) — UFO misidentification analysis
+- NASA Fireballs (877 CNEOS located bolides worldwide, 1988-present; impact energy in kt; last-180-day events highlighted) — UFO misidentification analysis. NOTE: a 2026 fireball-surge rumor was checked against primary CNEOS monthly counts and REFUTED (2026 runs ~2.8 located events/mo vs 2.6-2.7 in 2024-25); findings in docs/superpowers/specs/fireball-surge-brief.md
 - Cryptid Sightings (105 non-Bigfoot: Mothman, Jersey Devil, Champ, Skunk Ape, Dogman, etc)
 - Missing 411 (71 National Park disappearance cases)
 - Geomagnetic Storms (92 G3+ storms, 1950-2026) — temporal overlay on timeline

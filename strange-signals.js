@@ -416,16 +416,21 @@ function renderFireballs(){
   if(fireballLayer){map.removeLayer(fireballLayer);fireballLayer=null}
   if(!showFireballs||!fireballData)return;
   fireballLayer=L.layerGroup();
-  const FF={LAT:0,LON:1,DATE:2,ENERGY:3,VELOCITY:4,ALT:5};
+  // impact_kt (index 6) is true impact energy in kt; index 3 is CNEOS
+  // radiated energy in 1e10 J — kept for sizing continuity, NOT kilotons
+  const FF={LAT:0,LON:1,DATE:2,ENERGY:3,VELOCITY:4,ALT:5,IMPACT:6};
+  const recentCutoff=new Date(Date.now()-180*86400000).toISOString().substring(0,10);
   fireballData.data.forEach(f=>{
-    const energy=f[FF.ENERGY]||1;
-    const sz=Math.max(10,Math.min(24,8+Math.sqrt(energy)*3));
-    const icon=tablerIcon('meteor','#ffcc00',sz);
-    const marker=L.marker([f[FF.LAT],f[FF.LON]],{icon});
+    const impact=f[FF.IMPACT]||0.1;
+    const recent=(f[FF.DATE]||'')>=recentCutoff;
+    const sz=Math.max(recent?13:9,Math.min(26,8+Math.sqrt(impact)*4));
+    const icon=tablerIcon('meteor',recent?'#ffee99':'#ffcc00',sz);
+    const marker=L.marker([f[FF.LAT],f[FF.LON]],{icon,opacity:recent?1:0.75});
     const velStr=f[FF.VELOCITY]?'Velocity: '+f[FF.VELOCITY]+' km/s<br>':'';
     const altStr=f[FF.ALT]?'Altitude: '+f[FF.ALT]+' km':'';
-    marker.bindPopup('<b style="color:var(--fireball)">'+TABLER_SVG.meteor('var(--fireball)',12)+' NASA Fireball</b><br>'+
-      'Date: '+esc(f[FF.DATE])+'<br>Energy: '+energy+' kt TNT<br>'+velStr+altStr);
+    marker.bindPopup('<b style="color:var(--fireball)">'+TABLER_SVG.meteor('var(--fireball)',12)+' NASA Fireball'+(recent?' <span style="color:#ffee99">(recent)</span>':'')+'</b><br>'+
+      'Date: '+esc(f[FF.DATE])+'<br>'+
+      (f[FF.IMPACT]?'Impact energy: '+f[FF.IMPACT]+' kt TNT<br>':'')+velStr+altStr);
     fireballLayer.addLayer(marker);
   });
   fireballLayer.addTo(map);
@@ -3346,7 +3351,7 @@ window.StrangeSignals={
     if(missing411Data)results.missing411=missing411Data.data.filter(m=>haversine(lat,lon,m[0],m[1])<=r)
       .map(m=>({name:m[2],park:m[3],state:m[4],dist:Math.round(haversine(lat,lon,m[0],m[1]))}));
     if(fireballData)results.fireballs=fireballData.data.filter(f=>haversine(lat,lon,f[0],f[1])<=r)
-      .map(f=>({date:f[2],energy:f[3],dist:Math.round(haversine(lat,lon,f[0],f[1]))}));
+      .map(f=>({date:f[2],energy:f[6]!=null?f[6]:f[3],dist:Math.round(haversine(lat,lon,f[0],f[1]))}));
     if(cryptidData)results.cryptids=cryptidData.data.filter(c=>haversine(lat,lon,c[0],c[1])<=r)
       .map(c=>({name:c[2],type:c[3],state:c[4],dist:Math.round(haversine(lat,lon,c[0],c[1]))}));
     if(militaryData)results.military=militaryData.data.filter(m=>haversine(lat,lon,m[0],m[1])<=r)
