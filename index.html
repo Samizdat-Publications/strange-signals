@@ -4,11 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STRANGE SIGNALS // Paranormal Sightings Correlation Map</title>
-<meta name="description" content="Interactive map visualizing 258K+ paranormal sightings — UFO/UAP, Bigfoot, and Haunted Places — with spatial correlation analysis, temporal trends, and AI-powered insights.">
+<!-- No inline scripts or handlers anywhere in this app, so script-src stays strict.
+     'unsafe-inline' is required for style-src only: Leaflet writes element.style
+     directly and several panels build markup with inline style attributes.
+     frame-ancestors cannot be set from a meta tag — it lives in _headers. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://unpkg.com; connect-src 'self' https://api.anthropic.com https://nominatim.openstreetmap.org; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="description" content="Interactive map visualizing 385K+ geocoded paranormal sightings — UFO/UAP, Bigfoot, and Haunted Places — with population-corrected anomaly detection, spatial correlation analysis, and an AI research assistant.">
 <meta name="theme-color" content="#05060f">
 <meta property="og:title" content="STRANGE SIGNALS // Paranormal Sightings Correlation Map">
-<meta property="og:description" content="Explore 258K+ geocoded paranormal sightings with spatial correlation, temporal analysis, and AI-powered insights.">
+<meta property="og:description" content="385K+ geocoded paranormal sightings, 593 BC to present. Population-corrected anomaly detection, 14 overlay datasets, and an AI research assistant.">
 <meta property="og:type" content="website">
+<meta property="og:image" content="screenshots/hero-markers.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="STRANGE SIGNALS">
+<meta name="twitter:description" content="385K+ geocoded paranormal sightings with population-corrected anomaly detection.">
+<meta name="twitter:image" content="screenshots/hero-markers.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='none' stroke='%2300ff88' stroke-width='2'/><circle cx='16' cy='16' r='2' fill='%2300ff88'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -392,6 +402,14 @@
         <span id="sb-mode">MARKERS</span>
         <span class="sb-sep">|</span>
         <span id="sb-engine">ENGINE IDLE</span>
+      </div>
+      <!-- INBOUND TELEMETRY (shown while the large UFO payload is still streaming) -->
+      <div id="map-inbound" role="status" aria-live="polite" hidden>
+        <span class="inb-label">INBOUND</span>
+        <span id="inb-name">UFO/UAP</span>
+        <span class="sb-sep">|</span>
+        <span id="inb-bytes">--</span>
+        <div class="inb-track"><div class="inb-fill" id="inb-fill"></div></div>
       </div>
       <!-- ANNOTATION TOOLBAR -->
       <div class="annotation-toolbar" id="annotation-toolbar">

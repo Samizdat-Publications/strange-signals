@@ -1,0 +1,40 @@
+# Cloudflare Pages header rules. Read from the root of the deployed output.
+# https://developers.cloudflare.com/pages/configuration/headers/
+#
+# The Content-Security-Policy lives in a <meta> tag in index.html so it travels
+# with the app on any host (local python -m http.server, GitHub Pages, Pages).
+# Only the headers that CANNOT be expressed in a meta tag are set here.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Content-Security-Policy: frame-ancestors 'self'
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+
+# The Service Worker is the update mechanism for everything else it caches, so
+# it must never be served stale. A cached sw.js pins users to an old CACHE_VERSION.
+/sw.js
+  Cache-Control: no-cache
+
+# Filenames carry no content hash, so a long immutable TTL would strand users on
+# a stale build. Revalidation is cheap — these are small and ETag'd.
+/index.html
+  Cache-Control: no-cache
+/*.js
+  Cache-Control: public, max-age=0, must-revalidate
+/*.css
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Sighting + overlay data changes only when the Python pipeline is re-run. The
+# Service Worker serves these stale-while-revalidate anyway (see sw.js), so a
+# generous browser TTL here just removes a round-trip on the 14 MB UFO payload.
+#
+# Note on the .gz files: no Content-Encoding is declared. Cloudflare may or may
+# not re-encode them in transit, and parse-worker.js sniffs the gzip magic bytes
+# either way — so the payload decodes correctly whichever path the CDN takes.
+/data/*
+  Cache-Control: public, max-age=3600, stale-while-revalidate=604800
+
+/screenshots/*
+  Cache-Control: public, max-age=604800

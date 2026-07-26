@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**STRANGE SIGNALS** — An interactive paranormal-sightings correlation map visualizing **~385K geocoded records** across three categories (UFO/UAP, Bigfoot/Sasquatch, Haunted Places) with 11 toggleable overlay datasets and an in-browser **Signal Analyst** AI (Anthropic Messages API). Historical coverage spans **593 BC → present**, worldwide. Static HTML/CSS/JS — no build toolchain.
+**STRANGE SIGNALS** — An interactive paranormal-sightings correlation map visualizing **~385K geocoded records** across three categories (UFO/UAP, Bigfoot/Sasquatch, Haunted Places) with 12 toggleable overlay datasets and an in-browser **Signal Analyst** AI (Anthropic Messages API). Historical coverage spans **593 BC → present**, worldwide. Static HTML/CSS/JS — no build toolchain.
 
 ## How to Run
 
@@ -125,7 +125,7 @@ const F = {LAT:0, LON:1, CAT:2, DATE:3, LOC:4, SUB:5, DESC:6};
 Overlay JSON files use their own per-file field maps (`MF` for military, `AF` for airspace, `CF` for caves, etc.).
 
 ### JS Architecture (strange-signals.js)
-Everything is wrapped in an IIFE `(function(){ 'use strict'; ... })();`. Cross-script communication happens via a small set of globals assigned to `window` (e.g. `window.StrangeSignals`, `window.SignalAI`, `window.Annotations`) — there are no ES modules.
+Everything is wrapped in an IIFE `(function(){ 'use strict'; ... })();`. Cross-script communication happens via a small set of globals assigned to `window` (e.g. `window.StrangeSignals`, `window.SignalEngine`, `window.Annotations`, `window.DeepDive`, `window.SignalReports`; `ai-assistant.js` exports nothing and wires itself to the DOM) — there are no ES modules.
 
 | Section | What It Does |
 |---------|--------------|
@@ -140,7 +140,7 @@ Everything is wrapped in an IIFE `(function(){ 'use strict'; ... })();`. Cross-s
 | **Timeline** | D3 stacked bar chart with year brush for filtering |
 | **Filters** | Year range, state, subcategory text, timeline brush — all call `applyFilters()` |
 | **URL State** | Map position, zoom, view mode, layers, filters, overlays → `location.hash` via URLSearchParams |
-| **Overlays** | 11 toggleable layers, lazy-loaded on first toggle |
+| **Overlays** | 12 toggleable layers, lazy-loaded on first toggle |
 | **Data Loading** | `parse-worker.js` decodes JSON off-main-thread, batched rendering (5K markers per `setTimeout` chunk) |
 
 ### Web Workers
@@ -176,7 +176,7 @@ Correlation sub-modes (`corrSubMode`):
 | `clusters` | Min sightings + hex size | Array of `{centroid, label, composition}` rendered as circles |
 | `nearest` | (none) | Grid-indexed NN distances, mean/median/stddev per category pair |
 
-### Overlay Layers (11 total)
+### Overlay Layers (12 total, plus the 3 sighting categories)
 
 Lazy-loaded on first toggle. Each has its own Leaflet layer group and JSON source.
 
