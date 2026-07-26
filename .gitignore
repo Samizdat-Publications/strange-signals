@@ -28,6 +28,9 @@ data/sightings_*.json
 !screenshots/*.png
 !screenshots/*.jpg
 
+# Wrangler / Cloudflare local state
+.wrangler/
+
 # Node (shouldn't exist but just in case)
 node_modules/
 
