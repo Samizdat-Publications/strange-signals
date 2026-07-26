@@ -94,6 +94,18 @@ DOCS
   docs/superpowers/           Phase-by-phase implementation plans and design specs
   screenshots/                PNG marketing imagery used by docs/index.html and README
 
+DEPLOY (Cloudflare Workers static assets — NOT Pages; live at strange-signals.stewartgregerson.workers.dev)
+  wrangler.jsonc              Whole config. assets.directory = repo root, asset-first routing,
+                              main = worker.js. Bindings declared HERE, not in the dashboard —
+                              `wrangler deploy` treats this file as source of truth and can drop
+                              dashboard-only bindings. Secrets are separate and persist.
+  worker.js                   Worker entry. Only runs for paths with no matching file on disk,
+                              i.e. POST /api/signal (shared SIGNAL Analyst proxy). Everything
+                              else falls through to env.ASSETS. Inert + free unless BOTH an
+                              ANTHROPIC_API_KEY secret and a SIGNAL_QUOTA KV binding exist.
+  _headers                    Edge cache + security headers. Applies to static assets only —
+                              worker.js responses set their own.
+
 CONFIG
   .claude/launch.json         Dev server configs (strange-signals on 8002 + branch previews)
   .env.example                Template (ANTHROPIC_API_KEY — BUT key is actually entered via UI gear, not env)

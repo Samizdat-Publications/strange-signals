@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "strange-signals",
+  "compatibility_date": "2026-07-26",
+  "observability": {
+    "enabled": true
+  },
+  // The whole repo is the static site — there is no build step. Routing is
+  // asset-first: any path matching a file on disk is served directly, and only
+  // paths with no matching file (i.e. /api/signal) reach worker.js.
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+  "main": "worker.js",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+
+  // ---------------------------------------------------------------------
+  // To switch the shared SIGNAL Analyst on (see README -> Deployment), BOTH
+  // of the following are required. It stays inert and free until then.
+  //
+  //   1. The secret. Set it once, out of band -- never in this file:
+  //        npx wrangler secret put ANTHROPIC_API_KEY
+  //
+  //   2. The quota store. Create it, then uncomment the block below using the
+  //      id wrangler prints. Deploys run `wrangler deploy`, which treats this
+  //      file as the source of truth for bindings -- a KV namespace added only
+  //      in the dashboard can be dropped on the next deploy, so it has to be
+  //      declared here.
+  //        npx wrangler kv namespace create SIGNAL_QUOTA
+  //
+  // "kv_namespaces": [
+  //   { "binding": "SIGNAL_QUOTA", "id": "<paste the id wrangler prints>" }
+  // ]
+  // ---------------------------------------------------------------------
+}
