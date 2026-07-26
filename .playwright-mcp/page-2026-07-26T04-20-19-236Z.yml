@@ -1,0 +1,182 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - heading "STRANGE SIGNALS" [level=1] [ref=f4e9]
+    - status [ref=f4e10]: Triangulating signals...
+    - generic [ref=f4e13]: 14.9MB / 14.9MB
+    - generic [ref=f4e14]: "Earliest recorded sighting: 1910, Pacific Northwest"
+  - banner [ref=f4e16]:
+    - heading "STRANGE SIGNALS" [level=1] [ref=f4e22]
+    - navigation [ref=f4e23]:
+      - button "MARKERS" [ref=f4e24] [cursor=pointer]
+      - button "HEATMAP" [ref=f4e25] [cursor=pointer]
+      - button "HEX DENSITY" [ref=f4e26] [cursor=pointer]
+      - button "ANOMALY" [ref=f4e27] [cursor=pointer]
+      - button "CORRELATION" [ref=f4e28] [cursor=pointer]
+    - generic [ref=f4e29]:
+      - textbox "Search location" [ref=f4e30]:
+        - /placeholder: Search location...
+      - generic [ref=f4e31]: / to search
+      - button "Toggle SIGNAL AI assistant" [ref=f4e32] [cursor=pointer]: SIGNAL
+      - button "Export map snapshot" [ref=f4e33] [cursor=pointer]: 📷 SNAP
+  - generic [ref=f4e34]:
+    - complementary [ref=f4e35]:
+      - generic [ref=f4e36]:
+        - generic [ref=f4e37]:
+          - generic [ref=f4e38]: ◎
+          - text: LAYERS
+        - generic [ref=f4e39] [cursor=pointer]:
+          - checkbox "Toggle UFO/UAP sightings layer" [checked] [ref=f4e40]
+          - generic [ref=f4e41]: ▲
+          - generic [ref=f4e42]: UFO / UAP
+          - generic "UFO/UAP sighting count" [ref=f4e43]: "-"
+        - generic [ref=f4e44] [cursor=pointer]:
+          - checkbox "Toggle Bigfoot/Sasquatch sightings layer" [checked] [ref=f4e45]
+          - generic [ref=f4e46]: ●
+          - generic [ref=f4e47]: Bigfoot / Sasquatch
+          - generic "Bigfoot/Sasquatch sighting count" [ref=f4e48]: "-"
+        - generic [ref=f4e49] [cursor=pointer]:
+          - checkbox "Toggle Haunted Places layer" [checked] [ref=f4e50]
+          - generic [ref=f4e51]: ✦
+          - generic [ref=f4e52]: Haunted Places
+          - generic "Haunted places count" [ref=f4e53]: "-"
+      - generic [ref=f4e54]:
+        - generic [ref=f4e55]:
+          - generic [ref=f4e56]: ★
+          - text: OVERLAYS
+        - generic [ref=f4e57]: INFRASTRUCTURE
+        - generic [ref=f4e58] [cursor=pointer]:
+          - checkbox "Toggle Military / DOE Sites overlay" [ref=f4e59]
+          - generic [ref=f4e61]: Military / DOE Sites
+          - generic [ref=f4e62]: ◆
+        - generic [ref=f4e63] [cursor=pointer]:
+          - checkbox "Toggle Restricted Airspace overlay" [ref=f4e64]
+          - generic [ref=f4e66]: Restricted Airspace
+          - generic [ref=f4e67]: ◆
+        - generic [ref=f4e68] [cursor=pointer]:
+          - checkbox "Toggle Airports overlay" [ref=f4e69]
+          - generic [ref=f4e71]: Airports
+          - generic [ref=f4e72]: ◆
+        - generic [ref=f4e73] [cursor=pointer]:
+          - checkbox "Toggle National Parks overlay" [ref=f4e74]
+          - generic [ref=f4e76]: National Parks
+          - generic [ref=f4e77]: ◆
+        - generic [ref=f4e78]: GEOLOGICAL
+        - generic [ref=f4e79] [cursor=pointer]:
+          - checkbox "Toggle USGS Earthquakes overlay" [ref=f4e80]
+          - generic [ref=f4e82]: USGS Earthquakes
+          - generic [ref=f4e83]: ◆
+        - generic [ref=f4e84] [cursor=pointer]:
+          - checkbox "Toggle US Cave Systems overlay" [ref=f4e85]
+          - generic [ref=f4e87]: US Cave Systems
+          - generic [ref=f4e88]: ◆
+        - generic [ref=f4e89] [cursor=pointer]:
+          - checkbox "Toggle NASA Fireballs overlay" [ref=f4e90]
+          - generic [ref=f4e92]: NASA Fireballs
+          - generic [ref=f4e93]: ◆
+        - generic [ref=f4e94]: PARANORMAL
+        - generic [ref=f4e95] [cursor=pointer]:
+          - checkbox "Toggle Cryptid Sightings overlay" [ref=f4e96]
+          - generic [ref=f4e98]: Cryptid Sightings
+          - generic [ref=f4e99]: ◆
+        - generic [ref=f4e100] [cursor=pointer]:
+          - checkbox "Toggle Missing 411 Cases overlay" [ref=f4e101]
+          - generic [ref=f4e103]: Missing 411 Cases
+          - generic [ref=f4e104]: ◆
+        - generic [ref=f4e105] [cursor=pointer]:
+          - checkbox "Toggle Historic Sites overlay" [ref=f4e106]
+          - generic [ref=f4e108]: Historic Sites (NRHP)
+          - generic [ref=f4e109]: ◆
+        - generic [ref=f4e110]: TEMPORAL
+        - generic [ref=f4e111] [cursor=pointer]:
+          - checkbox "Toggle Geomagnetic Storms overlay" [ref=f4e112]
+          - generic [ref=f4e114]: Geomagnetic Storms
+          - generic [ref=f4e115]: ◆
+        - generic [ref=f4e116]: DEMOGRAPHICS
+        - generic [ref=f4e117] [cursor=pointer]:
+          - checkbox "Toggle Per Capita Heatmap" [checked] [ref=f4e118]
+          - generic [ref=f4e120]: Per Capita Heatmap
+          - generic [ref=f4e121]: HEAT
+        - generic [ref=f4e122]: Normalizes sighting density by population.Reveals anomalous hotspots vs. population centers.
+      - generic [ref=f4e123]:
+        - generic [ref=f4e124]:
+          - generic [ref=f4e125]: ◑
+          - text: VIEW MODE
+        - generic [ref=f4e126]:
+          - button "MARKERS" [ref=f4e127] [cursor=pointer]
+          - button "HEAT" [ref=f4e128] [cursor=pointer]
+          - button "HEX" [ref=f4e129] [cursor=pointer]
+          - button "ANOM" [ref=f4e130] [cursor=pointer]
+          - button "CORR" [ref=f4e131] [cursor=pointer]
+      - generic [ref=f4e132]:
+        - generic [ref=f4e133]:
+          - generic [ref=f4e134]: ◢
+          - text: FILTERS
+        - generic [ref=f4e135]:
+          - spinbutton "Filter from year" [ref=f4e136]
+          - spinbutton "Filter to year" [ref=f4e137]
+        - textbox "Filter by state" [ref=f4e139]:
+          - /placeholder: State (OH, CA, TX...)
+        - textbox "Filter by shape or class" [ref=f4e141]:
+          - /placeholder: Shape / class...
+        - generic [ref=f4e142]:
+          - button "APPLY" [ref=f4e143] [cursor=pointer]
+          - button "RESET" [ref=f4e144] [cursor=pointer]
+          - button "EXPORT CSV" [ref=f4e145] [cursor=pointer]
+      - generic [ref=f4e146]:
+        - generic [ref=f4e147]:
+          - generic [ref=f4e148]: ■
+          - text: STATISTICS
+        - generic [ref=f4e149]:
+          - generic [ref=f4e150]:
+            - generic [ref=f4e151]: "-"
+            - generic [ref=f4e152]: VISIBLE
+          - generic [ref=f4e153]:
+            - generic [ref=f4e154]: "-"
+            - generic [ref=f4e155]: TOTAL
+          - generic [ref=f4e156]:
+            - generic [ref=f4e157]: "-"
+            - generic [ref=f4e158]: HOTSPOTS
+          - generic [ref=f4e159]:
+            - generic [ref=f4e160]: "-"
+            - generic [ref=f4e161]: ZOOM
+      - generic [ref=f4e162]:
+        - generic [ref=f4e163]:
+          - generic [ref=f4e164]: ☉
+          - text: PROXIMITY RADIUS
+        - generic [ref=f4e165]:
+          - generic [ref=f4e166]: Proximity radius
+          - slider "Proximity radius in kilometers" [ref=f4e167]: "50"
+          - generic [ref=f4e168]: 50km
+        - generic [ref=f4e169]: Click a sighting to see nearby points of other types
+      - generic [ref=f4e170]:
+        - generic [ref=f4e171]:
+          - generic [ref=f4e172]: ⌨
+          - text: SHORTCUTS
+        - generic [ref=f4e173]: 1 UFO 2 Bigfoot 3 Haunted M Markers H Heat X Hex C Corr / Search Esc Close S Sidebar I Signal AI T Timeline ? All shortcuts
+    - main [ref=f4e174]:
+      - button "Toggle sidebar" [expanded] [ref=f4e175] [cursor=pointer]: ☰
+      - generic [ref=f4e176]:
+        - generic [ref=f4e177]:
+          - generic:
+            - generic [ref=f4e178]:
+              - button "Zoom in" [ref=f4e179] [cursor=pointer]: +
+              - button "Zoom out" [ref=f4e180] [cursor=pointer]: −
+            - generic [ref=f4e181]:
+              - link "Leaflet" [ref=f4e182] [cursor=pointer]:
+                - /url: https://leafletjs.com
+              - text: "| © OpenStreetMap © CARTO"
+        - generic:
+          - generic: "--.--- , --.---"
+          - generic: "|"
+          - generic: MARKERS
+          - generic: "|"
+          - generic: ENGINE IDLE
+        - generic [ref=f4e187]:
+          - button "Add annotation" [ref=f4e188] [cursor=pointer]: 📌
+          - button "Export annotations" [ref=f4e189] [cursor=pointer]: 💾
+          - button "Import annotations" [ref=f4e190] [cursor=pointer]: 📂
+          - button "Clear all annotations" [ref=f4e191] [cursor=pointer]: 🗑
+          - generic [ref=f4e192]: "0"
+      - generic [ref=f4e193]:
+        - generic [ref=f4e194]: TIMELINE
+        - button "Toggle timeline" [ref=f4e195] [cursor=pointer]: ▼
