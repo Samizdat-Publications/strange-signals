@@ -102,36 +102,62 @@ Built-in AI research assistant powered by Claude. SIGNAL can:
 
 ## Screenshots
 
-### Marker Clusters — Zoomed to California/Nevada
-<img src="screenshots/markers-zoomed-sf.png" alt="Markers zoomed into California showing clustered sightings" width="100%">
+### ANOMALY — where there is more than there should be
+<img src="screenshots/anomaly-view.png" alt="Anomaly view showing 374 statistically significant cells out of 1,463 modeled" width="100%">
+
+The flagship view. Every lit cell has survived a Poisson test against a baseline built from
+census population and regional reporting rate, then Benjamini&ndash;Hochberg FDR correction at
+q&lt;0.05 with a rate ratio of at least 1.5&times;. **374 significant cells out of 1,463 modeled.**
+Blue cells are significant *deficits* &mdash; fewer reports than the baseline predicts. Big cities
+alone do not light up; that is the entire point.
+
+### DEEP DIVE — a full regional workup on any point
+<img src="screenshots/deep-dive-dossier.png" alt="Deep dive dossier for Sedona, Arizona open over the anomaly map" width="100%">
+
+Right-click anywhere for a dossier. Sedona, AZ &mdash; 699 observed against 384.1 expected,
+**7.28&times; its population baseline**, p&lt;0.001:
+
+<img src="screenshots/dossier-detail.png" alt="Full Sedona dossier: composition, flap episodes, seasonality, matched controls, confounder ledger" width="620">
+
+Note the bottom two panels. **Matched controls** benchmarks the area against 30
+same-population US locations &mdash; Sedona beats 100% of its population twins, median control 96
+reports versus 699 here. The **confounder ledger** then argues against itself, flagging
+Flagstaff Pulliam Airport 31 km away because aircraft landing lights are the single most
+common source of misidentified UAP reports.
+
+### Hex Analysis — including the honest answer
+<img src="screenshots/hex-detail-panel.png" alt="Hex analysis panel for Elk Grove, California showing a significant deficit" width="560">
+
+Click any cell for a breakdown. This one is a **significant deficit** &mdash; Elk Grove, CA has
+311 sightings, which sounds like a lot until you see it is 0.44&times; its regional baseline. A tool
+that only ever finds excess is not measuring anything.
+
+### Marker Clusters — Zoomed to the Bay Area
+<img src="screenshots/markers-zoomed-sf.png" alt="Markers zoomed into the San Francisco Bay Area showing clustered sightings" width="100%">
 
 ### Heatmap — National Sighting Density
 <img src="screenshots/heatmap-us.png" alt="Heatmap showing national sighting density with category color blending" width="100%">
 
-### Hex Density — Zoomed to Pacific Northwest
-<img src="screenshots/hex-detail-pnw.png" alt="Hex density view zoomed into Washington state" width="100%">
+### Hex Density — Pacific Northwest
+<img src="screenshots/hex-detail-pnw.png" alt="Hex density view over the Washington and Oregon hotspot corridor" width="100%">
 
-### Hex Detail Panel — Deep Analysis
-<img src="screenshots/hex-detail-panel.png" alt="Hex detail panel showing 3,536 sightings in Seattle with subcategory tags and temporal distribution" width="100%">
+### Overlays — Sightings against Restricted Airspace
+<img src="screenshots/overlays-military-airspace.png" alt="Sightings with military, restricted airspace and airport overlays over the Nevada Test and Training Range" width="100%">
 
-Click any hex cell to open a detailed analysis panel showing:
-- Total sighting count with per-category breakdown
-- Density per km² and per year statistics
-- Temporal distribution chart
-- Top subcategories (light, circle, triangle, fireball, etc.)
-- Top reported locations within the hex
-
-### SIGNAL AI Assistant
-<img src="screenshots/signal-ai-panel.png" alt="SIGNAL AI assistant panel with research tools" width="100%">
+The Nevada Test and Training Range with military sites, restricted airspace rings and airports
+enabled &mdash; the confounder stack you have to rule out before claiming anything.
 
 ### Correlation Matrix
 <img src="screenshots/correlation-matrix.png" alt="3x3 correlation matrix showing pairwise correlations with significance markers" width="100%">
 
-### Temporal Correlation Dashboard
-<img src="screenshots/temporal-correlation.png" alt="Temporal correlation showing rolling 5-year window and seasonal patterns" width="100%">
+All-pairs correlation across 9,452 hex cells. UFO&harr;Haunted r=0.787 (p&lt;0.001), while
+Bigfoot&harr;Haunted is a flat &minus;0.001. 631 triple hotspots.
 
-### Overlay Layers — Military & Airspace
-<img src="screenshots/overlays-military-airspace.png" alt="Sighting markers with military base and restricted airspace overlays active" width="100%">
+### Temporal Correlation Dashboard
+<img src="screenshots/temporal-correlation.png" alt="Temporal correlation showing rolling 5-year window and seasonal patterns peaking in July" width="100%">
+
+### SIGNAL Analyst
+<img src="screenshots/signal-ai-panel.png" alt="SIGNAL Analyst panel with onboarding message and research prompts" width="100%">
 
 ## Getting Started
 
