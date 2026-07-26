@@ -41,6 +41,19 @@
   color:var(--green);padding:5px 8px;border-top:1px solid rgba(0,255,136,0.15)}
 
 /* Input bar */
+/* Links in transcript messages. Without this they render as default browser
+   blue, which is unreadable on the dark panel. */
+.signal-messages a{color:var(--cyan);text-decoration:underline;text-underline-offset:2px}
+.signal-messages a:hover{color:var(--green)}
+
+/* Free-allowance readout — sits between the transcript and the input bar,
+   visible only while the shared analyst is actually serving this visitor. */
+.signal-quota{flex-shrink:0;padding:4px 12px 0;font-family:var(--font-mono);font-size:9px;
+  letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;
+  font-variant-numeric:tabular-nums;text-align:right}
+.signal-quota[hidden]{display:none}
+.signal-quota--low{color:var(--fireball)}
+
 .signal-input-bar{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--border);flex-shrink:0}
 .signal-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);
   border-radius:4px;color:var(--text);padding:8px 10px;outline:none;resize:none;
@@ -67,6 +80,10 @@
   cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;
   transition:color .15s,border-color .15s;z-index:1}
 .signal-gear:hover{color:var(--text);border-color:var(--border-bright)}
+/* Points at the gear right after the onboarding message names it. */
+.signal-gear--pulse{color:var(--green);border-color:var(--green);animation:signal-gear-pulse 1.4s ease-in-out infinite}
+@keyframes signal-gear-pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,255,136,0.45)}50%{box-shadow:0 0 0 6px rgba(0,255,136,0)}}
+@media (prefers-reduced-motion:reduce){.signal-gear--pulse{animation:none}}
 
 /* AI toggle button in header — green because SIGNAL is the primary assistant */
 #ai-toggle{padding:4px 12px;border:1px solid var(--border);border-radius:3px;

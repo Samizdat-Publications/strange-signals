@@ -159,6 +159,12 @@ Bigfoot&harr;Haunted is a flat &minus;0.001. 631 triple hotspots.
 ### SIGNAL Analyst
 <img src="screenshots/signal-ai-panel.png" alt="SIGNAL Analyst panel with onboarding message and research prompts" width="100%">
 
+Visitors can try the analyst with no setup where a shared key is configured. When there
+isn't one — or the free daily allowance is spent — the panel explains what an API key is,
+what it costs, and exactly where to click, in terms that assume no prior knowledge:
+
+<img src="screenshots/signal-key-onboarding.png" alt="Signal Analyst explaining what an Anthropic API key is and how to get one" width="560">
+
 ## Getting Started
 
 ### Prerequisites
@@ -354,8 +360,38 @@ Two constraints worth knowing before you fork:
 - `data/sightings_ufo.json.gz` is **14.5 MB**, comfortably under the Cloudflare Pages
   25 MiB per-file cap — but re-running the pipeline with more sources could push past it.
   Split the file further (see `export_map_data.py`) if that happens.
-- No API keys or secrets are needed at deploy time. The SIGNAL AI assistant asks each
+- No API keys or secrets are needed at deploy time. By default the SIGNAL Analyst asks each
   visitor for their own Anthropic key and keeps it in their browser's `localStorage`.
+
+### Optional: a shared analyst on your own key
+
+[`functions/api/signal.js`](functions/api/signal.js) is a Cloudflare Pages Function that
+proxies analyst requests using the *site's* key, so visitors can try the analyst without
+signing up for anything. **It is off by default and cannot spend anything until you turn on
+both of these** in the Pages dashboard:
+
+| Setting | Where | Purpose |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | Settings → Environment variables, **encrypted** | The key requests are made with |
+| `SIGNAL_QUOTA` | Settings → Bindings → KV namespace | Where the daily counters live |
+
+The KV binding is deliberately required rather than optional. It is the only place a durable
+counter can live, and without a durable counter the caps below are unenforceable — so with no
+KV the endpoint returns `503` and the client falls back to asking for the visitor's own key.
+
+Hard limits, none of them client-controllable — the Function rebuilds the upstream payload
+rather than forwarding what the browser sent, so a tampered request cannot raise them:
+
+- **Haiku 4.5 only**, whatever model the client asks for
+- **1,024 output tokens**, 256 KB body, 40 messages per request
+- **12 calls per IP per day** and **100 calls per day site-wide** — override with the
+  `PER_IP_DAILY_CALLS` and `GLOBAL_DAILY_CALLS` environment variables
+
+At Haiku 4.5 rates ($1/M in, $5/M out) with prompt caching on the system+tools prefix, a call
+runs roughly $0.03 for the first in a conversation and ~$0.007 after — so the default 100/day
+ceiling lands near **$0.80/day worst case**. Raise it only as far as you're willing to see on
+a bill. A visitor with their own key bypasses the proxy entirely: their choice of model, no cap,
+and no cost to you.
 
 ## Contributing
 

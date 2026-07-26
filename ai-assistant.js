@@ -10,6 +10,59 @@ let settingsVisible=false;
 let evidenceStore={};   // ev-N -> {id, label, dataUrl, ts} — session map captures
 let evidenceCounter=0;
 
+// Does this deployment host a shared analyst on the site's own key?
+// 'unknown' until the first /api/signal response tells us. We never probe
+// speculatively — the first real question doubles as the probe.
+let sharedAnalyst='unknown';
+
+function removeTyping(){
+  var t=document.getElementById('signal-typing');
+  if(t)t.remove();
+}
+
+// Free-call counter, shown only while the shared analyst is actually serving.
+function updateQuotaBadge(remaining,limit){
+  var el=document.getElementById('signal-quota');
+  if(!el)return;
+  var n=parseInt(remaining,10);
+  if(isNaN(n)){el.textContent='';el.hidden=true;return}
+  el.hidden=false;
+  el.textContent=n+' free '+(n===1?'question':'questions')+' left today';
+  el.classList.toggle('signal-quota--low',n<=3);
+}
+
+// The one place we ask for a key. Written for someone who has never heard of
+// an API key: what it is, that the map does not need one, what it costs, and
+// exactly where to click. `reason` is set when the free allowance ran out
+// rather than when there was never a shared analyst.
+function showKeyOnboarding(reason){
+  var lead=reason
+    ? '**'+reason+'**\n\nTo keep going, add your own key — it takes about two minutes.'
+    : 'The analyst needs an **Anthropic API key** to answer. Here is the short version:';
+  appendMessage('assistant',lead+'\n\n'+
+    '**Everything else on this map already works without one.** All 385,531 sightings, '+
+    'the anomaly engine, deep-dive dossiers, correlations and overlays are free and need no account. '+
+    'A key only powers the conversational analyst.\n\n'+
+    '**What a key is.** A password-like string from Anthropic — the company that makes Claude — '+
+    'that lets this page ask Claude questions on your behalf. It stays in your browser\'s local '+
+    'storage. It is never sent anywhere except directly to Anthropic, and this site has no server '+
+    'that could collect it.\n\n'+
+    '**What it costs.** Anthropic gives new accounts free starting credit, and questions here cost '+
+    'well under a cent each. You set your own spending limit and can revoke the key at any time.\n\n'+
+    '**How to get one — three steps:**\n\n'+
+    '1. Open [console.anthropic.com](https://console.anthropic.com/settings/keys) and sign up\n'+
+    '2. Click **Create Key**, then copy the string that starts with `sk-ant-`\n'+
+    '3. Come back here, click the **gear icon** at the top of this panel, paste it in, and hit Save\n\n'+
+    '**Why bother?** With a key the analyst can hunt anomalies for you, run dossiers on any place '+
+    'you name, detect historical flap episodes, and write up illustrated reports — driving the map '+
+    'while it explains what it found.');
+  var gear=document.getElementById('signal-gear');
+  if(gear){
+    gear.classList.add('signal-gear--pulse');
+    setTimeout(function(){gear.classList.remove('signal-gear--pulse')},6000);
+  }
+}
+
 var STORAGE_KEY='signal-conversation';
 var MAX_STORED_MESSAGES=40;
 
@@ -366,6 +419,7 @@ function createChatWindow(){
       '</div>'+
     '</div>'+
     '<div class="signal-messages" id="signal-messages"></div>'+
+    '<div class="signal-quota" id="signal-quota" hidden></div>'+
     '<div class="signal-input-bar">'+
       '<textarea class="signal-input" id="signal-input" placeholder="Ask about patterns, correlations, or regions..." rows="1"></textarea>'+
       '<button class="signal-send" id="signal-send">SEND</button>'+
@@ -438,8 +492,13 @@ function addGreeting(){
   var hasKey=!!getApiKey();
   var greeting='**Signal Analyst online.** I\'m your AI analyst for Strange Signals.\n\n';
   if(!hasKey){
-    greeting+='To get started, click the **gear icon** above and add your Anthropic API key. Your key stays in your browser and is only sent to Anthropic.\n\n';
-    greeting+='**All map features work without a key** — markers, heatmap, hex density, correlation, timeline, and overlays. The AI analyst just needs a key to answer questions.\n\n';
+    // Don't gate on a key up front — this deployment may host a shared analyst.
+    // Just ask a question; if there is no shared analyst, or the free allowance
+    // is spent, showKeyOnboarding() explains the key properly at that point.
+    greeting+='**Ask away — no setup needed to try me.** If the free allowance runs out I\'ll walk you '+
+      'through adding your own key (about two minutes, and Anthropic gives new accounts free credit).\n\n';
+    greeting+='**And the map itself never needs a key** — all 385,531 sightings, the anomaly engine, '+
+      'dossiers, correlations and overlays are free and open right now.\n\n';
   }
   greeting+='I run a statistical engine that separates real anomalies from population noise — plus deep-dive dossiers, flap detection, evidence capture, and illustrated reports. Try:\n\n- "Where are the most statistically anomalous areas right now?"\n- "Run a deep dive on my town" *(or right-click anywhere on the map)*\n- "Find historical UFO flaps and report on the biggest one"\n- "Is the Bigfoot-UFO correlation real or just population?"';
   if(hasKey) greeting+='\n- "Analyze the sightings in my selected hex" *(click a hex first)*';
@@ -518,6 +577,11 @@ function renderMarkdown(text){
     .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
     .replace(/\*(.+?)\*/g,'<em>$1</em>')
     .replace(/`(.+?)`/g,'<code>$1</code>')
+    // [label](url) — http(s) only. This text can come from the model, so the
+    // scheme is allowlisted rather than escaped: a javascript: or data: URL
+    // must never survive into an href.
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
     .replace(/^- (.+)$/gm,'<li>$1</li>')
     .replace(/((?:<li>[\s\S]*?<\/li>\s*)+)/g,'<ul>$1</ul>')
     .replace(/\n/g,'<br>');
@@ -1010,9 +1074,11 @@ async function sendMessage(){
   var text=inputEl.value.trim();
   if(!text||isStreaming)return;
 
-  var apiKey=getApiKey();
-  if(!apiKey){
-    appendMessage('assistant','**API key required.** Click the gear icon (top-right of this panel) to add your Anthropic API key.\n\nDon\'t have one? [Get a free key at console.anthropic.com](https://console.anthropic.com/settings/keys)\n\nYour key stays in your browser and is never stored on any server.');
+  // No hard gate on a key any more. If the deployment has a shared analyst
+  // configured, the request goes through /api/signal on the site's key; the
+  // fallback to "bring your own key" happens only once that path is refused.
+  if(!getApiKey()&&sharedAnalyst==='no'){
+    showKeyOnboarding();
     return;
   }
 
@@ -1071,18 +1137,51 @@ async function runConversationLoop(){
       stream:true
     };
 
+    // Route: the visitor's own key goes straight to Anthropic (their choice of
+    // model, no cap). Without a key we try the site's shared analyst, which is
+    // Haiku-only and quota-limited. A 503 there means this deployment has no
+    // shared analyst configured, so we ask for a key instead.
+    var viaProxy=!apiKey;
     var resp=null;
     for(var attempt=0;attempt<=MAX_RETRIES;attempt++){
-      resp=await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'x-api-key':apiKey,
-          'anthropic-version':'2023-06-01',
-          'anthropic-dangerous-direct-browser-access':'true'
-        },
-        body:JSON.stringify(body)
-      });
+      resp=viaProxy
+        ? await fetch('/api/signal',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(body)
+          })
+        : await fetch('https://api.anthropic.com/v1/messages',{
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json',
+              'x-api-key':apiKey,
+              'anthropic-version':'2023-06-01',
+              'anthropic-dangerous-direct-browser-access':'true'
+            },
+            body:JSON.stringify(body)
+          });
+      if(viaProxy){
+        // 503 = Function present but not configured to spend. 404/405/501/502 =
+        // no Function at all, which is what a plain static host (or `python -m
+        // http.server` in dev) returns. Both mean "no shared analyst here".
+        if(resp.status===503||resp.status===404||resp.status===405||resp.status===501||resp.status===502){
+          sharedAnalyst='no';
+          removeTyping();
+          showKeyOnboarding();
+          return;
+        }
+        if(resp.status===429){
+          var qmsg='';
+          try{qmsg=(await resp.clone().json()).error.message}catch(e){}
+          removeTyping();
+          showKeyOnboarding(qmsg||'The free analyst allowance is used up for today.');
+          return;
+        }
+        if(resp.ok){
+          sharedAnalyst='yes';
+          updateQuotaBadge(resp.headers.get('x-signal-quota-remaining'),resp.headers.get('x-signal-quota-limit'));
+        }
+      }
       if(resp.status!==429&&resp.status!==529)break;
       if(attempt<MAX_RETRIES){
         var retryAfter=resp.headers.get('retry-after');
