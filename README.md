@@ -340,58 +340,66 @@ SIGNAL is an AI research assistant built directly into Strange Signals. It uses 
 
 ## Deployment
 
-The app is a static site with no build step, so any static host works. It is deployed to
-**Cloudflare Pages** straight from this repo:
+The app is a static site with no build step. It is deployed to **Cloudflare Workers
+static assets** straight from this repo — every push to `master` redeploys.
 
-| Setting | Value |
-|---------|-------|
-| Framework preset | None |
-| Build command | *(empty)* |
-| Build output directory | `/` |
+Live: **https://strange-signals.stewartgregerson.workers.dev/**
 
-[`_headers`](_headers) at the repo root supplies the caching and security headers Pages
-applies at the edge — notably `no-cache` on `sw.js` (a cached Service Worker would pin
-users to a stale `CACHE_VERSION`) and a long `stale-while-revalidate` window on `/data/*`.
-The Content-Security-Policy travels in a `<meta>` tag in `index.html` instead, so it holds
-on any host including a bare `python -m http.server`.
+[`wrangler.jsonc`](wrangler.jsonc) is the whole configuration. `assets.directory` is the
+repo root, and routing is **asset-first**: any path matching a file on disk is served
+directly, and only paths with no matching file reach [`worker.js`](worker.js) — in practice
+just `/api/signal`.
+
+[`_headers`](_headers) supplies the caching and security headers Cloudflare applies at the
+edge — notably `no-cache` on `sw.js` (a cached Service Worker would pin users to a stale
+`CACHE_VERSION`) and a long `stale-while-revalidate` window on `/data/*`. The
+Content-Security-Policy travels in a `<meta>` tag in `index.html` instead, so it holds on any
+host including a bare `python -m http.server`.
 
 Two constraints worth knowing before you fork:
 
-- `data/sightings_ufo.json.gz` is **14.5 MB**, comfortably under the Cloudflare Pages
-  25 MiB per-file cap — but re-running the pipeline with more sources could push past it.
-  Split the file further (see `export_map_data.py`) if that happens.
-- No API keys or secrets are needed at deploy time. By default the SIGNAL Analyst asks each
-  visitor for their own Anthropic key and keeps it in their browser's `localStorage`.
+- `data/sightings_ufo.json.gz` is **14.5 MB**, under the 25 MiB per-file cap — but re-running
+  the pipeline with more sources could push past it. Split the file further (see
+  `export_map_data.py`) if that happens.
+- No secrets are needed to deploy. The SIGNAL Analyst asks each visitor for their own
+  Anthropic key and keeps it in their browser's `localStorage`.
 
 ### Optional: a shared analyst on your own key
 
-[`functions/api/signal.js`](functions/api/signal.js) is a Cloudflare Pages Function that
-proxies analyst requests using the *site's* key, so visitors can try the analyst without
-signing up for anything. **It is off by default and cannot spend anything until you turn on
-both of these** in the Pages dashboard:
+[`worker.js`](worker.js) can proxy analyst requests using the *site's* key, so visitors can
+try the analyst without signing up for anything. **It is off by default and cannot spend
+anything until you turn on both of these:**
 
-| Setting | Where | Purpose |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | Settings → Environment variables, **encrypted** | The key requests are made with |
-| `SIGNAL_QUOTA` | Settings → Bindings → KV namespace | Where the daily counters live |
+```bash
+npx wrangler secret put ANTHROPIC_API_KEY
+```
 
-The KV binding is deliberately required rather than optional. It is the only place a durable
+```bash
+npx wrangler kv namespace create SIGNAL_QUOTA
+```
+
+Then uncomment the `kv_namespaces` block in `wrangler.jsonc` with the id wrangler prints.
+The binding has to be declared in that file rather than added in the dashboard — deploys run
+`wrangler deploy`, which treats the config file as the source of truth and can drop bindings
+that only exist in the dashboard. Secrets are separate and persist safely.
+
+The KV store is deliberately required rather than optional. It is the only place a durable
 counter can live, and without a durable counter the caps below are unenforceable — so with no
 KV the endpoint returns `503` and the client falls back to asking for the visitor's own key.
 
-Hard limits, none of them client-controllable — the Function rebuilds the upstream payload
+Hard limits, none of them client-controllable — the Worker rebuilds the upstream payload
 rather than forwarding what the browser sent, so a tampered request cannot raise them:
 
 - **Haiku 4.5 only**, whatever model the client asks for
 - **1,024 output tokens**, 256 KB body, 40 messages per request
 - **12 calls per IP per day** and **100 calls per day site-wide** — override with the
-  `PER_IP_DAILY_CALLS` and `GLOBAL_DAILY_CALLS` environment variables
+  `PER_IP_DAILY_CALLS` and `GLOBAL_DAILY_CALLS` variables
 
 At Haiku 4.5 rates ($1/M in, $5/M out) with prompt caching on the system+tools prefix, a call
 runs roughly $0.03 for the first in a conversation and ~$0.007 after — so the default 100/day
 ceiling lands near **$0.80/day worst case**. Raise it only as far as you're willing to see on
-a bill. A visitor with their own key bypasses the proxy entirely: their choice of model, no cap,
-and no cost to you.
+a bill. A visitor with their own key bypasses the proxy entirely: their choice of model, no
+cap, and no cost to you.
 
 ## Contributing
 

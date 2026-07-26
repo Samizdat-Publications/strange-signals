@@ -1,14 +1,17 @@
-// Cloudflare Pages Function — POST /api/signal
+// Worker entry script for the static site. Routing is asset-first (see
+// wrangler.jsonc), so this only runs for paths with no matching file on disk —
+// in practice, POST /api/signal. Anything else that lands here is handed to the
+// static-asset binding so a stray path still gets the normal 404 page.
 //
-// Proxies SIGNAL Analyst requests to the Anthropic Messages API using the site's
-// own key, so a visitor can try the analyst without bringing their own. The
-// browser never sees the key.
+// /api/signal proxies SIGNAL Analyst requests to the Anthropic Messages API
+// using the site's own key, so a visitor can try the analyst without bringing
+// their own. The browser never sees the key.
 //
 // SPENDING IS DOUBLE OPT-IN AND OFF BY DEFAULT. This endpoint returns 503 and
-// costs nothing unless BOTH are configured in the Pages dashboard:
+// costs nothing unless BOTH exist:
 //
-//   1. ANTHROPIC_API_KEY   — an encrypted environment variable (secret)
-//   2. SIGNAL_QUOTA        — a KV namespace binding
+//   1. ANTHROPIC_API_KEY   — a secret (`wrangler secret put`)
+//   2. SIGNAL_QUOTA        — a KV binding declared in wrangler.jsonc
 //
 // The KV binding is deliberately mandatory. It is the only place a durable
 // counter can live, and without a durable counter the caps below are
@@ -57,9 +60,19 @@ async function bump(kv, key, limit, ttl) {
   return {ok: true, used: current + 1, limit};
 }
 
-// Single catch-all handler. Exporting both onRequest and onRequestPost is
-// ambiguous in Pages — onRequest wins for every method — so we branch here.
-export async function onRequest({request, env}) {
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    if (url.pathname !== '/api/signal') {
+      // Not ours. Hand back to static assets so unknown paths still 404 the
+      // way the rest of the site does.
+      return env.ASSETS.fetch(request);
+    }
+    return handleSignal(request, env);
+  }
+};
+
+async function handleSignal(request, env) {
   if (request.method !== 'POST') {
     return json(405, {error: {type: 'method_not_allowed', message: 'POST only.'}}, {allow: 'POST'});
   }
