@@ -3007,11 +3007,60 @@ async function mainThreadFallback(buffer,records,resolve){
 // Fetch one category's gzipped file and parse it in a worker. Returns the
 // records array. Throws on HTTP/parse failure so callers can decide whether
 // to recover (Promise.allSettled) or bail (Promise.all).
-async function fetchCategory(file){
+// Pass onProgress to read the body as a stream and report bytes as they land —
+// worth it only for the large UFO payload; the small files finish before a
+// counter would render.
+async function fetchCategory(file,onProgress){
   const resp=await fetch(file.url);
   if(!resp.ok)throw new Error(`${file.slug}: HTTP ${resp.status}`);
-  const buf=await resp.arrayBuffer();
-  return parseInWorker(buf);
+  if(!onProgress||!resp.body||typeof resp.body.getReader!=='function')
+    return parseInWorker(await resp.arrayBuffer());
+
+  // Content-Length is absent whenever a CDN re-encodes on the fly, so the
+  // readout degrades to "N MB received" rather than lying about a percentage.
+  const total=parseInt(resp.headers.get('content-length')||'0',10)||0;
+  const reader=resp.body.getReader();
+  const chunks=[];
+  let loaded=0;
+  for(;;){
+    const {done,value}=await reader.read();
+    if(done)break;
+    chunks.push(value);
+    loaded+=value.byteLength;
+    onProgress(loaded,total);
+  }
+  const merged=new Uint8Array(loaded);
+  let off=0;
+  for(let i=0;i<chunks.length;i++){merged.set(chunks[i],off);off+=chunks[i].byteLength}
+  return parseInWorker(merged.buffer);
+}
+
+/* ---------- Progressive-load readout ---------- */
+function showInbound(name){
+  const el=document.getElementById('map-inbound');
+  if(!el)return;
+  const n=document.getElementById('inb-name');
+  if(n&&name)n.textContent=name;
+  el.hidden=false;
+}
+function hideInbound(){
+  const el=document.getElementById('map-inbound');
+  if(el)el.hidden=true;
+}
+// Feeds both the loading screen's byte counter (pre-first-paint) and the
+// inbound readout (post-first-paint). Same numbers, two places to show them.
+function onInboundProgress(loaded,total){
+  // A CDN that re-encodes on the fly leaves Content-Length describing the
+  // *compressed* body while the reader hands us decoded bytes, so a total we
+  // have already overrun is not a total — fall back to a plain byte count
+  // rather than showing "42.6MB / 14.9MB".
+  const known=total>0&&loaded<=total;
+  setBytes(loaded,known?total:0);
+  const b=document.getElementById('inb-bytes');
+  const fill=document.getElementById('inb-fill');
+  const fmt=n=>n<1e6?(n/1e3).toFixed(0)+'KB':(n/1e6).toFixed(1)+'MB';
+  if(b)b.textContent=known?`${fmt(loaded)} / ${fmt(total)}`:`${fmt(loaded)} recv`;
+  if(fill)fill.style.width=known?(loaded/total*100).toFixed(1)+'%':'100%';
 }
 
 // Stale-while-revalidate cache for /data/* responses. After the first visit, cold loads
@@ -3023,24 +3072,73 @@ if('serviceWorker' in navigator){
   });
 }
 
+// Tear down the loading screen. Idempotent — the progressive first paint and
+// the full-dataset paint both call it.
+function dismissLoadingScreen(){
+  stopFlavorRotation();
+  const flavorEl=document.getElementById('loading-flavor');
+  if(flavorEl)flavorEl.textContent='';
+  const bytesEl=document.getElementById('loading-bytes');
+  if(bytesEl)bytesEl.textContent='';
+  const pf=document.getElementById('progress-fill');
+  if(pf){pf.style.animation='none';pf.style.width='100%';pf.style.transition='width 0.3s'}
+  setProgress(100,'Systems online');
+  const el=document.getElementById('loading');
+  if(el&&el.style.display!=='none')setTimeout(()=>{el.style.display='none'},600);
+}
+
 async function init(){
   loadState();
   setProgress(2,nextVerb()+'...');
   startFlavorRotation();
 
-  // Phase 1: Fetch + parse all 3 sighting categories in parallel, plus the
-  // small overlay JSONs. Each category gets its own Worker so parses don't
-  // serialize. If a category fetch fails, we keep going with the rest.
+  // Phase 1: fire every request at once. Each sighting category gets its own
+  // Worker so the parses don't serialize. Bigfoot + Haunted (0.5 MB combined)
+  // land in ~150ms while the 14 MB UFO payload is still streaming, so we paint
+  // those two first and let UFO fold in when it arrives.
+  const ufoP=fetchCategory(SIGHTING_FILES[0],onInboundProgress);
+  const bigfootP=fetchCategory(SIGHTING_FILES[1]);
+  const hauntedP=fetchCategory(SIGHTING_FILES[2]);
+  const popP=fetch('data/us_population_density.json').then(r=>r.json());
+  const milP=fetch('data/military_bases.json').then(r=>r.json());
+  // Both aggregates are constructed synchronously so every promise has a
+  // rejection handler attached before the first await — otherwise a failing
+  // UFO fetch would surface as an unhandled rejection.
+  const smallP=Promise.allSettled([bigfootP,hauntedP]);
+  const allP=Promise.allSettled([ufoP,bigfootP,hauntedP,popP,milP]);
+  let ufoSettled=false;
+  ufoP.then(()=>{ufoSettled=true},()=>{ufoSettled=true});
+
+  // Phase 2 (optional): progressive first paint. Only for the cheap views —
+  // hexbin/anomaly/correlation run heavy analysis that would be meaningless on
+  // 3% of the records and thrown away seconds later when UFO lands.
+  let painted=false;
+  if(currentView==='markers'||currentView==='heatmap'){
+    const small=await smallP;
+    if(!ufoSettled){
+      catArrays[1]=small[0].status==='fulfilled'?small[0].value:[];
+      catArrays[2]=small[1].status==='fulfilled'?small[1].value:[];
+      if(catArrays[1].length||catArrays[2].length){
+        allData=[...catArrays[1],...catArrays[2]];
+        dismissLoadingScreen();
+        showInbound(CAT_NAMES[0]);
+        setView(currentView);
+        // UFO is 96% of the corpus — showing "0" next to it while it is still
+        // in flight would read as "none found" rather than "not here yet".
+        const c0=document.getElementById('count-0');
+        if(c0)c0.textContent='···';
+        document.getElementById('stat-zoom').textContent=map.getZoom();
+        await yieldThread();
+        buildTimeline();
+        painted=true;
+      }
+    }
+  }
+
+  // Phase 3: full dataset.
   let total=0;
   try{
-    const settled=await Promise.allSettled([
-      fetchCategory(SIGHTING_FILES[0]),
-      fetchCategory(SIGHTING_FILES[1]),
-      fetchCategory(SIGHTING_FILES[2]),
-      fetch('data/us_population_density.json').then(r=>r.json()),
-      fetch('data/military_bases.json').then(r=>r.json())
-    ]);
-    const [ufoR,bigfootR,hauntedR,popResp,milResp]=settled;
+    const [ufoR,bigfootR,hauntedR,popResp,milResp]=await allP;
     catArrays[0]=ufoR.status==='fulfilled'?ufoR.value:[];
     catArrays[1]=bigfootR.status==='fulfilled'?bigfootR.value:[];
     catArrays[2]=hauntedR.status==='fulfilled'?hauntedR.value:[];
@@ -3053,10 +3151,12 @@ async function init(){
     else console.warn('Military bases data not available:',milResp.reason);
     total=catArrays[0].length+catArrays[1].length+catArrays[2].length;
   }catch(err){
+    hideInbound();
     setProgress(0,'Error loading data: '+err.message);
     stopFlavorRotation();
     return;
   }
+  hideInbound();
 
   if(!total){
     setProgress(0,'No valid records found in data');
@@ -3064,13 +3164,9 @@ async function init(){
     return;
   }
 
-  // Phase 2: Workers already decompressed, parsed, and validated.
-  // Build the combined array used by the rendering pipeline.
+  // Workers already decompressed, parsed, and validated. Build the combined
+  // array used by the rendering pipeline.
   allData=[...catArrays[0],...catArrays[1],...catArrays[2]];
-
-  // Clear the download counter — it's stale now
-  const bytesEl=document.getElementById('loading-bytes');
-  if(bytesEl)bytesEl.textContent='';
 
   document.getElementById('stat-total').textContent=total.toLocaleString();
   document.getElementById('stat-zoom').textContent=map.getZoom();
@@ -3080,23 +3176,17 @@ async function init(){
   const milToggle=document.getElementById('military-toggle');
   if(milToggle&&!militaryData)milToggle.disabled=true;
 
-  // Phase 3: Render — yield between each heavy step
-  setProgress(0,nextVerb()+'...');
+  // Phase 4: render — yield between each heavy step. On a progressive load
+  // this is the second pass; renderCurrentView() clears its layers first and
+  // buildTimeline() empties its SVG, so both are safe to repeat.
+  if(!painted)setProgress(0,nextVerb()+'...');
   await yieldThread();
   setView(currentView);
 
   await yieldThread();
   buildTimeline();
 
-  stopFlavorRotation();
-  const flavorEl=document.getElementById('loading-flavor');
-  if(flavorEl)flavorEl.textContent='';
-  if(bytesEl)bytesEl.textContent='';
-  const pf=document.getElementById('progress-fill');
-  if(pf){pf.style.animation='none';pf.style.width='100%';pf.style.transition='width 0.3s'}
-  setProgress(100,'Systems online');
-  setTimeout(()=>{document.getElementById('loading').style.display='none'},600);
-
+  if(!painted)dismissLoadingScreen();
   saveState();
 }
 

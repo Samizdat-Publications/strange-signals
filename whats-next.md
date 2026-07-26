@@ -1,3 +1,18 @@
+> **STATUS: RESOLVED 2026-07-25.** This is an archived session handoff from the
+> 2026-06-09 perf + branch-consolidation work. Every item in `<work_remaining>`
+> below has since shipped:
+>
+> - Branch consolidation, gzip, Service Worker, per-category split &mdash; merged (PRs #10&ndash;#13).
+> - NASA fireball investigation &mdash; done, surge claim refuted. See
+>   [docs/superpowers/specs/fireball-surge-brief.md](docs/superpowers/specs/fireball-surge-brief.md).
+> - Progressive rendering (follow-up #1) &mdash; shipped; the two small categories
+>   now paint at ~0.6s while the UFO payload streams, tracked by the INBOUND readout.
+> - UFO file chunking (follow-up #2) &mdash; **not needed.** Progressive paint removed
+>   the cold-load pain it was meant to address. Revisit only if that changes.
+> - Apache Arrow (follow-up #3) &mdash; still intentionally skipped.
+>
+> Kept for the engineering narrative. Nothing here is actionable.
+
 <original_task>
 The session opened with: "launch our uap correlation project and check to see if we have any outstanding tasks or items we need to work on. Lajujnch t he servers and lets see it in acftion."
 

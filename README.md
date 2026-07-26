@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Interactive Paranormal Sightings Correlation Map</strong><br>
-  258,000+ geocoded reports across UFO/UAP, Bigfoot, and Haunted Places — with spatial correlation analysis, 10+ overlay datasets, and an AI research assistant.
+  385,531 geocoded reports across UFO/UAP, Bigfoot, and Haunted Places — spanning 593 BC to the present, worldwide — with population-corrected anomaly detection, 12 overlay datasets, and an AI research assistant.
 </p>
 
 <p align="center">
@@ -23,7 +23,7 @@
 
 ## What is Strange Signals?
 
-Strange Signals is an interactive web-based map that visualizes and correlates 258,000+ paranormal sighting reports across the United States. It combines three categories of unexplained phenomena — UFO/UAP sightings, Bigfoot/Sasquatch encounters, and Haunted Places — and layers them with real-world data like military installations, restricted airspace, earthquake zones, cave systems, and more.
+Strange Signals is an interactive web-based map that visualizes and correlates 385,531 paranormal sighting reports, worldwide, from 593 BC to the present. It combines three categories of unexplained phenomena — UFO/UAP sightings, Bigfoot/Sasquatch encounters, and Haunted Places — and layers them with real-world data like military installations, restricted airspace, earthquake zones, cave systems, and more.
 
 The goal: **discover spatial and temporal patterns** hidden in the data. Do UFO sightings cluster near military bases? Do Bigfoot reports correlate with cave systems? Are paranormal hotspots near geomagnetically active zones? Strange Signals gives you the tools to explore these questions.
 
@@ -59,7 +59,7 @@ and the Puget Sound corridor light up; mere big cities don't.
 
 ### Overlay Datasets
 
-Toggle 10+ real-world reference layers to investigate correlations:
+Toggle 12 real-world reference layers to investigate correlations:
 
 | Category | Overlays |
 |----------|----------|
@@ -171,12 +171,16 @@ All map features work without an API key. To enable the AI assistant:
 
 ## Data Sources
 
-### Sighting Datasets (258K+ records)
+### Sighting Datasets (385,531 records)
+
+Totals after dedup and geocoding: **UFO/UAP 372,518 &bull; Bigfoot 4,237 &bull; Haunted Places 8,776**.
 
 | Dataset | Records | Source |
 |---------|---------|--------|
+| UFO/UAP (NUFORC via HuggingFace, geocoded) | ~109K | [geocode_nuforc_hf.py](geocode_nuforc_hf.py) — city-level gazetteer geocoding, worldwide |
 | UFO/UAP (NUFORC via TidyTuesday) | ~96K | [TidyTuesday 2023](https://github.com/rfordatascience/tidytuesday/tree/master/data/2023/2023-06-20) |
 | UFO/UAP (planetsig geocoded) | ~80K | [planetsig/ufo-reports](https://github.com/planetsig/ufo-reports) |
+| UFO/UAP (Larry Hatch \*U\* database) | ~18K | [RR0/uDb](https://github.com/RR0/uDb) — the historical catalog, 593 BC onward |
 | Bigfoot (BFRO detailed) | ~5K | [TidyTuesday 2022](https://github.com/rfordatascience/tidytuesday/tree/master/data/2022/2022-09-13) |
 | Bigfoot (BFRO locations) | ~4.2K | [Christopher1994-1/bigfoot-dataset-website](https://github.com/Christopher1994-1/bigfoot-dataset-website) |
 | Haunted Places (Shadowlands) | ~11K | [TidyTuesday 2023](https://github.com/rfordatascience/tidytuesday/tree/master/data/2023/2023-10-10) |
@@ -185,14 +189,18 @@ All map features work without an API key. To enable the AI assistant:
 
 | Dataset | Records | Description |
 |---------|---------|-------------|
-| Military / DOE Sites | 45 | Major military installations and DOE facilities |
+| Military / DOE Sites | 98 | Major military installations and DOE facilities |
 | Restricted Airspace | 105 | MOAs, prohibited zones, restricted areas with altitude data |
-| USGS Earthquakes | 20K | Significant US earthquakes with magnitude and depth |
+| Airports | 876 | US large + medium airports (OurAirports) — the strongest UAP confounder |
+| USGS Earthquakes | 20,000 | US M2.5+ earthquakes 2019–2025 with magnitude and depth |
 | US Cave Systems | 104 | Notable cave systems with type and length |
-| NASA Fireballs | 29 | Confirmed fireball/bolide events with energy and velocity |
+| NASA Fireballs | 877 | CNEOS located bolides, global 1988–present, with impact energy |
 | Cryptid Sightings | 105 | Non-Bigfoot cryptid reports (Mothman, Chupacabra, etc.) |
 | Missing 411 | 71 | Unexplained disappearances in wilderness areas |
 | Geomagnetic Storms | 92 | G3+ geomagnetic storms (temporal overlay on timeline) |
+| National Parks | 30 | Park boundaries |
+| Historic Sites (NRHP) | 30 | National Register of Historic Places entries |
+| Per Capita Grid | — | US census tract population density, for population-corrected views |
 
 ## Architecture
 
@@ -205,8 +213,9 @@ Strange Signals is a **zero-build static web app** — no webpack, no npm, no bu
 | [Leaflet](https://leafletjs.com/) | 1.9.4 | Map rendering, markers, popups |
 | [Leaflet MarkerCluster](https://github.com/Leaflet/Leaflet.markercluster) | 1.5.3 | Dynamic cluster visualization |
 | [leaflet-heat](https://github.com/Leaflet/Leaflet.heat) | 0.2.0 | Heatmap overlay |
-| [Turf.js](https://turfjs.org/) | 7 | Geospatial analysis (hex grid, point-in-polygon, distances) |
-| [D3.js](https://d3js.org/) | 7 | Timeline, correlation charts, SVG rendering |
+| [Turf.js](https://turfjs.org/) | 7.3.5 | Geospatial analysis (hex grid, point-in-polygon, distances) |
+| [D3.js](https://d3js.org/) | 7.9.0 | Timeline, correlation charts, SVG rendering |
+| [html2canvas](https://html2canvas.hertzen.com/) | 1.4.1 | PNG snapshot export and AI map captures |
 | [CARTO Dark Matter](https://carto.com/basemaps/) | — | Dark map tiles |
 
 ### File Structure
@@ -285,12 +294,42 @@ SIGNAL is an AI research assistant built directly into Strange Signals. It uses 
 | Key | Action |
 |-----|--------|
 | `1` `2` `3` | Toggle UFO / Bigfoot / Haunted layers |
-| `M` `H` `X` `C` | Switch view mode (Markers/Heat/Hex/Correlation) |
+| `M` `H` `X` `N` `C` | Switch view mode (Markers / Heat / Hex / Anomaly / Correlation) |
 | `I` | Open SIGNAL AI assistant |
+| `A` | Enter annotation mode |
 | `S` | Toggle sidebar |
 | `T` | Toggle timeline |
+| `F` | Fullscreen map (collapse sidebar + timeline) |
+| `R` | Reset map to US center |
+| `P` | Export PNG snapshot |
 | `/` | Focus search bar |
 | `?` | Show all shortcuts |
+| `Esc` | Close windows, else reset filters |
+
+## Deployment
+
+The app is a static site with no build step, so any static host works. It is deployed to
+**Cloudflare Pages** straight from this repo:
+
+| Setting | Value |
+|---------|-------|
+| Framework preset | None |
+| Build command | *(empty)* |
+| Build output directory | `/` |
+
+[`_headers`](_headers) at the repo root supplies the caching and security headers Pages
+applies at the edge — notably `no-cache` on `sw.js` (a cached Service Worker would pin
+users to a stale `CACHE_VERSION`) and a long `stale-while-revalidate` window on `/data/*`.
+The Content-Security-Policy travels in a `<meta>` tag in `index.html` instead, so it holds
+on any host including a bare `python -m http.server`.
+
+Two constraints worth knowing before you fork:
+
+- `data/sightings_ufo.json.gz` is **14.5 MB**, comfortably under the Cloudflare Pages
+  25 MiB per-file cap — but re-running the pipeline with more sources could push past it.
+  Split the file further (see `export_map_data.py`) if that happens.
+- No API keys or secrets are needed at deploy time. The SIGNAL AI assistant asks each
+  visitor for their own Anthropic key and keeps it in their browser's `localStorage`.
 
 ## Contributing
 

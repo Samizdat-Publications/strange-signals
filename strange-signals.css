@@ -710,6 +710,24 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 #sb-mode{color:var(--text)}
 #sb-engine.busy{color:var(--green);animation:engine-pulse 1s ease-in-out infinite}
 @keyframes engine-pulse{50%{opacity:0.45}}
+/* Progressive-load readout. Sits directly above the status bar so the two
+   read as one instrument stack. Only visible between first paint and the
+   moment the UFO payload finishes arriving. */
+#map-inbound{position:absolute;bottom:32px;left:10px;z-index:900;font-family:var(--font-mono);
+  font-size:9px;letter-spacing:1px;color:var(--text-dim);background:rgba(5,6,15,0.72);
+  border:1px solid var(--border);border-radius:3px;padding:4px 10px;display:flex;gap:8px;
+  align-items:center;font-variant-numeric:tabular-nums;pointer-events:none;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#map-inbound[hidden]{display:none}
+#map-inbound .inb-label{color:var(--green);animation:engine-pulse 1s ease-in-out infinite}
+#map-inbound .sb-sep{opacity:0.3}
+#inb-name{color:var(--text)}
+#inb-bytes{color:var(--text);min-width:76px}
+.inb-track{width:52px;height:2px;background:var(--border);border-radius:1px;overflow:hidden}
+.inb-fill{height:100%;width:0;background:var(--green);transition:width .2s linear}
+@media (max-width:768px){#map-inbound{display:none}}
+@media (prefers-reduced-motion:reduce){#map-inbound .inb-label{animation:none}}
+
 #map-container{overflow:hidden}
 #map-container.computing::after{content:'';position:absolute;left:-50%;top:-50%;width:200%;height:200%;
   z-index:850;pointer-events:none;
