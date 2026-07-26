@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**STRANGE SIGNALS** — An interactive paranormal-sightings correlation map visualizing **~385K geocoded records** across three categories (UFO/UAP, Bigfoot/Sasquatch, Haunted Places) with 12 toggleable overlay datasets and an in-browser **Signal Analyst** AI (Anthropic Messages API). Historical coverage spans **593 BC → present**, worldwide. Static HTML/CSS/JS — no build toolchain.
+**STRANGE SIGNALS** — An interactive paranormal-sightings correlation map visualizing **~385K geocoded records** across three categories (UFO/UAP, Bigfoot/Sasquatch, Haunted Places) with 12 toggleable overlay datasets and an in-browser **Signal Analyst** AI (Anthropic Messages API). Historical coverage spans **593 BC → present**, worldwide. Static HTML/CSS/JS — no build toolchain. Live at https://strange-signals.stewartgregerson.workers.dev/
 
 ## How to Run
 
