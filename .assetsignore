@@ -1,0 +1,39 @@
+# Files under the assets directory that must NOT be uploaded to Workers.
+#
+# wrangler uploads from the working directory, not from git — so anything a
+# local pipeline run leaves behind is a deploy candidate even when .gitignore
+# excludes it from the repo. A 33 MB geocoding intermediate sitting on disk is
+# what broke the first sharded deploy: Workers rejects any single asset over
+# 25 MiB, and the whole build fails rather than skipping the file.
+#
+# This also keeps the deployed site to actual web assets: the Python pipeline,
+# its inputs, and the generated workbook have no business being served.
+
+# Git internals. wrangler does NOT skip these automatically when the assets
+# directory is the repo root, and a single packfile is far over the 25 MiB
+# limit — this is what failed the CI build, since the runner checks out .git
+# too. Must be first.
+.git/
+
+# Pipeline intermediates (regenerated; never served)
+data/raw/
+data/geocode_cache/
+data/nuforc_hf_*.csv
+data/*.xlsx
+
+# Source pipeline + tooling
+*.py
+*.sh
+requirements.txt
+__pycache__/
+
+# Repo metadata and local tooling
+.claude/
+.wrangler/
+.playwright-mcp/
+.github/
+CONTRIBUTING.md
+CLAUDE.md
+.impeccable.md
+whats-next.md
+WISHLIST.md
