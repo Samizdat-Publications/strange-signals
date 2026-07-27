@@ -1,27 +1,47 @@
 <p align="center">
-  <img src="screenshots/hero-markers.png" alt="Strange Signals — Paranormal Sightings Correlation Map" width="100%">
+  <a href="https://strange-signals.stewartgregerson.workers.dev/"><img src="screenshots/hero-markers.png" alt="Strange Signals — Paranormal Sightings Correlation Map" width="100%"></a>
 </p>
 
 <h1 align="center">STRANGE SIGNALS</h1>
 
 <p align="center">
   <strong>Interactive Paranormal Sightings Correlation Map</strong><br>
-  385,531 geocoded reports across UFO/UAP, Bigfoot, and Haunted Places — spanning 593 BC to the present, worldwide — with population-corrected anomaly detection, 12 overlay datasets, and an AI research assistant.
+  385,531 geocoded reports across UFO/UAP, Bigfoot, and Haunted Places — spanning 593 BC to the
+  present, worldwide — with population-corrected anomaly detection, 12 overlay datasets, and an
+  AI research assistant.
 </p>
 
 <p align="center">
+  <a href="https://strange-signals.stewartgregerson.workers.dev/"><img src="https://img.shields.io/badge/https://strange-signals.stewartgregerson.workers.dev_DEMO-strange--signals-00ff88?style=for-the-badge&labelColor=05060f" alt="Live demo"></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/reports-385,531-informational?labelColor=05060f&color=8a9bac" alt="385,531 reports">
+  <img src="https://img.shields.io/badge/coverage-593_BC_→_present-informational?labelColor=05060f&color=8a9bac" alt="Coverage 593 BC to present">
+  <img src="https://img.shields.io/badge/overlays-12-informational?labelColor=05060f&color=8a9bac" alt="12 overlay datasets">
+  <img src="https://img.shields.io/badge/build-none_(zero_toolchain)-informational?labelColor=05060f&color=8a9bac" alt="No build step">
+  <img src="https://img.shields.io/badge/license-MIT-informational?labelColor=05060f&color=8a9bac" alt="MIT license">
+</p>
+
+<p align="center">
+  <a href="#what-is-strange-signals">About</a> &bull;
   <a href="#features">Features</a> &bull;
   <a href="#screenshots">Screenshots</a> &bull;
   <a href="#getting-started">Getting Started</a> &bull;
   <a href="#data-sources">Data Sources</a> &bull;
   <a href="#architecture">Architecture</a> &bull;
   <a href="#signal-ai">SIGNAL AI</a> &bull;
+  <a href="#keyboard-shortcuts">Shortcuts</a> &bull;
+  <a href="#deployment">Deployment</a> &bull;
+  <a href="#contributing">Contributing</a> &bull;
   <a href="#license">License</a>
 </p>
 
 ---
 
 ## What is Strange Signals?
+
+**[Open the live map →](https://strange-signals.stewartgregerson.workers.dev/)**
 
 Strange Signals is an interactive web-based map that visualizes and correlates 385,531 paranormal sighting reports, worldwide, from 593 BC to the present. It combines three categories of unexplained phenomena — UFO/UAP sightings, Bigfoot/Sasquatch encounters, and Haunted Places — and layers them with real-world data like military installations, restricted airspace, earthquake zones, cave systems, and more.
 

@@ -389,6 +389,14 @@
     object-position:top;
   }
 
+  /* Portrait captures (e.g. the full dossier) must not be cropped to 16/10 —
+     the panels the prose refers to live at the bottom of the frame. */
+  .shot--tall img{
+    aspect-ratio:auto;
+    object-fit:contain;
+    background:#0a0c18;
+  }
+
   .shot .cap{
     display:flex;
     justify-content:space-between;
@@ -644,7 +652,7 @@
            width="1200" height="750" loading="lazy" decoding="async">
       <figcaption class="cap"><span>Anomaly &mdash; 374 significant of 1,463 modeled</span><span class="ref">FRM&middot;01</span></figcaption>
     </figure>
-    <figure class="shot">
+    <figure class="shot shot--tall">
       <img src="https://strange-signals.stewartgregerson.workers.dev/screenshots/dossier-detail.png"
            alt="Deep dive dossier for Sedona, Arizona with matched controls and confounder ledger"
            width="900" height="1050" loading="lazy" decoding="async">
