@@ -18,7 +18,7 @@ python geocode_nuforc_hf.py --run     # OPTIONAL: geocode HuggingFace NUFORC (ad
 
 The HF NUFORC step is optional because its gazetteer download is slow and the app works fine at 276K records. Run it if you want worldwide city-level coverage.
 
-The pipeline writes **three per-category gzipped files** instead of one combined dataset: `data/sightings_ufo.json.gz` (~14 MB, ~372K records), `data/sightings_bigfoot.json.gz` (~150 KB, ~4K), `data/sightings_haunted.json.gz` (~300 KB, ~9K). The browser fetches all three in parallel and spawns a Worker per file so decompress + parse run truly in parallel on multi-core. A Service Worker (`sw.js`) caches the responses so repeat visits load from cache instantly.
+The pipeline writes **three per-category gzipped files** instead of one combined dataset: `data/sightings_ufo.json.gz` (~18 MB, ~372K records), `data/sightings_bigfoot.json.gz` (~150 KB, ~4K), `data/sightings_haunted.json.gz` (~300 KB, ~9K). The browser fetches all three in parallel and spawns a Worker per file so decompress + parse run truly in parallel on multi-core. A Service Worker (`sw.js`) caches the responses so repeat visits load from cache instantly.
 
 ### Development
 
@@ -68,7 +68,7 @@ DATA PIPELINE (Python 3)
   geocode_nuforc_hf.py        Standalone: HF NUFORC gazetteer geocoding (~109K records, optional)
 
   data/
-    sightings_ufo.json.gz      Generated: ~372K UFO/UAP records, ~14 MB gzipped (committed)
+    sightings_ufo.json.gz      Generated: ~372K UFO/UAP records, ~18 MB gzipped (committed)
     sightings_bigfoot.json.gz  Generated: ~4K Bigfoot records, ~150 KB gzipped (committed)
     sightings_haunted.json.gz  Generated: ~9K Haunted Place records, ~300 KB gzipped (committed)
     us_population_density.json Per-capita grid for population-adjusted correlation (committed)

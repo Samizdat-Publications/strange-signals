@@ -77,6 +77,16 @@ document.addEventListener('click',(e)=>{
   }
 });
 
+// Delegated handler for the popup's deep-dive button.
+document.addEventListener('click',(e)=>{
+  const btn=e.target.closest('[data-dossier-lat]');
+  if(!btn)return;
+  e.preventDefault();
+  if(!window.DeepDive)return;
+  map.closePopup();
+  window.DeepDive.run({lat:parseFloat(btn.dataset.dossierLat),lon:parseFloat(btn.dataset.dossierLon)});
+});
+
 // cockpit status bar: live cursor coordinates
 map.on('mousemove',e=>{
   const el=document.getElementById('sb-coords');
@@ -226,6 +236,11 @@ function makePopup(rec){
     }
   }
   h+=`<div class="popup-coords">${rec[F.LAT].toFixed(4)}, ${rec[F.LON].toFixed(4)}</div>`;
+  // Deep dive was previously reachable only by right-clicking the map, which is
+  // undiscoverable — close the window once and there was no way back. The label
+  // says "area" because the dossier is a 50km regional workup, so two sightings
+  // in the same town legitimately return the same report.
+  h+=`<button type="button" class="popup-dossier" data-dossier-lat="${rec[F.LAT]}" data-dossier-lon="${rec[F.LON]}">&#9678; DEEP DIVE THIS AREA <span class="popup-dossier-hint">50km radius</span></button>`;
   // proximity analysis (bounding-box pre-filter for performance)
   const radius=parseInt(document.getElementById('prox-radius').value);
   const radiusDeg=radius/111;
