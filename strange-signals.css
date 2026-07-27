@@ -354,6 +354,16 @@ select option{background:var(--surface-solid);color:var(--text)}
   background:none;border:0;padding:0;font-family:inherit;letter-spacing:0.4px}
 .popup-expand:hover{text-decoration:underline}
 .popup-expand:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:2px}
+/* Deep-dive launcher inside a sighting popup. Previously the dossier was
+   reachable only via right-click on the map, with no way back once closed. */
+.popup-dossier{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;
+  margin-top:8px;padding:6px 8px;background:rgba(0,255,136,0.08);
+  border:1px solid var(--border-bright);border-radius:3px;color:var(--green);
+  font-family:var(--font-display);font-size:9px;letter-spacing:1.2px;cursor:pointer;
+  transition:background .15s,border-color .15s}
+.popup-dossier:hover{background:rgba(0,255,136,0.16);border-color:var(--green)}
+.popup-dossier:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.popup-dossier-hint{color:var(--text-dim);letter-spacing:.5px;font-family:var(--font-mono);font-size:8px}
 .popup-coords{font-size:9px;color:var(--text-dim);margin-top:4px}
 .popup-prox{margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:10px}
 .popup-prox-title{font-family:var(--font-display);font-size:8px;letter-spacing:1.5px;color:var(--cyan);margin-bottom:3px}
