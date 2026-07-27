@@ -378,9 +378,10 @@ host including a bare `python -m http.server`.
 
 Two constraints worth knowing before you fork:
 
-- `data/sightings_ufo.json.gz` is **17.5 MB**, under the 25 MiB per-file cap but with less room
-  than it looks — restoring full descriptions grew it ~27%. Adding sources could push past the
-  cap; split the file further (see `export_map_data.py`) if that happens.
+- The UFO payload is **sharded into 3 files** (9.3, 10.3, 10.0 MB) because restoring full descriptions
+  pushed it past the 25 MiB per-asset cap. `export_map_data.py` shards automatically by
+  serialized byte weight and writes `data/sightings_manifest.json`; the browser reads that
+  manifest, so adding a shard needs no client change.
 - No secrets are needed to deploy. The SIGNAL Analyst asks each visitor for their own
   Anthropic key and keeps it in their browser's `localStorage`.
 

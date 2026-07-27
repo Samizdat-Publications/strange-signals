@@ -2,7 +2,7 @@
 // First visit: data fetched from network as normal, then cached.
 // Repeat visits: cached copy served instantly, network fetch in background updates the cache.
 // Bump CACHE_VERSION when the data file format changes (forces re-fetch on next activate).
-const CACHE_VERSION='strange-signals-data-v5';  // bump when /data/* content changes (v5: restored full descriptions)
+const CACHE_VERSION='strange-signals-data-v6';  // bump when /data/* content changes (v6: full pipeline rebuild, UFO sharded)
 
 // Cache same-origin requests under /data/ — the big sightings file plus the overlay JSONs.
 // Code (HTML/JS/CSS) is intentionally NOT cached so iteration during dev is normal.

@@ -10,6 +10,7 @@ Format: { categories: [...], fields: [...], data: [[lat,lon,cat,date,loc,sub,des
 
 import pandas as pd
 import gzip
+import math
 import json
 import os
 import sys
@@ -18,6 +19,12 @@ WORKBOOK = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                         "data", "paranormal_sightings_consolidated.xlsx")
 OUTPUT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                       "data", "sightings_map_data.json")
+
+# Static hosts cap individual assets at 25 MiB (Cloudflare, GitHub Pages).
+# Split below that for headroom, and aim each shard well under the cap so
+# future growth does not immediately breach it again.
+SHARD_LIMIT_MB = 20.0
+SHARD_TARGET_MB = 12.0
 
 
 def main():
@@ -90,21 +97,74 @@ def main():
     print(f"  Exported {len(records):,} records, splitting by category:")
     total_raw = 0
     total_gz = 0
-    for idx, slug in enumerate(cat_slug):
+    manifest = []
+
+    def write_shard(slug, idx, rows, part=None):
+        """Write one .json.gz and return its gzipped size in MB."""
         out = {
             "category": categories_full[idx],
             "fields": fields,
-            "data": cat_records[idx],
+            "data": rows,
         }
         payload = json.dumps(out, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
-        gz_path = os.path.join(base_dir, f"sightings_{slug}.json.gz")
+        name = f"sightings_{slug}.json.gz" if part is None else f"sightings_{slug}_{part}.json.gz"
+        gz_path = os.path.join(base_dir, name)
         with gzip.open(gz_path, "wb", compresslevel=9) as f:
             f.write(payload)
         raw_mb = len(payload) / (1024 * 1024)
         gz_mb = os.path.getsize(gz_path) / (1024 * 1024)
-        total_raw += raw_mb
-        total_gz += gz_mb
-        print(f"    {os.path.basename(gz_path):<32s} {len(cat_records[idx]):>8,} rec  raw {raw_mb:5.1f} MB  gz {gz_mb:5.1f} MB")
+        print(f"    {name:<34s} {len(rows):>8,} rec  raw {raw_mb:5.1f} MB  gz {gz_mb:5.1f} MB")
+        manifest.append(name)
+        return raw_mb, gz_mb
+
+    for idx, slug in enumerate(cat_slug):
+        rows = cat_records[idx]
+        # Probe the single-file size first. Cloudflare (and most static hosts)
+        # cap individual assets at 25 MiB; restoring full descriptions pushed
+        # the UFO payload past that, so any category that would breach the cap
+        # is split into equal shards rather than silently failing to deploy.
+        probe = json.dumps(
+            {"category": categories_full[idx], "fields": fields, "data": rows},
+            separators=(",", ":"), ensure_ascii=False,
+        ).encode("utf-8")
+        est_gz = len(gzip.compress(probe, 9)) / (1024 * 1024)
+
+        if est_gz <= SHARD_LIMIT_MB or not rows:
+            raw_mb, gz_mb = write_shard(slug, idx, rows)
+            total_raw += raw_mb
+            total_gz += gz_mb
+        else:
+            n = math.ceil(est_gz / SHARD_TARGET_MB)
+            print(f"    {slug}: {est_gz:.1f} MB exceeds the {SHARD_LIMIT_MB} MB cap -> {n} shards")
+            # Partition by serialized byte weight, not record count. Description
+            # lengths vary hugely by source (HF NUFORC records are far longer and
+            # sort to the end), so equal record counts produce wildly unequal
+            # files — one shard came out 3x the size of another.
+            weights = [len(json.dumps(r, separators=(",", ":"), ensure_ascii=False)) for r in rows]
+            budget = sum(weights) / n
+            groups, cur, cur_w = [], [], 0
+            for r, w in zip(rows, weights):
+                cur.append(r)
+                cur_w += w
+                if cur_w >= budget and len(groups) < n - 1:
+                    groups.append(cur)
+                    cur, cur_w = [], 0
+            groups.append(cur)
+            for p, g in enumerate(groups):
+                raw_mb, gz_mb = write_shard(slug, idx, g, part=p + 1)
+                total_raw += raw_mb
+                total_gz += gz_mb
+            # Drop a stale single-file version so the browser can't load both.
+            legacy_single = os.path.join(base_dir, f"sightings_{slug}.json.gz")
+            if os.path.exists(legacy_single):
+                os.remove(legacy_single)
+
+    # The browser reads this to discover how many shards exist, so adding or
+    # removing one never requires a matching edit in strange-signals.js.
+    manifest_path = os.path.join(base_dir, "sightings_manifest.json")
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump({"files": manifest}, f, indent=2)
+    print(f"    sightings_manifest.json            {len(manifest)} file(s)")
 
     # Remove any legacy combined files (uncompressed or gzipped).
     for legacy in (OUTPUT, OUTPUT + ".gz"):

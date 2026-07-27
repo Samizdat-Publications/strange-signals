@@ -432,13 +432,33 @@ def build_combined(ufo_nuforc, ufo_planetsig, bigfoot_det, bigfoot_loc, haunted,
     combined = pd.concat(frames, ignore_index=True)
     print(f"         {len(combined):,} total records")
 
-    # Deduplicate: same category + lat + lon + date
+    # Deduplicate: same category + lat + lon + date.
+    #
+    # `keep="first"` alone keeps whichever source happens to be concatenated
+    # first, regardless of how good its text is. Several sources ship a
+    # pre-truncated excerpt — CORGIS has a column literally named
+    # "Data.Description excerpt", capped at 60 characters — so the naive order
+    # let those excerpts beat the full reports on every duplicate. That is what
+    # flattened the whole dataset to 60 chars and, downstream, silently
+    # disabled the popup's "Show more" control (it only renders above 200).
+    #
+    # Sort the longest description to the front of each duplicate group first,
+    # so "first" means "most complete" rather than "loaded earliest". mergesort
+    # is stable, so equal-length rows keep the original source precedence, and
+    # the original row order is restored afterwards.
     before = len(combined)
+    combined["_desc_len"] = combined["description"].fillna("").astype(str).str.len()
+    combined["_orig_order"] = range(len(combined))
+    combined = combined.sort_values("_desc_len", ascending=False, kind="mergesort")
     combined = combined.drop_duplicates(
         subset=["category", "latitude", "longitude", "date"], keep="first"
     )
+    combined = combined.sort_values("_orig_order", kind="mergesort")
+    combined = combined.drop(columns=["_desc_len", "_orig_order"])
     if len(combined) < before:
         print(f"         Removed {before - len(combined):,} duplicates -> {len(combined):,} unique")
+        avg = combined["description"].fillna("").astype(str).str.len().mean()
+        print(f"         Kept the longest description per duplicate (mean {avg:.0f} chars)")
 
     return combined
 

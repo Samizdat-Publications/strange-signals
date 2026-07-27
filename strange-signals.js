@@ -2944,15 +2944,39 @@ document.getElementById('shortcuts-close').addEventListener('click',()=>{
 /* ========== DATA LOADING ========== */
 function yieldThread(){return new Promise(r=>setTimeout(r,0))}
 
-// Per-category data files. Browser fetches all three in parallel; the small
-// ones (Bigfoot, Haunted) finish near-instantly while UFO downloads. Each
-// gets its own DecompressionStream + JSON.parse in its own Worker, so on a
-// multi-core machine the parses run truly in parallel.
-const SIGHTING_FILES=[
-  {slug:'ufo',     url:'data/sightings_ufo.json.gz'},
-  {slug:'bigfoot', url:'data/sightings_bigfoot.json.gz'},
-  {slug:'haunted', url:'data/sightings_haunted.json.gz'}
+// Per-category data files, discovered from data/sightings_manifest.json.
+// Each file gets its own DecompressionStream + JSON.parse in its own Worker,
+// so on a multi-core machine the parses run truly in parallel. The small
+// categories (Bigfoot, Haunted) finish near-instantly while UFO downloads.
+//
+// UFO is sharded because restoring full descriptions pushed it past the 25 MiB
+// per-asset cap most static hosts enforce. The manifest exists so adding or
+// removing a shard is a pipeline concern only — no matching edit needed here.
+const FALLBACK_FILES=[
+  'sightings_ufo.json.gz','sightings_bigfoot.json.gz','sightings_haunted.json.gz'
 ];
+function slugOf(name){
+  const m=name.match(/^sightings_([a-z]+?)(?:_\d+)?\.json\.gz$/);
+  return m?m[1]:null;
+}
+async function loadManifest(){
+  let names=FALLBACK_FILES;
+  try{
+    const r=await fetch('data/sightings_manifest.json');
+    if(r.ok){
+      const j=await r.json();
+      if(Array.isArray(j.files)&&j.files.length)names=j.files;
+    }
+  }catch(e){/* pre-manifest deploy — fall back to the original three */}
+  // Group shards by category so a category resolves only once all its shards
+  // have landed.
+  const bySlug={ufo:[],bigfoot:[],haunted:[]};
+  names.forEach(n=>{
+    const s=slugOf(n);
+    if(s&&bySlug[s])bySlug[s].push({slug:s,url:'data/'+n});
+  });
+  return bySlug;
+}
 
 // Parse, validate, and filter ONE category's payload in a Web Worker.
 // Worker streams results back in small batches so structured clone never
@@ -3042,7 +3066,7 @@ async function fetchCategory(file,onProgress){
     if(done)break;
     chunks.push(value);
     loaded+=value.byteLength;
-    onProgress(loaded,total);
+    onProgress(loaded,total,file.url);
   }
   const merged=new Uint8Array(loaded);
   let off=0;
@@ -3111,9 +3135,23 @@ async function init(){
   // Worker so the parses don't serialize. Bigfoot + Haunted (0.5 MB combined)
   // land in ~150ms while the 14 MB UFO payload is still streaming, so we paint
   // those two first and let UFO fold in when it arrives.
-  const ufoP=fetchCategory(SIGHTING_FILES[0],onInboundProgress);
-  const bigfootP=fetchCategory(SIGHTING_FILES[1]);
-  const hauntedP=fetchCategory(SIGHTING_FILES[2]);
+  // Manifest tells us how many shards each category has. Fetch every shard in
+  // parallel; a category resolves once all of its shards are parsed.
+  const files=await loadManifest();
+  const fetchAll=(list,onProg)=>list.length
+    ? Promise.all(list.map(f=>fetchCategory(f,onProg))).then(parts=>parts.flat())
+    : Promise.resolve([]);
+  // Byte counter has to sum across shards, not reset per shard.
+  const ufoBytes=new Map();
+  const ufoProgress=(loaded,total,url)=>{
+    ufoBytes.set(url,[loaded,total]);
+    let l=0,t=0,allKnown=true;
+    ufoBytes.forEach(([a,b])=>{l+=a; if(b>0)t+=b; else allKnown=false;});
+    onInboundProgress(l,allKnown?t:0);
+  };
+  const ufoP=fetchAll(files.ufo,ufoProgress);
+  const bigfootP=fetchAll(files.bigfoot);
+  const hauntedP=fetchAll(files.haunted);
   const popP=fetch('data/us_population_density.json').then(r=>r.json());
   const milP=fetch('data/military_bases.json').then(r=>r.json());
   // Both aggregates are constructed synchronously so every promise has a
@@ -3157,8 +3195,9 @@ async function init(){
     catArrays[0]=ufoR.status==='fulfilled'?ufoR.value:[];
     catArrays[1]=bigfootR.status==='fulfilled'?bigfootR.value:[];
     catArrays[2]=hauntedR.status==='fulfilled'?hauntedR.value:[];
-    [ufoR,bigfootR,hauntedR].forEach((r,i)=>{
-      if(r.status==='rejected')console.warn(`Category ${SIGHTING_FILES[i].slug} failed:`,r.reason);
+    ['ufo','bigfoot','haunted'].forEach((slug,i)=>{
+      const r=[ufoR,bigfootR,hauntedR][i];
+      if(r.status==='rejected')console.warn(`Category ${slug} failed:`,r.reason);
     });
     if(popResp.status==='fulfilled')popDensityGrid=popResp.value;
     else console.warn('Population density data not available:',popResp.reason);
