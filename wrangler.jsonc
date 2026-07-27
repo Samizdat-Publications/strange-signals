@@ -15,24 +15,18 @@
   "main": "worker.js",
   "compatibility_flags": [
     "nodejs_compat"
-  ]
+  ],
 
-  // ---------------------------------------------------------------------
-  // To switch the shared SIGNAL Analyst on (see README -> Deployment), BOTH
-  // of the following are required. It stays inert and free until then.
+  // Daily-counter store for the shared SIGNAL Analyst. Bindings have to be
+  // declared HERE rather than added in the dashboard: deploys run
+  // `wrangler deploy`, which treats this file as the source of truth and can
+  // drop bindings that exist only in the dashboard.
   //
-  //   1. The secret. Set it once, out of band -- never in this file:
-  //        npx wrangler secret put ANTHROPIC_API_KEY
-  //
-  //   2. The quota store. Create it, then uncomment the block below using the
-  //      id wrangler prints. Deploys run `wrangler deploy`, which treats this
-  //      file as the source of truth for bindings -- a KV namespace added only
-  //      in the dashboard can be dropped on the next deploy, so it has to be
-  //      declared here.
-  //        npx wrangler kv namespace create SIGNAL_QUOTA
-  //
-  // "kv_namespaces": [
-  //   { "binding": "SIGNAL_QUOTA", "id": "<paste the id wrangler prints>" }
-  // ]
-  // ---------------------------------------------------------------------
+  // This is half of the analyst's two-part opt-in. The other half is the
+  // secret, which never appears in this file and is set out of band with:
+  //   npx wrangler secret put ANTHROPIC_API_KEY
+  // Until that secret exists, /api/signal returns 503 and costs nothing.
+  "kv_namespaces": [
+    { "binding": "SIGNAL_QUOTA", "id": "06bebf3f23284a72998a567f9ad9a461" }
+  ]
 }
