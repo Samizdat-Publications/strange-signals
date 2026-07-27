@@ -301,6 +301,16 @@
     text-transform:uppercase;
   }
 
+  .sec-lede{
+    max-width:70ch;
+    margin:0 0 28px;
+    font-size:0.92rem;
+    line-height:1.75;
+    color:var(--text-dim);
+  }
+  .sec-lede em{color:var(--text);font-style:italic}
+  .sec-lede strong{color:var(--green);font-weight:600}
+
   .sec-head .meta{
     margin-left:auto;
     font-size:0.65rem;
@@ -593,12 +603,12 @@
 <header class="hero">
   <div class="callsign">Samizdat Publications &nbsp;/&nbsp; Console 01</div>
   <h1 class="logo">Strange Signals</h1>
-  <p class="tagline">A listening post for the unexplained. <em>385,531</em> geocoded reports of UFO, Bigfoot, and haunted locations &mdash; cross-indexed against military installations, restricted airspace, earthquakes, caves, fireballs, and geomagnetic storms. Instrument-grade correlation tooling for the curious.</p>
+  <p class="tagline">A listening post for the unexplained. <em>385,531</em> geocoded reports of UFO, Bigfoot, and haunted locations &mdash; cross-indexed against military installations, restricted airspace, earthquakes, caves, fireballs, and geomagnetic storms. A Poisson engine models what each area <em>should</em> report from census population and regional reporting rate, then flags only the cells that beat it. Instrument-grade correlation tooling for the curious.</p>
 
   <div class="readout" aria-label="Dataset readout">
     <div class="cell"><span class="k">Reports</span><span class="v">385,531</span></div>
     <div class="cell"><span class="k">Phenomena</span><span class="v">3</span></div>
-    <div class="cell"><span class="k">Overlays</span><span class="v">10</span></div>
+    <div class="cell"><span class="k">Overlays</span><span class="v">12</span></div>
     <div class="cell"><span class="k">Modes</span><span class="v">5</span></div>
   </div>
 
@@ -616,11 +626,43 @@
        fetchpriority="high">
 </header>
 
-<section id="modes">
+<section id="engine">
   <div class="sec-head">
     <span class="id">SEC&middot;01</span>
+    <h2>The Signal Engine</h2>
+    <span class="meta">374 significant cells</span>
+  </div>
+  <p class="sec-lede">Raw sighting counts mostly tell you where people live. The Signal Engine models
+  the <em>expected</em> count for every cell from census population and regional reporting culture, then
+  flags only what statistically exceeds that baseline &mdash; Poisson test, Benjamini&ndash;Hochberg FDR
+  at q&lt;0.05, rate ratio at least 1.5&times;, Getis-Ord Gi* spatial coherence. Sedona, Mt. Shasta and the
+  Puget Sound corridor light up. Mere big cities do not.</p>
+  <div class="gallery">
+    <figure class="shot">
+      <img src="https://strange-signals.stewartgregerson.workers.dev/screenshots/anomaly-view.png"
+           alt="Anomaly view showing 374 statistically significant cells out of 1,463 modeled"
+           width="1200" height="750" loading="lazy" decoding="async">
+      <figcaption class="cap"><span>Anomaly &mdash; 374 significant of 1,463 modeled</span><span class="ref">FRM&middot;01</span></figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="https://strange-signals.stewartgregerson.workers.dev/screenshots/dossier-detail.png"
+           alt="Deep dive dossier for Sedona, Arizona with matched controls and confounder ledger"
+           width="900" height="1050" loading="lazy" decoding="async">
+      <figcaption class="cap"><span>Deep Dive &mdash; Sedona, 7.28&times; its population baseline</span><span class="ref">FRM&middot;02</span></figcaption>
+    </figure>
+  </div>
+  <p class="sec-lede">Right-click anywhere for a full regional workup. Sedona returns 699 observed
+  against 384.1 expected at p&lt;0.001 &mdash; and then the dossier argues against itself: a
+  <strong>matched-control</strong> panel benchmarks the area against 30 same-population US locations, and a
+  <strong>confounder ledger</strong> flags Flagstaff Pulliam Airport 31&nbsp;km away, because aircraft landing
+  lights are the most common source of misidentified UAP reports.</p>
+</section>
+
+<section id="modes">
+  <div class="sec-head">
+    <span class="id">SEC&middot;02</span>
     <h2>Visualization Modes</h2>
-    <span class="meta">4 panels</span>
+    <span class="meta">5 panels</span>
   </div>
   <div class="modes">
     <div class="mode">
@@ -636,7 +678,11 @@
       <p>Hexagonal binning with viridis color scale. Click any hex for deep analysis: category breakdown, temporal distribution, subcategory tags, and density statistics.</p>
     </div>
     <div class="mode">
-      <span class="label"><span class="idx">04</span>Correlation Suite</span>
+      <span class="label"><span class="idx">04</span>Anomaly</span>
+      <p>Signal Engine output. Significant cells glow green&rarr;amber by Anomaly Index; significant <em>deficits</em> show blue; everything within expectation stays dark. Click any cell for the full breakdown.</p>
+    </div>
+    <div class="mode">
+      <span class="label"><span class="idx">05</span>Correlation Suite</span>
       <p>Five sub-modes: spatial Pearson, all-pairs matrix, temporal rolling window, BFS cluster detection, and nearest-neighbor distance analysis.</p>
     </div>
   </div>
@@ -644,53 +690,53 @@
 
 <section id="gallery">
   <div class="sec-head">
-    <span class="id">SEC&middot;02</span>
+    <span class="id">SEC&middot;03</span>
     <h2>Field Captures</h2>
-    <span class="meta">6 frames</span>
+    <span class="meta">frames 03&ndash;08</span>
   </div>
   <div class="gallery">
     <figure class="shot">
       <img src="https://strange-signals.stewartgregerson.workers.dev/screenshots/heatmap-us.png"
            alt="National heatmap of sighting density across the continental US"
            width="1200" height="750" loading="lazy" decoding="async">
-      <figcaption class="cap"><span>Heatmap &mdash; national sighting density</span><span class="ref">FRM&middot;01</span></figcaption>
+      <figcaption class="cap"><span>Heatmap &mdash; national sighting density</span><span class="ref">FRM&middot;03</span></figcaption>
     </figure>
     <figure class="shot">
       <img src="https://strange-signals.stewartgregerson.workers.dev/screenshots/hex-detail-panel.png"
            alt="Hex detail panel analyzing 3,536 Seattle sightings"
            width="1200" height="750" loading="lazy" decoding="async">
-      <figcaption class="cap"><span>Hex Detail &mdash; 3,536 sightings, Seattle</span><span class="ref">FRM&middot;02</span></figcaption>
+      <figcaption class="cap"><span>Hex Detail &mdash; 3,536 sightings, Seattle</span><span class="ref">FRM&middot;04</span></figcaption>
     </figure>
     <figure class="shot">
       <img src="https://strange-signals.stewartgregerson.workers.dev/screenshots/correlation-matrix.png"
            alt="Correlation matrix showing all pairwise phenomenon correlations"
            width="1200" height="750" loading="lazy" decoding="async">
-      <figcaption class="cap"><span>Correlation Matrix &mdash; all pairs</span><span class="ref">FRM&middot;03</span></figcaption>
+      <figcaption class="cap"><span>Correlation Matrix &mdash; all pairs</span><span class="ref">FRM&middot;05</span></figcaption>
     </figure>
     <figure class="shot">
       <img src="https://strange-signals.stewartgregerson.workers.dev/screenshots/signal-ai-panel.png"
            alt="Signal AI research assistant panel in conversation"
            width="1200" height="750" loading="lazy" decoding="async">
-      <figcaption class="cap"><span>Signal AI &mdash; research assistant</span><span class="ref">FRM&middot;04</span></figcaption>
+      <figcaption class="cap"><span>Signal AI &mdash; research assistant</span><span class="ref">FRM&middot;06</span></figcaption>
     </figure>
     <figure class="shot">
       <img src="https://strange-signals.stewartgregerson.workers.dev/screenshots/overlays-military-airspace.png"
            alt="Military installation and restricted airspace overlays"
            width="1200" height="750" loading="lazy" decoding="async">
-      <figcaption class="cap"><span>Overlays &mdash; military &amp; restricted airspace</span><span class="ref">FRM&middot;05</span></figcaption>
+      <figcaption class="cap"><span>Overlays &mdash; military &amp; restricted airspace</span><span class="ref">FRM&middot;07</span></figcaption>
     </figure>
     <figure class="shot">
       <img src="https://strange-signals.stewartgregerson.workers.dev/screenshots/temporal-correlation.png"
            alt="Temporal rolling correlation chart with seasonal pattern analysis"
            width="1200" height="750" loading="lazy" decoding="async">
-      <figcaption class="cap"><span>Temporal &mdash; rolling correlation</span><span class="ref">FRM&middot;06</span></figcaption>
+      <figcaption class="cap"><span>Temporal &mdash; rolling correlation</span><span class="ref">FRM&middot;08</span></figcaption>
     </figure>
   </div>
 </section>
 
 <section id="overlays">
   <div class="sec-head">
-    <span class="id">SEC&middot;03</span>
+    <span class="id">SEC&middot;04</span>
     <h2>Overlay Datasets</h2>
     <span class="meta">8 sources shown</span>
   </div>
@@ -715,7 +761,7 @@
 
 <section id="ai">
   <div class="sec-head">
-    <span class="id">SEC&middot;04</span>
+    <span class="id">SEC&middot;05</span>
     <h2>Signal AI</h2>
     <span class="meta">Claude-powered</span>
   </div>
