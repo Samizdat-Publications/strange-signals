@@ -37,3 +37,9 @@ CLAUDE.md
 .impeccable.md
 whats-next.md
 WISHLIST.md
+
+# Landing page (deployed separately to Cloudflare Pages) and its Pages function: not part of the app worker
+site/
+site-dist/
+functions/
+showcase.json

@@ -41,7 +41,7 @@
 
 ## What is Strange Signals?
 
-**[Open the live map →](https://strange-signals.stewartgregerson.workers.dev/)**
+**[Open the live map →](https://strange-signals.stewartgregerson.workers.dev/)** &bull; **[Landing page →](https://strange-signals.pages.dev)**
 
 Strange Signals is an interactive web-based map that visualizes and correlates 385,531 paranormal sighting reports, worldwide, from 593 BC to the present. It combines three categories of unexplained phenomena — UFO/UAP sightings, Bigfoot/Sasquatch encounters, and Haunted Places — and layers them with real-world data like military installations, restricted airspace, earthquake zones, cave systems, and more.
 

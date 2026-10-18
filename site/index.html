@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strange Signals: 385,531 paranormal reports on one map</title>
+<meta name="description" content="An interactive map of 385,531 UFO, Bigfoot and haunted-place reports, with a statistical engine that corrects for population so only the real hot spots light up.">
+<meta name="theme-color" content="#05060f">
+<meta property="og:title" content="Strange Signals">
+<meta property="og:description" content="Every major paranormal dataset plotted on one map, 385,531 reports, with a math engine that separates the signal from the noise.">
+<meta property="og:image" content="https://strange-signals.pages.dev/media/og.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2305060f'/%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%2300ff88' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='8' fill='none' stroke='%2300d4ff' stroke-width='1.5' stroke-dasharray='3 3'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%2300ff88'/%3E%3C/svg%3E">
+<link rel="preload" href="fonts/Orbitron.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SpaceMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<a class="skip" href="#engine">Skip to the engine</a>
+
+<header class="bar">
+  <a class="bar-mark" href="#top" aria-label="Strange Signals, back to the top">
+    <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle class="r1" cx="16" cy="16" r="14"/><circle class="r2" cx="16" cy="16" r="9"/><circle class="dot" cx="16" cy="16" r="2.4"/></svg>
+    <span>STRANGE <b>SIGNALS</b></span>
+  </a>
+  <nav class="bar-links" aria-label="Sections">
+    <a href="#engine">The engine</a>
+    <a href="#dossier">Deep dive</a>
+    <a href="#overlays">Overlays</a>
+    <a href="#analyst">Analyst</a>
+    <a href="#making">How it was made</a>
+  </nav>
+  <a class="btn btn-small" href="https://strange-signals.stewartgregerson.workers.dev/">Open the map</a>
+</header>
+
+<main>
+
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <video class="hero-video" id="hero-video" muted loop playsinline autoplay preload="auto" poster="media/hero.jpg" aria-label="The map starts as clustered markers, turns into a population-driven heat blob, then a hex grid, and finally the Anomaly view where only the cells that beat the population baseline stay lit.">
+    <source src="media/hero.mp4" type="video/mp4">
+  </video>
+  <div class="hero-shade"></div>
+  <div class="hero-text">
+    <p class="pill"><span class="pill-dot"></span>In development, live now</p>
+    <h1 id="hero-title">STRANGE <b>SIGNALS</b></h1>
+    <p class="tagline">Every major paranormal dataset plotted on one map, 385,531 reports, with a math engine that separates the signal from the noise.</p>
+    <div class="cta">
+      <a class="btn" href="https://strange-signals.stewartgregerson.workers.dev/">Open the live map</a>
+      <a class="btn btn-ghost" href="https://github.com/Samizdat-Publications/strange-signals">Source on GitHub</a>
+    </div>
+    <p class="hero-note">Runs in a desktop browser with nothing to install. The first visit loads about 30 MB of data, then your browser keeps it.</p>
+  </div>
+  <a class="scroll-cue" href="#numbers" aria-label="Scroll down">SCAN DOWN</a>
+</section>
+
+<section class="numbers" id="numbers" aria-label="The dataset in numbers">
+  <div class="num"><span class="n" data-count="385531">385,531</span><span class="l">geocoded reports</span></div>
+  <div class="num"><span class="n" data-count="372518">372,518</span><span class="l">UFO / UAP</span></div>
+  <div class="num"><span class="n" data-count="8776">8,776</span><span class="l">haunted places</span></div>
+  <div class="num"><span class="n" data-count="4237">4,237</span><span class="l">Bigfoot</span></div>
+  <div class="num"><span class="n" data-count="12">12</span><span class="l">overlay layers</span></div>
+  <div class="num"><span class="n">593 BC</span><span class="l">to the present</span></div>
+</section>
+
+<section class="feature" id="engine" aria-labelledby="engine-title">
+  <div class="feature-text">
+    <p class="kicker">01 / THE PROBLEM</p>
+    <h2 id="engine-title">Raw counts mostly tell you where people live</h2>
+    <p>Plot every report and you get a population map. The Signal Engine builds an expected count for each hex cell from census population and the region's reporting rate, then tests the real count against it.</p>
+    <p>A cell stays lit only if it beats that baseline: a Poisson test, Benjamini-Hochberg false-discovery control at q below 0.05, and a rate ratio of at least 1.5. Cells with significantly fewer reports than expected show in blue. Big cities alone do not light up.</p>
+  </div>
+  <div class="pair">
+    <figure class="screen">
+      <span class="screen-tag">HEATMAP: RAW DENSITY</span>
+      <img src="media/shot-heatmap.jpg" alt="The Heatmap view: a solid purple and green blob that follows where people live." loading="lazy" width="1280" height="720">
+    </figure>
+    <figure class="screen lit">
+      <span class="screen-tag">ANOMALY: AFTER THE CORRECTION</span>
+      <img src="media/shot-anomaly.jpg" alt="The Anomaly view: a hex grid where only the cells above the population baseline glow green to amber." loading="lazy" width="1280" height="720">
+    </figure>
+  </div>
+</section>
+
+<section class="feature flip" id="dossier" aria-labelledby="dossier-title">
+  <div class="feature-text">
+    <p class="kicker">02 / DEEP DIVE</p>
+    <h2 id="dossier-title">Right-click anywhere for a dossier</h2>
+    <p>Pick a point and the app runs a 50 km survey around it: an anomaly verdict, per-category rate ratios, space-time flap episodes, seasonality against the national pattern, and a report you can export as a standalone HTML file.</p>
+    <p>Sedona, Arizona logs 699 reports against 384.1 expected, 7.28 times its population baseline (p below 0.001). The dossier then argues against itself, listing nearby airports and other overlays that could explain the number.</p>
+  </div>
+  <figure class="screen">
+    <span class="screen-tag">DOSSIER: SEDONA, AZ</span>
+    <video data-inview muted loop playsinline preload="none" poster="media/dossier.jpg" aria-label="The map flies to Arizona in the Anomaly view, a right-click opens the deep dive menu, and the Sedona dossier fills with its verdict, composition and timeline.">
+      <source src="media/dossier.mp4" type="video/mp4">
+    </video>
+  </figure>
+</section>
+
+<section class="feature" id="overlays" aria-labelledby="overlays-title">
+  <div class="feature-text">
+    <p class="kicker">03 / THE BORING EXPLANATIONS</p>
+    <h2 id="overlays-title">Rule out the obvious first</h2>
+    <p>Twelve overlay layers sit on the same map: military and DOE sites, restricted airspace, airports, national parks, earthquakes, caves, NASA fireballs, cryptid sightings, Missing 411 cases, historic sites, geomagnetic storms and a per-capita heatmap.</p>
+    <p>Here, the Nevada Test and Training Range with military sites, restricted airspace and airports switched on, one at a time. Spatial correlations report the raw r next to the population-adjusted r, so "ghosts correlate with UFOs" cannot hide "cities exist".</p>
+  </div>
+  <figure class="screen">
+    <span class="screen-tag">OVERLAYS: NEVADA</span>
+    <video data-inview muted loop playsinline preload="none" poster="media/overlays.jpg" aria-label="Over Nevada, military sites, then restricted airspace rings, then airports are switched on over the sighting markers.">
+      <source src="media/overlays.mp4" type="video/mp4">
+    </video>
+  </figure>
+</section>
+
+<section class="feature flip" id="analyst" aria-labelledby="analyst-title">
+  <div class="feature-text">
+    <p class="kicker">04 / THE ANALYST</p>
+    <h2 id="analyst-title">Ask SIGNAL, and watch it work</h2>
+    <p>SIGNAL is a built-in analyst powered by Claude. It drives the map through tool calls: hunting anomalies with the Signal Engine, running deep dives, filtering, correlating, placing pins, capturing the map into illustrated reports. Every call shows up in a live investigation log.</p>
+    <p>The app says you can try it with no setup while a free daily allowance lasts. After that, paste in your own Anthropic API key, which stays in your browser. All map features work without the analyst.</p>
+  </div>
+  <div class="pair single">
+    <figure class="screen">
+      <span class="screen-tag">SIGNAL ANALYST</span>
+      <img src="media/shot-signal.jpg" alt="The SIGNAL Analyst panel open over the correlation map, greeting the visitor and offering research prompts." loading="lazy" width="1280" height="720">
+    </figure>
+  </div>
+</section>
+
+<section class="gallery" aria-labelledby="gallery-title">
+  <h2 id="gallery-title" class="center">From the field</h2>
+  <div class="shots">
+    <figure><img src="media/shot-markers.jpg" alt="Marker view: clusters of green UFO, orange Bigfoot and purple haunted-place markers across the United States." loading="lazy" width="1280" height="720"><figcaption>Markers. Every cluster drills down to single reports.</figcaption></figure>
+    <figure><img src="media/shot-dossier.jpg" alt="The Sedona, Arizona dossier open over the Anomaly map, showing 699 observed against 384.1 expected." loading="lazy" width="1280" height="720"><figcaption>A dossier: 699 observed, 384.1 expected, 7.28 times the population baseline.</figcaption></figure>
+    <figure><img src="media/shot-matrix.jpg" alt="Correlation view: a three-by-three matrix in the sidebar and hotspot cells outlined in white over a red co-occurrence grid of the United States." loading="lazy" width="1280" height="720"><figcaption>Correlation. The matrix pairs UFO, Bigfoot and haunted places across 21,670 hex cells.</figcaption></figure>
+  </div>
+</section>
+
+<section class="making" id="making" aria-labelledby="making-title">
+  <div class="making-head">
+    <p class="kicker">05 / HOW IT WAS MADE</p>
+    <h2 id="making-title">A map first, then an instrument</h2>
+    <p class="lede">Stewart Gregerson built Strange Signals with Claude Code as his pair engineer. It started on 13 March 2026 as a plain correlation map. In June a written diagnosis turned it into something stricter.</p>
+  </div>
+
+  <div class="pillars">
+    <article>
+      <h3>An honest diagnosis</h3>
+      <p>The v2 vision document opens by calling v1 out: it plotted where people report things, so population drove every number. Hexes were tested with no multiple-comparison control, and "UFOs correlate with Haunted Places" mostly meant "both happen where people live". The fix was a pure-math module, <code>signal-engine.js</code>, with no map code in it.</p>
+    </article>
+    <article>
+      <h3>Zero build, big data</h3>
+      <p>The app is plain HTML, CSS and JavaScript on Leaflet, Turf and D3, with no bundler. A Python pipeline merges nine source CSVs and geocodes about 109,000 NUFORC reports. The UFO file is split into three gzipped shards to stay under Cloudflare's 25 MiB per-asset limit, each parsed in its own Web Worker and cached by a Service Worker.</p>
+    </article>
+    <article>
+      <h3>Claims get checked</h3>
+      <p>A rumored surge in NASA fireball detections was tested against primary CNEOS counts and refuted; the brief is in the repo. When a pipeline dedup bug was found truncating every description, the whole dataset was rebuilt rather than patched.</p>
+    </article>
+  </div>
+
+  <ol class="timeline">
+    <li><time>13 Mar</time><div><b>The first build.</b> A full-featured correlation map for UFO, Bigfoot and haunted-place reports.</div></li>
+    <li><time>14 Mar</time><div><b>The correlation suite.</b> Spatial, temporal, cluster and nearest-neighbor analysis.</div></li>
+    <li><time>17 Mar</time><div><b>SIGNAL arrives.</b> The AI analyst, a draggable window system and chart and report tools.</div></li>
+    <li><time>9 Jun</time><div><b>The v2 vision.</b> The product is not the map, it is the residual: where there is more than there should be.</div></li>
+    <li><time>25 Jul</time><div><b>Progressive first paint.</b> The two small categories appear in about 0.6 seconds while the big UFO file streams in.</div></li>
+    <li><time>26 Jul</time><div><b>Live on Cloudflare.</b> Deployed as static assets, with an optional shared analyst and a plain-language API key walkthrough.</div></li>
+  </ol>
+</section>
+
+<section class="credits-sec" id="credits" aria-labelledby="credits-title">
+  <h2 id="credits-title" class="center">Data and credits</h2>
+  <p class="center small">Strange Signals plots public datasets. Each belongs to its authors and keeps its own terms; check the source before reusing any of it.</p>
+  <div class="credit-grid">
+    <div>
+      <h3>Sightings</h3>
+      <ul>
+        <li><b>NUFORC reports</b> via the HuggingFace NUFORC dataset (geocoded here from a city gazetteer) and the TidyTuesday 2023-06-20 release. The reports belong to the National UFO Reporting Center.</li>
+        <li><b>planetsig/ufo-reports:</b> geocoded UFO reports.</li>
+        <li><b>Larry Hatch *U* database</b> via RR0/uDb: the historical catalog back to 593 BC.</li>
+        <li><b>BFRO Bigfoot reports</b> via TidyTuesday 2022-09-13 and Christopher1994-1/bigfoot-dataset-website.</li>
+        <li><b>Haunted Places:</b> the Shadowlands database, via TidyTuesday 2023-10-10.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Overlays</h3>
+      <ul>
+        <li><b>Airports:</b> OurAirports, public domain.</li>
+        <li><b>Earthquakes:</b> USGS earthquake catalog (US government data).</li>
+        <li><b>Fireballs:</b> NASA/JPL CNEOS fireball database.</li>
+        <li><b>Geomagnetic storms:</b> NOAA Space Weather Prediction Center plus a historical event list.</li>
+        <li><b>Restricted airspace:</b> compiled from FAA special use airspace charts.</li>
+        <li><b>Military sites and national parks:</b> US DOT military bases and National Park Service boundaries.</li>
+        <li><b>Population baseline:</b> US Census county population and land area.</li>
+        <li><b>Caves, historic sites, cryptids, Missing 411:</b> curated lists compiled for this project.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Software</h3>
+      <ul>
+        <li><b>Leaflet</b> 1.9.4 (BSD-2), <b>Leaflet.markercluster</b> (MIT), <b>leaflet-heat</b> (BSD-2).</li>
+        <li><b>Turf.js</b> 7.3.5 (MIT), <b>D3</b> 7.9.0 (ISC), <b>html2canvas</b> 1.4.1 (MIT).</li>
+        <li><b>Basemap:</b> CARTO Dark Matter, data from OpenStreetMap contributors.</li>
+        <li><b>Fonts:</b> Orbitron and Space Mono, SIL Open Font License 1.1.</li>
+        <li><b>SIGNAL Analyst:</b> Anthropic's Claude API.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <p class="pill"><span class="pill-dot"></span>In development</p>
+  <p>Strange Signals is a Samizdat Publications project. Code is MIT. It reports what people say they saw; it does not say what they saw.</p>
+  <p><a href="https://strange-signals.stewartgregerson.workers.dev/">Open the live map</a> · <a href="https://github.com/Samizdat-Publications/strange-signals">Source on GitHub</a> · <a href="https://github.com/Samizdat-Publications">Samizdat Publications</a></p>
+</footer>
+
+<script src="site.js" defer></script>
+</body>
+</html>

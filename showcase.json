@@ -1,0 +1,27 @@
+{
+  "name": "Strange Signals",
+  "repo": "strange-signals",
+  "pitch": "Every major paranormal dataset plotted on one map, 385,531 reports, with a math engine that separates the signal from the noise.",
+  "status": "in-development",
+  "version": "",
+  "kind": "app",
+  "started": "2026-03-13",
+  "updated": "2026-10-18",
+  "tech": ["JavaScript", "Leaflet", "Turf.js", "D3", "Web Workers", "Python"],
+  "links": {
+    "landing": "https://strange-signals.pages.dev",
+    "play": "https://strange-signals.stewartgregerson.workers.dev/",
+    "devlog": ""
+  },
+  "hero": {
+    "gif": "",
+    "poster": "site/media/hero.jpg",
+    "clip": "site/media/hero.mp4"
+  },
+  "credits": [
+    { "what": "Sighting data", "who": "NUFORC, BFRO, Shadowlands, Larry Hatch *U* database (via TidyTuesday, HuggingFace, RR0/uDb, planetsig)", "licence": "per source" },
+    { "what": "Overlay data", "who": "OurAirports, USGS, NASA/JPL CNEOS, NOAA SWPC, FAA, US DOT, NPS, US Census", "licence": "public domain / US government data" },
+    { "what": "Leaflet, markercluster, leaflet-heat, Turf.js, D3, html2canvas", "who": "their authors", "licence": "BSD-2 / MIT / ISC" },
+    { "what": "Orbitron and Space Mono fonts (landing page)", "who": "Google Fonts", "licence": "SIL OFL 1.1" }
+  ]
+}

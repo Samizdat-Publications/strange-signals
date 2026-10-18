@@ -46,3 +46,7 @@ node_modules/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Landing page (Cloudflare Pages project "strange-signals"): site/ is committed, site-dist/ is the build copy
+site-dist/
+!site/media/*.jpg
