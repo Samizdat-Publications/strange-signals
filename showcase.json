@@ -1,0 +1,31 @@
+{
+  "name": "Strange Signals",
+  "repo": "strange-signals",
+  "pitch": "An interactive map of 385,531 UFO, Bigfoot and haunted-place reports with population-corrected anomaly detection.",
+  "status": "v1",
+  "version": "1.0.0",
+  "kind": "dashboard",
+  "started": "2026-02-16",
+  "updated": "2026-07-27",
+  "tech": ["JavaScript", "Leaflet", "D3", "Web Workers", "Python"],
+  "links": {
+    "landing": "https://strange-signals.stewartgregerson.workers.dev/",
+    "play": "",
+    "devlog": ""
+  },
+  "hero": {
+    "gif": "",
+    "poster": "screenshots/hero-markers.png",
+    "clip": ""
+  },
+  "credits": [
+    { "what": "UFO/UAP reports", "who": "NUFORC (via HuggingFace and TidyTuesday), planetsig/ufo-reports, Larry Hatch *U* database (RR0/uDb)", "licence": "Per each source's terms" },
+    { "what": "Bigfoot reports", "who": "BFRO (via TidyTuesday and Christopher1994-1/bigfoot-dataset-website)", "licence": "Per each source's terms" },
+    { "what": "Haunted places", "who": "Shadowlands Haunted Places (via TidyTuesday)", "licence": "Per each source's terms" },
+    { "what": "Earthquakes", "who": "USGS", "licence": "US government data, public domain" },
+    { "what": "Fireballs and bolides", "who": "NASA/JPL CNEOS", "licence": "US government data, public domain" },
+    { "what": "Airports", "who": "OurAirports", "licence": "Public domain" },
+    { "what": "Map rendering and charts", "who": "Leaflet, Leaflet.markercluster, leaflet-heat, D3.js", "licence": "BSD-2-Clause, MIT, BSD-2-Clause, ISC" },
+    { "what": "SIGNAL AI research assistant", "who": "Anthropic Claude API", "licence": "Commercial API terms" }
+  ]
+}
