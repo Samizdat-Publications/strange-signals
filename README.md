@@ -274,7 +274,7 @@ Strange Signals is a **zero-build static web app** — no webpack, no npm, no bu
 | [Turf.js](https://turfjs.org/) | 7.3.5 | Geospatial analysis (hex grid, point-in-polygon, distances) |
 | [D3.js](https://d3js.org/) | 7.9.0 | Timeline, correlation charts, SVG rendering |
 | [html2canvas](https://html2canvas.hertzen.com/) | 1.4.1 | PNG snapshot export and AI map captures |
-| [CARTO Dark Matter](https://carto.com/basemaps/) | — | Dark map tiles |
+| [OpenFreeMap](https://openfreemap.org) (dark style) | © OpenMapTiles, data © OpenStreetMap contributors (ODbL) | Dark vector basemap, no API key |
 
 ### File Structure
 

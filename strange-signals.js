@@ -57,8 +57,14 @@ let geomagData=null,showGeomagnetic=false,geomagBandsGroup=null;
 /* ========== MAP INIT ========== */
 const map=L.map('map',{center:[39.5,-98.35],zoom:4,preferCanvas:true,maxZoom:18,zoomControl:false});
 L.control.zoom({position:'topright'}).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-  attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19
+// Basemap: OpenFreeMap's "dark" vector style (a Dark Matter port), drawn by
+// MapLibre GL inside Leaflet. Free, no API key, attribution required. CARTO's
+// keyless dark_all raster tiles now return an "API KEY REQUIRED" watermark.
+// preserveDrawingBuffer keeps the WebGL canvas readable for html2canvas snapshots.
+L.maplibreGL({
+  style:'https://tiles.openfreemap.org/styles/dark',
+  canvasContextAttributes:{preserveDrawingBuffer:true},
+  attributionControl:{customAttribution:'<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}
 }).addTo(map);
 
 // Delegated handler for popup "Show more/less" toggle buttons

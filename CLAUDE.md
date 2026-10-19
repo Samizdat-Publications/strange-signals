@@ -145,7 +145,7 @@ Everything is wrapped in an IIFE `(function(){ 'use strict'; ... })();`. Cross-s
 |---------|--------------|
 | **Constants** | `CAT_COLORS`, `CAT_NAMES`, `CAT_RGB`, field index `F`, `TABLER_SVG` registry |
 | **State** | `allData`, `filteredCat[3]`, `currentView`, layer refs, analysis caches |
-| **Map Init** | Leaflet dark CARTO tile layer, centered on US (39.5, -98.35, zoom 4) |
+| **Map Init** | Leaflet map with an OpenFreeMap "dark" vector basemap (MapLibre GL via @maplibre/maplibre-gl-leaflet), centered on US (39.5, -98.35, zoom 4) |
 | **Icons** | `TABLER_SVG` registry of 15 inline Tabler SVGs + `tablerIcon(name,color,size)` helper |
 | **Markers** | `makePopup()` with proximity analysis, `createMarker()`, delegated popup toggle |
 | **Analysis** | `pearsonR()`, `buildSpatialIndex()`, `getOrBuildHexData()` with cache invalidation on filter change |
@@ -255,7 +255,7 @@ All loaded from unpkg.com in `index.html` with Subresource Integrity (SRI) hashe
 | Turf.js | 7 | Geospatial analysis (`hexGrid`, `distance`, `bbox`, `centroid`, `booleanPointInPolygon`) |
 | D3.js | 7 | Timeline, correlation charts, AI chart rendering |
 | html2canvas | 1.4.1 | Snapshot export (P key) |
-| CARTO Dark Matter tiles | — | Basemap (not a JS dep — just a tile URL) |
+| maplibre-gl 5.24.0 + @maplibre/maplibre-gl-leaflet 0.1.4 | unpkg, SRI-pinned | Renders the OpenFreeMap dark basemap (free, no key; CARTO dark_all now needs a key) |
 | Google Fonts | — | Orbitron + Space Mono |
 
 ### Keyboard Shortcuts
