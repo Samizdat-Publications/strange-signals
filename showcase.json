@@ -2,12 +2,18 @@
   "name": "Strange Signals",
   "repo": "strange-signals",
   "pitch": "Every major paranormal dataset plotted on one map, 385,531 reports, with a math engine that separates the signal from the noise.",
-  "status": "in-development",
-  "version": "",
-  "kind": "app",
-  "started": "2026-03-13",
+  "status": "v1",
+  "version": "1.0.0",
+  "kind": "dashboard",
+  "started": "2026-02-16",
   "updated": "2026-10-18",
-  "tech": ["JavaScript", "Leaflet", "Turf.js", "D3", "Web Workers", "Python"],
+  "tech": [
+    "JavaScript",
+    "Leaflet",
+    "D3",
+    "Web Workers",
+    "Python"
+  ],
   "links": {
     "landing": "https://strange-signals.pages.dev",
     "play": "https://strange-signals.stewartgregerson.workers.dev/",
@@ -19,9 +25,45 @@
     "clip": "site/media/hero.mp4"
   },
   "credits": [
-    { "what": "Sighting data", "who": "NUFORC, BFRO, Shadowlands, Larry Hatch *U* database (via TidyTuesday, HuggingFace, RR0/uDb, planetsig)", "licence": "per source" },
-    { "what": "Overlay data", "who": "OurAirports, USGS, NASA/JPL CNEOS, NOAA SWPC, FAA, US DOT, NPS, US Census", "licence": "public domain / US government data" },
-    { "what": "Leaflet, markercluster, leaflet-heat, Turf.js, D3, html2canvas", "who": "their authors", "licence": "BSD-2 / MIT / ISC" },
-    { "what": "Orbitron and Space Mono fonts (landing page)", "who": "Google Fonts", "licence": "SIL OFL 1.1" }
+    {
+      "what": "UFO/UAP reports",
+      "who": "NUFORC (via HuggingFace and TidyTuesday), planetsig/ufo-reports, Larry Hatch *U* database (RR0/uDb)",
+      "licence": "Per each source's terms"
+    },
+    {
+      "what": "Bigfoot reports",
+      "who": "BFRO (via TidyTuesday and Christopher1994-1/bigfoot-dataset-website)",
+      "licence": "Per each source's terms"
+    },
+    {
+      "what": "Haunted places",
+      "who": "Shadowlands Haunted Places (via TidyTuesday)",
+      "licence": "Per each source's terms"
+    },
+    {
+      "what": "Earthquakes",
+      "who": "USGS",
+      "licence": "US government data, public domain"
+    },
+    {
+      "what": "Fireballs and bolides",
+      "who": "NASA/JPL CNEOS",
+      "licence": "US government data, public domain"
+    },
+    {
+      "what": "Airports",
+      "who": "OurAirports",
+      "licence": "Public domain"
+    },
+    {
+      "what": "Map rendering and charts",
+      "who": "Leaflet, Leaflet.markercluster, leaflet-heat, D3.js",
+      "licence": "BSD-2-Clause, MIT, BSD-2-Clause, ISC"
+    },
+    {
+      "what": "SIGNAL AI research assistant",
+      "who": "Anthropic Claude API",
+      "licence": "Commercial API terms"
+    }
   ]
 }

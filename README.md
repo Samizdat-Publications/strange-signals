@@ -4,6 +4,12 @@
 
 <h1 align="center">STRANGE SIGNALS</h1>
 
+<div align="center">
+
+![Status: v1.0](https://img.shields.io/badge/status-v1.0-2ea043)
+
+</div>
+
 <p align="center">
   <strong>Interactive Paranormal Sightings Correlation Map</strong><br>
   385,531 geocoded reports across UFO/UAP, Bigfoot, and Haunted Places — spanning 593 BC to the
@@ -437,6 +443,8 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 ## License
 
 This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+
+Third-party datasets and libraries credited in the Data Sources and Acknowledgments sections keep their own licences.
 
 ## Acknowledgments
 
